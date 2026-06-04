@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brigham Larson Pianos — Tuning CRM</title>
+<link rel="icon" type="image/png" href="./assets/brand/blp-logo.png">
+<style>
+  /* ── Brand Colors ────────────────────────────────────────── */
+  :root {
+    color-scheme: light;
+    --brand: #a71920;
+    --brand-dark: #7d1016;
+    --brand-light: #b43333;
+    --brand-soft: rgba(167, 25, 32, 0.12);
+    --cream: #f8f5ee;
+    --cream2: #ebe6dc;
+    --near-black: #161514;
+    --charcoal: #312d29;
+    --gray: #746d64;
+    --gray-light: #9e9e9e;
+    --gray-bg: #f8f5ee;
+    --white: #fffdf8;
+    --gold: #d7bf86;
+    --green: #4f695b;
+    --red: #c0392b;
+    --orange: #d4803a;
+    --sidebar-w: 292px;
+    --header-h: 88px;
+    --radius: 8px;
+    --shadow: 0 18px 45px rgba(39, 31, 24, 0.09);
+    --shadow-lg: 0 28px 70px rgba(34, 26, 18, 0.14);
+    --font: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font);
+    background:
+      linear-gradient(90deg, rgba(255, 253, 248, 0.92), rgba(248, 245, 238, 0.9)),
+      repeating-linear-gradient(90deg, rgba(22, 21, 20, 0.025) 0 1px, transparent 1px 52px),
+      var(--cream);
+    color: var(--charcoal);
+    min-height: 100%;
+  }
+
+  /* ── Layout ──────────────────────────────────────────────── */
+  .app { display: flex; min-height: 100%; }
+
+  /* ── Sidebar ─────────────────────────────────────────────── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--white);
+    color: var(--near-black);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    z-index: 50;
+    border-right: 1px solid #d9d2c5;
+  }
+  .sidebar-logo {
+    padding: 28px 24px 18px;
+    border-bottom: 1px solid #d9d2c5;
+  }
+  .sidebar-logo .tagline {
+    font-size: 12px;
+    color: var(--brand);
+    margin-top: 14px;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    text-align: left;
+    font-weight: 900;
+  }
+  .sidebar-nav { flex: 1; padding: 8px 0; overflow-y: auto; }
+  .nav-section { padding: 12px 24px 6px; font-size: 10px; text-transform: uppercase; color: var(--gray); letter-spacing: 0; font-weight: 900; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 24px;
+    color: var(--charcoal);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 400;
+    transition: all 0.15s;
+    cursor: pointer;
+    border-left: 0;
+    border-radius: 7px;
+    margin: 0 12px;
+  }
+  .nav-item:hover { background: var(--cream); color: var(--near-black); }
+  .nav-item.active { background: var(--near-black); color: var(--white); font-weight: 700; }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 18px 24px;
+    border-top: 1px solid #d9d2c5;
+    font-size: 11px;
+    color: var(--gray);
+  }
+  .sidebar-footer .version { font-size: 10px; margin-top: 4px; }
+
+  /* ── Main area ───────────────────────────────────────────── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    position: relative;
+    background: transparent;
+  }
+  header {
+    height: var(--header-h);
+    background: rgba(255, 253, 248, 0.94);
+    border: 1px solid #d9d2c5;
+    display: flex;
+    align-items: center;
+    padding: 14px;
+    gap: 16px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    margin: 30px 30px 0;
+    border-radius: 8px;
+    box-shadow: 0 12px 30px rgba(39, 31, 24, 0.07);
+    backdrop-filter: blur(14px);
+  }
+  header h2 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 4vw, 48px); line-height: 1; font-weight: 700; color: var(--near-black); }
+  header .breadcrumb { font-size: 13px; color: var(--gray); }
+  header .breadcrumb span { color: var(--brand); }
+  .header-right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
+  /* removed header-search */
+
+  .content {
+    padding: 24px 30px 30px;
+    flex: 1;
+  }
+  .content.no-pad { padding: 0; background: var(--white); }
+  
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── Metric Cards ────────────────────────────────────────── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .metric-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid #d9d2c5;
+    transition: box-shadow 0.2s;
+  }
+  .metric-card:hover { box-shadow: var(--shadow-lg); }
+  .metric-card .label {
+    font-size: 12px;
+    color: var(--gray);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 4px;
+  }
+  .metric-card .value {
+    font-size: 28px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 700;
+    color: var(--near-black);
+    line-height: 1.1;
+  }
+  .metric-card .sub {
+    font-size: 12px;
+    color: var(--gray-light);
+    margin-top: 4px;
+  }
+  .metric-card .sub.green { color: var(--green); }
+  .metric-card .sub.red { color: var(--red); }
+  .metric-card .sub.gold { color: var(--gold); }
+  .metric-card .icon-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .metric-card .card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .card-icon.burgundy { background: var(--brand-soft); }
+  .card-icon.gold { background: #f6f0d6; }
+  .card-icon.green { background: #e4f0e8; }
+  .card-icon.cream { background: #efe5d6; }
+  .card-icon.red { background: #f5e4e4; }
+
+  /* ── Chart panels ────────────────────────────────────────── */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 1000px) { .chart-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid #d9d2c5;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .chart-card h3 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--near-black);
+  }
+  .chart-card h3 span {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--gray-light);
+    margin-left: 6px;
+  }
+
+  /* ── Appointment list ────────────────────────────────────── */
+  .appt-list { list-style: none; }
+  .appt-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0ede4;
+    font-size: 13px;
+  }
+  .appt-item:last-child { border-bottom: none; }
+  .appt-time {
+    font-weight: 600;
+    color: var(--brand);
+    min-width: 48px;
+    font-size: 12px;
+  }
+  .appt-name { flex: 1; }
+  .appt-tech {
+    color: var(--gray);
+    font-size: 12px;
+  }
+  .appt-city { color: var(--gray-light); font-size: 11px; }
+
+  /* ── Bar chart ───────────────────────────────────────────── */
+  .bar-chart { margin-top: 8px; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .bar-label {
+    min-width: 80px;
+    color: var(--charcoal);
+    font-weight: 500;
+  }
+  .bar-track {
+    flex: 1;
+    height: 20px;
+    background: var(--gray-bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--brand);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+    min-width: 2px;
+  }
+  .bar-fill.gold { background: var(--gold); }
+  .bar-fill.green { background: var(--green); }
+  .bar-value {
+    min-width: 30px;
+    text-align: right;
+    color: var(--gray);
+    font-weight: 500;
+  }
+
+  /* ── Service due list ────────────────────────────────────── */
+  .due-list { max-height: 300px; overflow-y: auto; }
+  .due-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0ede4;
+    font-size: 12px;
+  }
+  .due-item .name { flex: 1; }
+  .due-item .overdue {
+    font-weight: 600;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .overdue.critical { background: #f5e4e4; color: var(--red); }
+  .overdue.warning { background: #f6f0d6; color: var(--orange); }
+
+  /* ── Heatmap ─────────────────────────────────────────────── */
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 6px;
+  }
+  .heatmap-cell {
+    padding: 8px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 11px;
+  }
+  .heatmap-cell .hm-label { color: var(--gray); margin-bottom: 2px; }
+  .heatmap-cell .hm-count { font-weight: 700; font-size: 15px; }
+  .heatmap-cell.level-0 { background: var(--gray-bg); }
+  .heatmap-cell.level-1 { background: #f5ecec; }
+  .heatmap-cell.level-2 { background: #e8c8c8; }
+  .heatmap-cell.level-3 { background: #d49494; color: var(--white); }
+  .heatmap-cell.level-4 { background: #b86060; color: var(--white); }
+  .heatmap-cell.level-5 { background: var(--brand); color: var(--white); }
+
+  /* ── Table ───────────────────────────────────────────────── */
+  .table-wrap { overflow: auto; background: var(--white); border-radius: var(--radius); border: 1px solid #d9d2c5; box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 14px; font-weight: 600; color: var(--gray); font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 2px solid #e8e4d8; background: var(--white); position: sticky; top: 0; }
+  td { padding: 9px 14px; border-bottom: 1px solid #f0ede4; }
+  tr:hover td { background: #faf8f2; }
+  tr { cursor: pointer; }
+
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-scheduled { background: #e4f0e8; color: var(--green); }
+  .badge-reactivate { background: #f6f0d6; color: var(--orange); }
+  .badge-old { background: #f0ede4; color: var(--gray); }
+  .badge-digital { background: #f5ecec; color: var(--brand); }
+  .badge-removed { background: #f5e4e4; color: var(--red); }
+
+  /* ── Detail Panel ────────────────────────────────────────── */
+  .detail-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4); z-index: 99; display: none;
+  }
+  .detail-overlay.show { display: block; }
+  .detail-panel {
+    position: fixed; top: 0; right: -520px; width: 500px; height: 100vh;
+    background: var(--white); z-index: 100;
+    transition: right 0.3s ease;
+    display: flex; flex-direction: column;
+    box-shadow: -20px 0 50px rgba(39, 31, 24, 0.18);
+  }
+  .detail-panel.open { right: 0; }
+  .panel-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #d9d2c5;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-header h2 { font-family: Georgia, "Times New Roman", serif; font-size: 26px; font-weight: 700; }
+  .panel-close {
+    background: none; border: none; font-size: 24px;
+    cursor: pointer; color: var(--gray); padding: 4px;
+  }
+  .panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .field-group { margin-bottom: 14px; }
+  .field-group label {
+    display: block; font-size: 10px; text-transform: uppercase;
+    color: var(--gray); font-weight: 600; letter-spacing: 0.3px; margin-bottom: 3px;
+  }
+  .field-value {
+    font-size: 13px; padding: 6px 10px;
+    background: var(--gray-bg); border-radius: 4px;
+  }
+  .field-group input, .field-group select {
+    width: 100%; padding: 6px 10px;
+    border: 1px solid #d0ccc0; border-radius: 4px;
+    font-size: 13px; font-family: var(--font); background: var(--white);
+  }
+  .field-group input:focus { outline: none; border-color: var(--brand); }
+  .panel-actions {
+    padding: 14px 20px; border-top: 1px solid #e8e4d8;
+    display: flex; gap: 8px;
+  }
+  .btn {
+    padding: 9px 20px; border-radius: 6px; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: var(--font); transition: all 0.15s;
+  }
+  .btn-primary { background: var(--brand); color: var(--white); }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-outline { background: transparent; color: var(--charcoal); border: 1px solid #d0ccc0; }
+  .btn-outline:hover { background: var(--gray-bg); }
+  .btn-success { background: var(--green); color: var(--white); }
+
+  /* ── Pagination ──────────────────────────────────────────── */
+  .pagination { display: flex; gap: 4px; align-items: center; margin-top: 16px; justify-content: center; }
+  .pagination button {
+    background: var(--white); border: 1px solid #d0ccc0;
+    color: var(--charcoal); padding: 6px 12px; border-radius: 4px;
+    cursor: pointer; font-size: 12px; font-family: var(--font);
+  }
+  .pagination button:disabled { opacity: 0.4; cursor: default; }
+  .pagination button.active { background: var(--brand); color: var(--white); border-color: var(--brand); }
+
+  /* ── Loading ─────────────────────────────────────────────── */
+  .loading { text-align: center; padding: 60px; color: var(--gray); font-size: 14px; }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid #e8e4d8;
+    border-top-color: var(--brand); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+
+  /* ── Timeline ────────────────────────────────────────────── */
+  /* ── View Toggle ─────────────────────────────────────────── */
+  .view-toggle { display: flex; gap: 0; margin-bottom: 12px; border: 1px solid #d0ccc0; border-radius: 6px; overflow: hidden; width: fit-content; }
+  .view-toggle button {
+    padding: 7px 18px; border: none; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: var(--font);
+    background: var(--white); color: var(--gray);
+    transition: all 0.15s; border-right: 1px solid #d0ccc0;
+  }
+  .view-toggle button:last-child { border-right: none; }
+  .view-toggle button.active { background: var(--brand); color: var(--white); }
+  .view-toggle button:hover:not(.active) { background: var(--gray-bg); }
+
+  .timeline { position: relative; padding-left: 20px; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 6px; top: 4px; bottom: 4px;
+    width: 2px; background: #d0ccc0; border-radius: 1px;
+  }
+  .tl-item { position: relative; margin-bottom: 0; padding: 10px 0 10px 16px; border-bottom: 1px solid #f0ede4; }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-item::before {
+    content: '';
+    position: absolute; left: -18px; top: 14px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--brand); border: 2px solid var(--white);
+    box-shadow: 0 0 0 2px var(--brand-soft);
+  }
+  .tl-item.all-day::before { background: var(--gold); box-shadow: 0 0 0 2px #f6f0d6; }
+  .tl-item.cancelled { opacity: 0.4; }
+  .tl-item.cancelled::before { background: var(--gray); opacity: 0.3; }
+  .tl-time { font-size: 11px; font-weight: 600; color: var(--brand); margin-bottom: 1px; }
+  .tl-summary { font-size: 13px; line-height: 1.3; }
+  .tl-tag { font-size: 10px; color: var(--gray); margin-top: 1px; }
+  .tl-empty { padding: 24px 0; text-align: center; color: var(--gray-light); font-size: 13px; }
+
+  /* ── Toast ───────────────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 12px 20px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 500; z-index: 200;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s ease;
+    background: var(--green); color: var(--white);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: var(--red); }
+
+  /* ── Responsive ──────────────────────────────────────────── */
+  
+  /* ── Full-width views ──────────────────────────────────────── */
+  .view.active.fullwidth { padding: 0; margin: 0; display: flex; flex-direction: column; background: var(--white); min-height: 100%; }
+  #view-schedule.active.fullwidth { padding: 24px 30px 30px; }
+  #view-schedule #scheduleWizard { width: 100%; max-width: none; margin: 0; padding: 0; }
+  #scheduleWizard .wiz-body {
+    width: 100%;
+    min-height: calc(100vh - 230px);
+    background: var(--white);
+    border: 1px solid #e0dcd0;
+    border-radius: 8px;
+    padding: 36px 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .view.fullwidth .table-wrap {
+    border-radius: 0; border-left: none; border-right: none;
+    flex: 1; overflow: auto; max-height: none;
+    border-bottom: none;
+  }
+  .view.fullwidth .search-header {
+    padding: 16px 24px; background: var(--white);
+    border-bottom: 1px solid #e8e4d8;
+  }
+  .view.fullwidth table th { background: var(--gray-bg); }
+  .view.fullwidth .pagination { padding: 12px 24px; background: var(--white); border-top: 1px solid #e8e4d8; }
+
+@media (max-width: 768px) {
+    .sidebar { width: 60px; }
+    .sidebar-logo .tagline, .nav-item span, .nav-section, .sidebar-footer { display: none; }
+    .sidebar-logo { padding: 16px 12px; }
+    .nav-item { padding: 12px; justify-content: center; }
+    .main { margin-left: 60px; }
+    .metric-grid { grid-template-columns: 1fr 1fr; }
+    .chart-grid { grid-template-columns: 1fr; }
+    header { padding: 0 16px; }
+
+    .content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="./assets/brand/blp-logo.png" 
+           alt="Brigham Larson Pianos"
+           style="width:100%;max-width:196px;height:auto;display:block;margin:0;">
+      <div class="tagline">Tuning Operations</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <a class="nav-item active" onclick="showView('dashboard')"><span class="icon">📊</span><span>Dashboard</span></a>
+      <a class="nav-item" onclick="showView(&apos;customers&apos;)"><span class="icon">👥</span><span>Clients</span></a>
+      <div class="nav-section">Pianos</div>
+      <a class="nav-item" onclick="showView('service')"><span class="icon">🔧</span><span>Service Due</span></a>
+      <a class="nav-item" onclick="showView('duplicates')"><span class="icon">🔗</span><span>Duplicates</span></a>
+      <div class="nav-section">Analytics</div>
+      <a class="nav-item" onclick="showView('tuners')"><span class="icon">🎛️</span><span>Tuners</span></a>
+      <a class="nav-item" onclick="showView('geo')"><span class="icon">📍</span><span>Geography</span></a>
+      <div class="nav-section">Booking</div>
+      <a class="nav-item" onclick="showView('schedule')"><span class="icon">📅</span><span>Schedule Online</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      Live Tuning CRM
+      <div class="version">🎹 Ivory · v2.0</div>
+    </div>
+  </aside>
+
+  <!-- ── Main ──────────────────────────────────────────────────── -->
+  <div class="main">
+    <header>
+      <div>
+        <div class="breadcrumb">BLP / <span id="headerView">Dashboard</span></div>
+        <h2 id="headerTitle">Dashboard</h2>
+      </div>
+      <div class="header-right">
+        
+        <span id="headerCount" style="font-size:12px;color:var(--gray);"></span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ══ Dashboard ══ -->
+      
+      <div class="view active" id="view-dashboard">
+        <div class="metric-grid" id="metricCards"></div>
+        <div class="chart-grid">
+          <div class="chart-card" id="todayApptsCard">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <h3 style="margin:0;">Today's Appointments</h3>
+              <div class="view-toggle" style="margin:0;">
+                <button class="cal-toggle-btn active" data-kind="tuning" onclick="renderAppts('tuning')">🔧 Tunings</button>
+                <button class="cal-toggle-btn" data-kind="moving" onclick="renderAppts('moving')">🚚 Piano Moves</button>
+              </div>
+            </div>
+            <div id="todayApptList"><p style="color:var(--gray-light);font-size:13px;">Loading...</p></div>
+          </div>
+          <div class="chart-card">
+            <h3>Status Breakdown <span>(9,283 total)</span></h3>
+            <div id="statusChart"></div>
+          </div>
+        </div>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <h3>Tuner Workload</h3>
+            <div id="tunerChart"></div>
+          </div>
+          <div class="chart-card">
+            <h3>Client Activity by City</h3>
+            <div id="cityHeatmap" class="heatmap-grid"></div>
+          </div>
+        </div>
+            </div>
+    </div>
+    
+
+</div>
+
+
+      <!-- ══ Schedule Online ══ -->
+      <div class="view fullwidth" id="view-schedule">
+        <div id="scheduleWizard"></div>
+      </div>
+      <!-- ══ Clients ══ -->
+      <div class="view fullwidth" id="view-customers">
+        <div class="search-header">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <input id="searchInput" placeholder="Search name, email, phone, city..." style="flex:1;min-width:240px;padding:9px 14px;border:1px solid #d0ccc0;border-radius:6px;font-size:13px;font-family:var(--font);" oninput="debouncedSearch()">
+            <select id="statusFilter" style="padding:9px 14px;border:1px solid #d0ccc0;border-radius:6px;font-size:13px;font-family:var(--font);" onchange="debouncedSearch()">
+              <option value="">All Statuses</option>
+              <option value="Scheduled Tuning Customer">Scheduled</option>
+              <option value="Reactivate Tuning Customer">Reactivate</option>
+              <option value="Old Tuning Customer">Old</option>
+            </select>
+            <span id="resultCount" style="font-size:13px;color:var(--gray);"></span>
+          </div>
+        </div>
+        <div class="table-wrap" >
+          <table><thead><tr><th>Name</th><th>Status</th><th>Email</th><th>Phone</th><th>City</th><th>Last Tuning</th><th>Scheduled</th><th>Tech</th></tr></thead>
+            <tbody id="customerTable"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination" ></div>
+      </div>
+
+      <!-- ══ Service Due ══ -->
+      <div class="view" id="view-service">
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">Pianos Due for Service</h3>
+        <p style="color:var(--gray);font-size:13px;margin-bottom:16px;" id="serviceCount"></p>
+        <div class="table-wrap">
+          <table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>City</th><th>Last Tuning</th><th>Overdue</th></tr></thead>
+            <tbody id="serviceTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ Duplicates ══ -->
+      <div class="view" id="view-duplicates">
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:4px;">Duplicate Email Addresses</h3>
+        <p style="color:var(--gray);font-size:13px;margin-bottom:16px;" id="dupCount"></p>
+        <div id="dupList"></div>
+      </div>
+
+      <!-- ══ Tuners ══ -->
+      <div class="view" id="view-tuners">
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">Tuner Workload Distribution</h3>
+        <div class="chart-card" id="tunerDetailChart"></div>
+      </div>
+
+      <!-- ══ Geography ══ -->
+      <div class="view" id="view-geo">
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">Customers by City</h3>
+        <div class="chart-card" id="geoChart"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Detail Panel ────────────────────────────────────────────── -->
+<div class="detail-overlay" id="panelOverlay" onclick="closePanel()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="panel-header">
+    <h2 id="panelTitle">Customer</h2>
+    <button class="panel-close" onclick="closePanel()">&times;</button>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+  <div class="panel-actions">
+    <button class="btn btn-outline" onclick="toggleEdit()" id="editBtn">✏️ Edit</button>
+    <button class="btn btn-success" id="saveBtn" onclick="saveCustomer()" style="display:none">💾 Save</button>
+    <button class="btn btn-outline" id="cancelBtn" onclick="closePanel()" style="display:none">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+let currentView = 'dashboard';
+let currentPage = 1;
+let selectedRow = null;
+let isEditing = false;
+let searchTimer = null;
+
+// ── Navigation ─────────────────────────────────────────────────
+function showView(name) {
+  currentView = name;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.add('active');
+  document.querySelector(`.nav-item[onclick*="${name}"]`)?.classList.add('active');
+  currentPage = 1;
+
+  // Toggle full-width padding and hide header for clients view
+  document.querySelector('.content').classList.toggle('no-pad', name === 'customers' || name === 'schedule');
+  var hdr = document.querySelector('.main > header');
+  if (hdr) hdr.style.display = (name === 'customers' || name === 'schedule') ? 'none' : 'flex';
+
+  const titles = {dashboard:'Dashboard',customers:'Clients',service:'Service Due',duplicates:'Duplicates',tuners:'Tuners',geo:'Geography',schedule:'Schedule Online'};
+  document.getElementById('headerView').textContent = titles[name] || name;
+  document.getElementById('headerTitle').textContent = titles[name] || name;
+
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'customers') loadCustomers();
+  if (name === 'service') loadServiceDue();
+  if (name === 'duplicates') loadDuplicates();
+  if (name === 'tuners') loadTuners();
+  if (name === 'geo') loadGeo();
+  if (name === 'schedule') initScheduler();
+}
+
+// ── Dashboard ──────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    document.getElementById('metricCards').innerHTML = '<div class="loading"><div class="spinner"></div>Loading dashboard...</div>';
+    const res = await fetch(`${API}/api/dashboard`);
+    const d = await res.json();
+
+    document.getElementById('headerCount').textContent = `${d.total_customers.toLocaleString()} customers`;
+
+    // Today's appointments from live calendars
+    let todayAppts = 0;
+    const apptList = document.getElementById('todayApptList');
+    try {
+      const apptRes = await fetch(API+'/api/appointments/today');
+      const apptData = await apptRes.json();
+      const appts = apptData.appointments.filter(a => !a.error);
+      todayAppts = appts.length;
+      if (appts.length === 0) {
+        apptList.innerHTML = '<p style="color:var(--gray-light);font-size:13px;">No appointments scheduled for today</p>';
+      } else {
+        // Store all appts for toggle
+        window._allAppts = appts;
+        renderAppts('tuning');
+      }
+    } catch(e) {
+      apptList.innerHTML = '<p style="color:var(--red);font-size:13px;">Could not load calendar</p>';
+    }
+
+    
+    
+    // Metric cards
+    document.getElementById('metricCards').innerHTML = `
+      <div class="metric-card">
+        <div class="icon-row">
+          <div><div class="label">Today's Appointments</div><div class="value">${todayAppts}</div></div>
+          <div class="card-icon burgundy">📅</div>
+        </div>
+        <div class="sub">${d.upcoming_appointments} upcoming total</div>
+      </div>
+      <div class="metric-card">
+        <div class="icon-row">
+          <div><div class="label">Pianos Due for Service</div><div class="value">${d.pianos_due_for_service.toLocaleString()}</div></div>
+          <div class="card-icon gold">🔧</div>
+        </div>
+        <div class="sub gold">${d.pianos_due_this_month} due this month</div>
+      </div>
+      <div class="metric-card">
+        <div class="icon-row">
+          <div><div class="label">Scheduled Tunings</div><div class="value">${d.scheduled.toLocaleString()}</div></div>
+          <div class="card-icon green">✅</div>
+        </div>
+        <div class="sub green">${d.reactivation_rate}% reactivation rate</div>
+      </div>
+      <div class="metric-card">
+        <div class="icon-row">
+          <div><div class="label">Total Revenue</div><div class="value">$${(d.total_revenue/1000).toFixed(0)}K</div></div>
+          <div class="card-icon cream">💰</div>
+        </div>
+        <div class="sub">${d.reactivate.toLocaleString()} reactivate customers</div>
+      </div>
+      <div class="metric-card">
+        <div class="icon-row">
+          <div><div class="label">Duplicate Emails</div><div class="value" style="color:var(--red)">${(await (await fetch(API+'/api/duplicates')).json()).length}</div></div>
+          <div class="card-icon red">🔗</div>
+        </div>
+        <div class="sub red">Needs review</div>
+      </div>
+      <div class="metric-card">
+        <div class="icon-row">
+          <div><div class="label">Total Clients</div><div class="value">${d.total_customers.toLocaleString()}</div></div>
+          <div class="card-icon burgundy">👥</div>
+        </div>
+        <div class="sub">${d.old.toLocaleString()} old · ${d.removed} removed</div>
+      </div>`;
+
+    // Status breakdown bar chart
+    const statuses = [
+      {label:'Scheduled', value:d.scheduled, color:'var(--green)'},
+      {label:'Reactivate', value:d.reactivate, color:'var(--orange)'},
+      {label:'Old', value:d.old, color:'var(--gray)'},
+      {label:'Digital', value:d.digital, color:'var(--brand)'},
+      {label:'Removed', value:d.removed, color:'var(--red)'},
+    ];
+    const maxVal = Math.max(...statuses.map(s => s.value), 1);
+    document.getElementById('statusChart').innerHTML = '<div class="bar-chart">' +
+      statuses.map(s => `<div class="bar-row">
+        <span class="bar-label">${s.label}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${(s.value/maxVal*100).toFixed(1)}%;background:${s.color};"></div></div>
+        <span class="bar-value">${s.value.toLocaleString()}</span>
+      </div>`).join('') + '</div>';
+
+    // Tuner workload (top 10)
+    const tuners = d.tuners;
+    const tunerMax = Math.max(...Object.values(tuners), 1);
+    const topTuners = Object.entries(tuners).sort((a,b) => b[1]-a[1]).slice(0, 10);
+    document.getElementById('tunerChart').innerHTML = '<div class="bar-chart">' +
+      topTuners.map(([name, count]) => `<div class="bar-row">
+        <span class="bar-label" style="min-width:100px;">${esc(name)}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${(count/tunerMax*100).toFixed(1)}%;"></div></div>
+        <span class="bar-value">${count}</span>
+      </div>`).join('') + '</div>';
+
+    // City heatmap
+    const geo = d.top_cities;
+    const geoMax = Math.max(...Object.values(geo), 1);
+    document.getElementById('cityHeatmap').innerHTML = Object.entries(geo).slice(0, 24).map(([city, count]) => {
+      const level = count > geoMax * 0.5 ? 5 : count > geoMax * 0.3 ? 4 : count > geoMax * 0.15 ? 3 : count > geoMax * 0.08 ? 2 : count > geoMax * 0.03 ? 1 : 0;
+      return `<div class="heatmap-cell level-${level}"><div class="hm-label">${esc(city)}</div><div class="hm-count">${count}</div></div>`;
+    }).join('');
+
+  } catch(e) {
+    document.getElementById('metricCards').innerHTML = `<div class="metric-card" style="text-align:center;padding:40px;color:var(--red);">⚠️ API offline — make sure the server is running on port 8900</div>`;
+  }
+}
+
+
+// ── Calendar toggle ────────────────────────────────────────────
+window.renderAppts = function(kind) {
+  var appts = window._allAppts || [];
+  var filtered = appts.filter(function(a) { return !a.error && a.kind === kind; });
+  var apptList = document.getElementById('todayApptList');
+  
+  // Update toggle buttons
+  var btns = document.querySelectorAll('.cal-toggle-btn');
+  btns.forEach(function(b) { b.classList.toggle('active', b.dataset.kind === kind); });
+  
+  if (filtered.length === 0) {
+    apptList.innerHTML = '<p style="color:var(--gray-light);font-size:13px;">No ' + kind + ' appointments today</p>';
+    return;
+  }
+  
+  apptList.innerHTML = '<div class="timeline">' + filtered.map(function(a) {
+    var isCanc = a.summary && (a.summary.toLowerCase().includes('cancel') || a.summary.toLowerCase().includes('deleted') || a.summary.includes('*'));
+    var isAllDay = !a.time;
+    var cls = (isCanc ? 'cancelled ' : '') + (isAllDay ? 'all-day' : '');
+    var emoji = isCanc ? '\uD83D\uDEAB' : (isAllDay ? '\uD83D\uDCCC' : '\uD83D\uDD14');
+    return '<div class="tl-item ' + cls + '">' +
+      '<div class="tl-time">' + (a.time || 'All day') + '</div>' +
+      '<div class="tl-summary">' + emoji + ' ' + esc(a.summary) + '</div>' +
+      '<div class="tl-tag">📋 ' + esc(a.calendar) + '</div>' +
+      '</div>';
+  }).join('') + '</div>';
+};
+
+
+
+// ══ Schedule Online Wizard ═══════════════════════════════════
+var sched = { step: 1, data: {} };
+
+function initScheduler() {
+  sched = { step: 1, data: { pianos: 1, services: 1, tuner: '', date: '', time: '', name: '', phone: '', email: '', notes: '' } };
+  renderScheduler();
+}
+
+function renderScheduler() {
+  var el = document.getElementById('scheduleWizard');
+  if (!el) { setTimeout(renderScheduler, 100); return; }
+  var d = sched.data;
+  var steps = ['Your Location', 'Pianos & Services', 'Preferences', 'Select Appointment', 'Contact Details', 'Finished'];
+  
+  var html = '';
+  // Stepper
+  html += '<div style="display:flex;gap:8px;margin-bottom:28px;padding:0;">';
+  for (var i = 0; i < steps.length; i++) {
+    var num = i + 1;
+    var cls = num === sched.step ? 'active' : (num < sched.step ? 'done' : '');
+    html += '<div style="flex:1;text-align:center;font-size:10px;">' +
+      '<div style="width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-bottom:6px;' +
+      (cls === 'active' ? 'background:var(--brand);color:#fff;' : (cls === 'done' ? 'background:var(--green);color:#fff;' : 'background:var(--gray-bg);color:var(--gray);')) + '">' +
+      (cls === 'done' ? '\u2713' : num) + '</div>' +
+      '<div style="font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' + (cls === 'active' ? 'color:var(--brand);font-weight:600;' : 'color:var(--gray);') + '">' + steps[i] + '</div></div>';
+  }
+  html += '</div>';
+
+  // Step content
+  html += '<div class="wiz-body">';
+  
+  if (sched.step === 1) html += step1HTML(d);
+  else if (sched.step === 2) html += step2HTML(d);
+  else if (sched.step === 3) html += step3HTML(d);
+  else if (sched.step === 4) html += step4HTML(d);
+  else if (sched.step === 5) html += step5HTML(d);
+  else if (sched.step === 6) html += step6HTML(d);
+  
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function step1HTML(d) {
+  return '<div style="max-width:520px;margin:0 auto;">' +
+    '<h2 style="font-size:22px;font-weight:700;margin-bottom:4px;">Find Your Location</h2>' +
+    '<p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Enter the street address or choose another location type.</p>' +
+    '<div class="field-group" style="margin-bottom:18px;">' +
+    '<label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">Street Address <span style="color:var(--red);">*</span></label>' +
+    '<input id="sAddr" value="' + esc(d.address || '') + '" placeholder="123 Main St" required style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;transition:border 0.15s;" onfocus="this.style.borderColor=\'var(--brand)\'" onblur="this.style.borderColor=\'#d0ccc0\'">' +
+    '</div>' +
+    '<div class="field-group" style="margin-bottom:18px;">' +
+    '<label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">City <span style="color:var(--red);">*</span></label>' +
+    '<input id="sCity" value="' + esc(d.city || '') + '" placeholder="Orem" required style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;transition:border 0.15s;" onfocus="this.style.borderColor=\'var(--brand)\'" onblur="this.style.borderColor=\'#d0ccc0\'">' +
+    '</div>' +
+    '<div style="display:flex;gap:12px;margin-bottom:24px;">' +
+    '<div class="field-group" style="flex:1;"><label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">State</label>' +
+    '<input id="sState" value="' + esc(d.state || 'UT') + '" placeholder="UT" style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;transition:border 0.15s;" onfocus="this.style.borderColor=\'var(--brand)\'" onblur="this.style.borderColor=\'#d0ccc0\'">' +
+    '</div>' +
+    '<div class="field-group" style="flex:1;"><label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">Zip Code</label>' +
+    '<input id="sZip" value="' + esc(d.zip || '') + '" placeholder="Optional" style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;transition:border 0.15s;" onfocus="this.style.borderColor=\'var(--brand)\'" onblur="this.style.borderColor=\'#d0ccc0\'">' +
+    '</div></div>' +
+    '<div style="display:flex;justify-content:flex-end;">' +
+    '<button class="btn btn-primary" onclick="schedNext(2)" style="padding:12px 32px;font-size:15px;border-radius:8px;">Next \u2192</button></div>' +
+    '<p style="text-align:center;font-size:13px;color:var(--gray-light);margin-top:20px;">Having trouble? Call us at <strong style="color:var(--brand);">(801) 701-0113</strong></p>' +
+    '</div>';
+}
+
+function step2HTML(d) {
+  return '<div style="max-width:520px;margin:0 auto;">' +
+    '<h2 style="font-size:22px;font-weight:700;margin-bottom:4px;">Pianos & Services</h2>' +
+    '<p style="color:var(--gray);font-size:14px;margin-bottom:24px;">How many pianos need service?</p>' +
+    '<div class="field-group" style="margin-bottom:18px;">' +
+    '<label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">Number of Pianos</label>' +
+    '<select id="sPianos" style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;background:var(--white);cursor:pointer;">' +
+    [1,2,3,4,5].map(function(n) { return '<option value="' + n + '" ' + (sched.data.pianos == n ? 'selected' : '') + '>' + n + '</option>'; }).join('') +
+    '</select></div>' +
+    '<div class="field-group" style="margin-bottom:24px;">' +
+    '<label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">Service Type</label>' +
+    '<select id="sServices" style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;background:var(--white);cursor:pointer;">' +
+    '<option value="1" ' + (sched.data.services == 1 ? 'selected' : '') + '>Standard Tuning (1.5h)</option>' +
+    '<option value="2" ' + (sched.data.services == 2 ? 'selected' : '') + '>Tuning + Pitch Raise (2.5h)</option>' +
+    '<option value="3" ' + (sched.data.services == 3 ? 'selected' : '') + '>Tuning + Repairs (3h)</option>' +
+    '</select></div>' +
+    '<div style="display:flex;justify-content:space-between;">' +
+    '<button class="btn btn-outline" onclick="sched.step=1;renderScheduler();" style="padding:12px 24px;font-size:15px;border-radius:8px;">\u2190 Back</button>' +
+    '<button class="btn btn-primary" onclick="schedNext(3)" style="padding:12px 32px;font-size:15px;border-radius:8px;">Next \u2192</button></div>' +
+    '</div>';
+}
+
+function step3HTML(d) {
+  var html = '<h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Select Preferences</h3>' +
+    '<p style="color:var(--gray);font-size:13px;margin-bottom:16px;">Choose a target date and preferred technician.</p>' +
+    '<div class="field-group"><label>Target Date</label>' +
+    '<input id="sDate" type="date" value="' + (d.date || '') + '" min="' + new Date().toISOString().split('T')[0] + '" style="width:200px;padding:10px 14px;border:1px solid #d0ccc0;border-radius:6px;font-size:14px;font-family:var(--font);"></div>' +
+    '<div class="field-group"><label>Preferred Technician</label>' +
+    '<select id="sTuner" style="width:240px;padding:10px 14px;border:1px solid #d0ccc0;border-radius:6px;font-size:14px;font-family:var(--font);">' +
+    '<option value="">Any Technician</option></select>' +
+    '<div style="font-size:12px;color:var(--gray);margin-top:6px;">Availability checked based on city area.</div>' +
+    '<div style="margin-top:16px;display:flex;gap:8px;">' +
+    '<button class="btn btn-outline" onclick="sched.step=2;renderScheduler();">\u2190 Back</button>' +
+    '<button class="btn btn-primary" onclick="schedSearch()">Search Availability \u2192</button></div>';
+
+  // Fetch tuners async
+  setTimeout(function() {
+    fetch(API+'/api/schedule/tuners').then(function(r) { return r.json(); }).then(function(tuners) {
+      var sel = document.getElementById('sTuner');
+      if (!sel) return;
+      tuners.forEach(function(t) {
+        var opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        if (sched.data.tuner === t) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }).catch(function() {});
+  }, 50);
+
+  return html;
+}
+
+function step4HTML(d) {
+  var avail = sched._availability || [];
+  if (avail.length === 0) {
+    return '<div style="text-align:center;padding:20px;">' +
+      '<p style="font-size:20px;margin-bottom:12px;">\uD83D\uDD0D</p>' +
+      '<h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">No Available Slots</h3>' +
+      '<p style="color:var(--gray);font-size:13px;margin-bottom:16px;">Try a different date or technician.</p>' +
+      '<button class="btn btn-outline" onclick="sched.step=3;renderScheduler();">\u2190 Change Preferences</button></div>';
+  }
+
+  var groups = {};
+  avail.forEach(function(a) {
+    if (!groups[a.date]) groups[a.date] = [];
+    groups[a.date].push(a);
+  });
+
+  var html = '<h3 style="font-size:18px;font-weight:700;margin-bottom:4px;">Select Appointment</h3>' +
+    '<p style="color:var(--gray);font-size:13px;margin-bottom:16px;">' + avail.length + ' slots available. Click a time to select.</p>';
+
+  var dates = Object.keys(groups).sort();
+  dates.forEach(function(date) {
+    var slots = groups[date];
+    var dt = new Date(date + 'T12:00:00');
+    var label = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    html += '<div style="margin-bottom:12px;"><div style="font-size:13px;font-weight:600;color:var(--brand);margin-bottom:6px;">' + label + '</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+      slots.map(function(s) {
+        var sel = sched.data.selectedSlot === s.start_iso;
+        return '<div data-slot="' + s.start_iso + '" onclick="schedPickSlot(\'' + s.start_iso + '\',\'' + s.end_iso + '\',\'' + s.time + '\',\'' + s.date + '\')" style="padding:8px 14px;border:2px solid ' + (sel ? 'var(--brand)' : '#d0ccc0') + ';border-radius:6px;cursor:pointer;font-size:13px;font-weight:' + (sel ? '600' : '400') + ';background:' + (sel ? 'var(--brand-soft)' : 'var(--white)') + ';color:' + (sel ? 'var(--brand)' : 'var(--charcoal)') + ';">' + s.time + '</div>';
+      }).join('') +
+      '</div></div>';
+  });
+
+  html += '<div style="margin-top:16px;display:flex;gap:8px;">' +
+    '<button class="btn btn-outline" onclick="sched.step=3;renderScheduler();">\u2190 Back</button>' +
+    '<button class="btn btn-primary" onclick="schedNext(5)" id="schedNextBtn" disabled>Next \u2192</button></div>';
+
+  return html;
+}
+
+function step5HTML(d) {
+  return '<div style="max-width:520px;margin:0 auto;">' +
+    '<h2 style="font-size:22px;font-weight:700;margin-bottom:4px;">Contact Details</h2>' +
+    '<p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Who is this appointment for?</p>' +
+    '<div style="display:flex;gap:12px;margin-bottom:18px;">' +
+    '<div style="flex:1;"><label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">First Name <span style="color:var(--red);">*</span></label>' +
+    '<input id="sFirstName" value="' + esc(d.firstName || '') + '" required placeholder="John" style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;"></div>' +
+    '<div style="flex:1;"><label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">Last Name <span style="color:var(--red);">*</span></label>' +
+    '<input id="sLastName" value="' + esc(d.lastName || '') + '" required placeholder="Doe" style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;"></div></div>' +
+    '<div class="field-group" style="margin-bottom:18px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">Phone Number <span style="color:var(--red);">*</span></label>' +
+    '<input id="sPhone" value="' + esc(d.phone || '') + '" required placeholder="801-555-0123" style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;"></div>' +
+    '<div class="field-group" style="margin-bottom:18px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">Email Address <span style="color:var(--red);">*</span></label>' +
+    '<input id="sEmail" value="' + esc(d.email || '') + '" required placeholder="customer@email.com" style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;"></div>' +
+    '<div class="field-group" style="margin-bottom:24px;"><label style="display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:4px;">Notes or Special Requests</label>' +
+    '<textarea id="sNotes" rows="3" placeholder="Any special instructions..." style="width:100%;padding:12px 14px;border:1px solid #d0ccc0;border-radius:8px;font-size:15px;font-family:var(--font);outline:none;resize:vertical;">' + esc(d.notes || '') + '</textarea></div>' +
+    '<div style="display:flex;justify-content:space-between;">' +
+    '<button class="btn btn-outline" onclick="sched.step=4;renderScheduler();" style="padding:12px 24px;font-size:15px;border-radius:8px;">\u2190 Back</button>' +
+    '<button class="btn btn-success" onclick="schedSubmit()" style="padding:12px 32px;font-size:15px;border-radius:8px;">Reserve Appointment</button></div>' +
+    '</div>';
+}
+
+function step6HTML(d) {
+  var tuner = d.tuner || 'TBD';
+  return '<div style="text-align:center;padding:20px 0;">' +
+    '<p style="font-size:40px;margin-bottom:12px;">\u2705</p>' +
+    '<h3 style="font-size:20px;font-weight:700;margin-bottom:4px;">Thank You!</h3>' +
+    '<p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Reservation submitted for review.</p>' +
+    '<div class="card" style="background:var(--cream);text-align:left;padding:20px;max-width:400px;margin:0 auto;">' +
+    '<h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">Appointment Reservation</h4>' +
+    '<div style="font-size:13px;line-height:1.8;">' +
+    '<div><strong>Date:</strong> ' + (d.slotDate ? new Date(d.slotDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD') + '</div>' +
+    '<div><strong>Time:</strong> ' + (d.slotTime || 'TBD') + '</div>' +
+    '<div><strong>Duration:</strong> ' + (sched.data.services || 1) * 1.5 + 'h</div>' +
+    '<div><strong>With:</strong> ' + esc(tuner) + '</div>' +
+    '<div><strong>Customer:</strong> ' + esc(d.firstName || '') + ' ' + esc(d.lastName || '') + '</div>' +
+    '<div><strong>Status:</strong> <span style="color:var(--orange);font-weight:600;">Pending Approval</span></div>' +
+    '</div></div>' +
+    '<button class="btn btn-outline" style="margin-top:20px;" onclick="schedReset()">New Reservation</button></div>';
+}
+
+// Helper functions
+function schedNext(step) {
+  if (step === 2) {
+    var addr = document.getElementById('sAddr');
+    var city = document.getElementById('sCity');
+    if (addr && !addr.value) { toast('Please enter a street address', true); return; }
+    if (city && !city.value) { toast('Please enter a city', true); return; }
+    sched.data.address = (addr||{}).value || '';
+    sched.data.city = (city||{}).value || '';
+    sched.data.state = (document.getElementById('sState')||{}).value || 'UT';
+    sched.data.zip = (document.getElementById('sZip')||{}).value || '';
+  }
+  if (step === 3) {
+    sched.data.pianos = parseInt((document.getElementById('sPianos')||{}).value || 1);
+    sched.data.services = parseInt((document.getElementById('sServices')||{}).value || 1);
+  }
+  if (step === 5) {
+    if (!sched.data.selectedSlot) { toast('Please select a time slot', true); return; }
+  }
+  sched.step = step;
+  renderScheduler();
+}
+
+function schedSearch() {
+  sched.data.date = (document.getElementById('sDate')||{}).value || '';
+  sched.data.tuner = (document.getElementById('sTuner')||{}).value || '';
+  if (!sched.data.date) { toast('Please select a target date', true); return; }
+  
+  var el = document.getElementById('scheduleWizard');
+  el.innerHTML = '<div class="card" style="padding:40px;text-align:center;"><div class="spinner"></div><p style="margin-top:12px;color:var(--gray);">Searching for available appointments...</p></div>';
+  
+  sched.step = 4;
+  var tuner = sched.data.tuner || 'McKinly Lopp';
+  fetch(API+'/api/schedule/check-availability?tuner=' + encodeURIComponent(tuner) + '&date=' + sched.data.date + '&city=' + encodeURIComponent(sched.data.city))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      sched._availability = data.available || [];
+      renderScheduler();
+    })
+    .catch(function() {
+      document.getElementById('scheduleWizard').innerHTML = '<div class="card" style="padding:40px;text-align:center;"><p style="color:var(--red);">Could not check availability</p><button class="btn btn-outline" style="margin-top:12px;" onclick="sched.step=3;renderScheduler();">\u2190 Back</button></div>';
+    });
+}
+
+function schedPickSlot(startIso, endIso, time, date) {
+  sched.data.selectedSlot = startIso;
+  sched.data.slotTime = time;
+  sched.data.slotDate = date;
+  sched.data.slotEnd = endIso;
+  
+  // Update visual selected state without re-rendering
+  document.querySelectorAll('#scheduleWizard [data-slot]').forEach(function(el) {
+    el.style.borderColor = el.dataset.slot === startIso ? 'var(--brand)' : '#d0ccc0';
+    el.style.fontWeight = el.dataset.slot === startIso ? '600' : '400';
+    el.style.background = el.dataset.slot === startIso ? 'var(--brand-soft)' : 'var(--white)';
+    el.style.color = el.dataset.slot === startIso ? 'var(--brand)' : 'var(--charcoal)';
+  });
+  var btn = document.getElementById('schedNextBtn');
+  if (btn) btn.disabled = false;
+}
+
+function schedSubmit() {
+  sched.data.firstName = (document.getElementById('sFirstName')||{}).value || '';
+  sched.data.lastName = (document.getElementById('sLastName')||{}).value || '';
+  sched.data.phone = (document.getElementById('sPhone')||{}).value || '';
+  sched.data.email = (document.getElementById('sEmail')||{}).value || '';
+  sched.data.notes = (document.getElementById('sNotes')||{}).value || '';
+  
+  if (!sched.data.firstName || !sched.data.lastName) { toast('Please enter first and last name', true); return; }
+  if (!sched.data.phone) { toast('Please enter a phone number', true); return; }
+  if (!sched.data.email) { toast('Please enter an email address', true); return; }
+  
+  // Show submitting state
+  var el = document.getElementById('scheduleWizard');
+  el.innerHTML = '<div class="card" style="padding:40px;text-align:center;"><div class="spinner"></div><p style="margin-top:12px;color:var(--gray);">Submitting reservation...</p></div>';
+  
+  // Call API to create emails
+  fetch(API+'/api/schedule/reserve', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(sched.data)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(resp) {
+    if (resp.error) { toast('Error: ' + resp.error, true); }
+    sched.step = 6;
+    renderScheduler();
+  })
+  .catch(function() {
+    toast('Could not submit reservation', true);
+    sched.step = 6;
+    renderScheduler();
+  });
+}
+
+function schedReset() {
+  sched = { step: 1, data: { pianos: 1, services: 1, tuner: '', date: '', time: '', name: '', phone: '', email: '', notes: '' } };
+  renderScheduler();
+}
+
+
+// ── Customers ─────────────────────────────────────────────────
+async function loadCustomers() {
+  const search = document.getElementById('searchInput').value;
+  const status = document.getElementById('statusFilter').value;
+  try {
+    const res = await fetch(`${API}/api/customers?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&page=${currentPage}&per_page=50`);
+    const data = await res.json();
+    document.getElementById('resultCount').textContent = `${data.total} customers found`;
+    const tbody = document.getElementById('customerTable');
+    if (!data.customers.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray);">No customers found</td></tr>';
+    } else {
+      tbody.innerHTML = data.customers.map(c => `<tr onclick="openCustomer(${c.row})">
+        <td><strong>${esc(c.name)}</strong></td>
+        <td><span class="badge ${badgeClass(c.status)}">${esc(c.status)}</span></td>
+        <td style="color:var(--gray)">${esc(c.email)}</td>
+        <td>${esc(c.phone)}</td>
+        <td>${esc(c.city)}</td>
+        <td>${esc(c.last_tuning)}</td>
+        <td>${esc(c.next_tuning)}</td>
+        <td>${esc(c.technician)}</td>
+      </tr>`).join('');
+    }
+    renderPagination(data.total_pages);
+  } catch(e) {
+    document.getElementById('customerTable').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--red);">⚠️ API offline</td></tr>';
+  }
+}
+
+function renderPagination(totalPages) {
+  const pg = document.getElementById('pagination');
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+  let html = `<button onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>‹</button>`;
+  const start = Math.max(1, currentPage-2), end = Math.min(totalPages, currentPage+2);
+  if (start > 1) html += `<button onclick="goPage(1)">1</button>${start>2?'<span>…</span>':''}`;
+  for (let i=start; i<=end; i++) html += `<button onclick="goPage(${i})" ${i===currentPage?'class="active"':''}>${i}</button>`;
+  if (end < totalPages) html += `${end<totalPages-1?'<span>…</span>':''}<button onclick="goPage(${totalPages})">${totalPages}</button>`;
+  html += `<button onclick="goPage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}>›</button>`;
+  pg.innerHTML = html;
+}
+function goPage(p) { currentPage = p; loadCustomers(); }
+function debouncedSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(loadCustomers, 300); }
+
+// ── Service Due ────────────────────────────────────────────────
+async function loadServiceDue() {
+  try {
+    const res = await fetch(`${API}/api/service-due`);
+    const d = await res.json();
+    document.getElementById('serviceCount').textContent = `${d.total} customers overdue for tuning`;
+    document.getElementById('serviceTable').innerHTML = d.customers.slice(0, 100).map(c => {
+      const cls = c.months_overdue > 36 ? 'critical' : c.months_overdue > 18 ? 'warning' : '';
+      return `<tr onclick="openCustomer(${c.row})">
+        <td><strong>${esc(c.name)}</strong></td>
+        <td style="color:var(--gray)">${esc(c.email)}</td>
+        <td>${esc(c.phone)}</td>
+        <td>${esc(c.city)}</td>
+        <td>${c.last_tuning}</td>
+        <td><span class="overdue ${cls}">${c.months_overdue}mo</span></td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('serviceTable').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--red);">⚠️ API offline</td></tr>';
+  }
+}
+
+// ── Duplicates ─────────────────────────────────────────────────
+async function loadDuplicates() {
+  try {
+    const res = await fetch(`${API}/api/duplicates`);
+    const data = await res.json();
+    document.getElementById('dupCount').textContent = `${data.length} email addresses used by multiple customers`;
+    const catchalls = data.filter(d => d.count >= 4).slice(0, 20);
+    const realDupes = data.filter(d => d.count < 4).slice(0, 30);
+    let html = '';
+    if (catchalls.length) {
+      html += `<h4 style="color:var(--red);margin-bottom:10px;">🔴 Catch-All Placeholders (${catchalls.length})</h4>`;
+      html += `<p style="font-size:12px;color:var(--gray);margin-bottom:12px;">Fake emails used as first-name sorting placeholders — research real emails.</p>`;
+      catchalls.forEach(d => {
+        html += `<div style="background:var(--white);border:1px solid #e8e4d8;border-radius:6px;padding:14px;margin-bottom:10px;">
+          <div style="font-weight:600;font-size:13px;margin-bottom:6px;"><span style="color:var(--brand);">${esc(d.email)}</span> × ${d.count}</div>`;
+        d.customers.slice(0, 10).forEach(c => {
+          html += `<div style="font-size:12px;padding:2px 0;cursor:pointer" onclick="openCustomer(${c.row})">➜ ${esc(c.name)} <span class="badge ${badgeClass(c.status)}">${esc(c.status)}</span></div>`;
+        });
+        if (d.customers.length > 10) html += `<div style="font-size:11px;color:var(--gray-light);">... and ${d.customers.length-10} more</div>`;
+        html += `</div>`;
+      });
+    }
+    if (realDupes.length) {
+      html += `<h4 style="color:var(--orange);margin:20px 0 10px;">🟠 Real Duplicates (${realDupes.length})</h4>`;
+      realDupes.forEach(d => {
+        html += `<div style="background:var(--white);border:1px solid #e8e4d8;border-radius:6px;padding:12px;margin-bottom:8px;">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;"><span style="color:var(--brand);">${esc(d.email)}</span> × ${d.count}</div>`;
+        d.customers.forEach(c => {
+          html += `<div style="font-size:12px;padding:1px 0;cursor:pointer" onclick="openCustomer(${c.row})">➜ Row ${c.row}: ${esc(c.name)} <span class="badge ${badgeClass(c.status)}">${esc(c.status)}</span></div>`;
+        });
+        html += `</div>`;
+      });
+    }
+    document.getElementById('dupList').innerHTML = html || '<p style="color:var(--green);">✅ No duplicates found</p>';
+  } catch(e) { document.getElementById('dupList').innerHTML = '<p style="color:var(--red);">⚠️ API offline</p>'; }
+}
+
+// ── Tuners ─────────────────────────────────────────────────────
+async function loadTuners() {
+  try {
+    const res = await fetch(`${API}/api/tuner-workload`);
+    const d = await res.json();
+    const maxVal = Math.max(...Object.values(d), 1);
+    const entries = Object.entries(d).sort((a,b) => b[1]-a[1]);
+    document.getElementById('tunerDetailChart').innerHTML = '<div class="bar-chart">' +
+      entries.map(([name, count]) => `<div class="bar-row">
+        <span class="bar-label" style="min-width:140px;">${esc(name)}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${(count/maxVal*100).toFixed(1)}%;"></div></div>
+        <span class="bar-value">${count.toLocaleString()}</span>
+      </div>`).join('') + '</div>';
+  } catch(e) { document.getElementById('tunerDetailChart').innerHTML = '<p style="color:var(--red);">⚠️ API offline</p>'; }
+}
+
+// ── Geography ─────────────────────────────────────────────────
+async function loadGeo() {
+  try {
+    const res = await fetch(`${API}/api/geo-stats`);
+    const d = await res.json();
+    const maxVal = Math.max(...Object.values(d), 1);
+    document.getElementById('geoChart').innerHTML = '<div class="bar-chart">' +
+      Object.entries(d).map(([city, count]) => `<div class="bar-row">
+        <span class="bar-label" style="min-width:120px;">${esc(city)}</span>
+        <div class="bar-track"><div class="bar-fill gold" style="width:${(count/maxVal*100).toFixed(1)}%;"></div></div>
+        <span class="bar-value">${count.toLocaleString()}</span>
+      </div>`).join('') + '</div>';
+  } catch(e) { document.getElementById('geoChart').innerHTML = '<p style="color:var(--red);">⚠️ API offline</p>'; }
+}
+
+// ── Customer Detail ────────────────────────────────────────────
+async function openCustomer(row) {
+  selectedRow = row; isEditing = false;
+  document.getElementById('panelBody').innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+  document.getElementById('panelTitle').textContent = `Customer #${row}`;
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('panelOverlay').classList.add('show');
+  document.getElementById('editBtn').style.display = 'inline-block';
+  document.getElementById('saveBtn').style.display = 'none';
+  document.getElementById('cancelBtn').style.display = 'none';
+  try {
+    const res = await fetch(`${API}/api/customers/${row}`);
+    const d = await res.json();
+    renderDetail(d);
+  } catch(e) { document.getElementById('panelBody').innerHTML = '<p style="color:var(--red)">Error</p>'; }
+}
+
+function renderDetail(d) {
+  // All CRM fields, with key fields first
+  const priorityFields = ['Status Tag','Full Name','Email','Primary Phone','City','State',
+    'Last Tuning Date','Scheduled Tuning Date','Preferred Technician',
+    'Reactivation Sequence Stage','Next Reactivation Touch Due',
+    'Piano','Piano Exit Date','Total Tunings (QBO)','Total Revenue to BLP','First Tuning Date',
+    'Customer Type','Wants Email','Wants Text','Wants Phone','Notes'];
+  const allFields = Object.keys(d).filter(function(k) { return k !== '__row__'; });
+  var fields = priorityFields.concat(allFields.filter(function(f) { return priorityFields.indexOf(f) === -1; }));
+  // Remove duplicates while preserving order
+  var seen = {}; var uniqueFields = [];
+  fields.forEach(function(f) { if (!seen[f]) { seen[f] = true; uniqueFields.push(f); } });
+  
+  let html = '';
+  uniqueFields.forEach(function(f) {
+    const val = d[f] || '';
+    html += '<div class="field-group">' +
+      '<label>' + f + '</label>' +
+      '<div class="field-value view-mode" data-field="' + attr(f) + '">' + (val ? esc(val) : '<span style="color:var(--gray-light);font-style:italic;">\u2014</span>') + '</div>' +
+      '<input class="edit-mode" style="display:none" id="ef-' + attr(f) + '" value="' + attr(val) + '" data-field="' + attr(f) + '">' +
+      '</div>';
+  });
+  document.getElementById('panelBody').innerHTML = html;
+  document.getElementById('panelTitle').textContent = esc(d['Full Name'] || 'Customer #' + d.__row__);
+}
+
+function toggleEdit() {
+  isEditing = !isEditing;
+  document.querySelectorAll('.view-mode').forEach(e => e.style.display = isEditing ? 'none' : '');
+  document.querySelectorAll('.edit-mode').forEach(e => e.style.display = isEditing ? '' : 'none');
+  document.getElementById('editBtn').style.display = isEditing ? 'none' : 'inline-block';
+  document.getElementById('saveBtn').style.display = isEditing ? 'inline-block' : 'none';
+  document.getElementById('cancelBtn').style.display = isEditing ? 'inline-block' : 'none';
+}
+
+async function saveCustomer() {
+  const updates = {};
+  document.querySelectorAll('.edit-mode').forEach(inp => {
+    const v = inp.value.trim();
+    if (v) updates[inp.dataset.field] = v;
+  });
+  try {
+    const res = await fetch(`${API}/api/customers/${selectedRow}`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(updates)
+    });
+    const d = await res.json();
+    if (d.error) { toast(`❌ ${d.error}`, true); return; }
+    toast(`✅ Saved ${Object.keys(updates).length} field(s)`);
+    isEditing = false;
+    renderDetail(d);
+    document.querySelectorAll('.view-mode').forEach(e => e.style.display = '');
+    document.querySelectorAll('.edit-mode').forEach(e => e.style.display = 'none');
+    document.getElementById('editBtn').style.display = 'inline-block';
+    document.getElementById('saveBtn').style.display = 'none';
+    document.getElementById('cancelBtn').style.display = 'none';
+  } catch(e) { toast('❌ Error saving', true); }
+}
+
+function closePanel() {
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('panelOverlay').classList.remove('show');
+  isEditing = false; selectedRow = null;
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function esc(s) { if(!s)return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function attr(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function badgeClass(s) {
+  const l=(s||'').toLowerCase();
+  if(l.includes('scheduled')) return 'badge-scheduled';
+  if(l.includes('reactivate')) return 'badge-reactivate';
+  if(l.includes('old')) return 'badge-old';
+  if(l.includes('digital')) return 'badge-digital';
+  if(l.includes('removed')) return 'badge-removed';
+  return 'badge-old';
+}
+function toast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Init ────────────────────────────────────────────────────────
+loadDashboard();
+</script>
+</body>
+</html>

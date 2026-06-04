@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BLP Agent Console</title>
+    <link rel="stylesheet" href="styles.css?v=blp-unified-agent-20260603" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Console navigation">
+        <div class="brand-lockup">
+          <img class="brand-logo" src="assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        </div>
+
+        <nav class="nav-list">
+          <button class="nav-item is-active" data-section="command">
+            <span>⌘</span> Command
+          </button>
+          <button class="nav-item" data-section="workQueue">
+            <span>▤</span> Work Queue
+          </button>
+          <button class="nav-item" data-section="roster">
+            <span>◌</span> Roster
+          </button>
+          <button class="nav-item" data-section="agentDesk">
+            <span>▣</span> Agent Desk
+          </button>
+          <button class="nav-item" data-section="agentHealth">
+            <span>◈</span> Health
+          </button>
+          <button class="nav-item" data-section="integrations">
+            <span>◎</span> Integrations
+          </button>
+          <button class="nav-item" data-section="agentLog">
+            <span>≡</span> Agent Log
+          </button>
+          <button class="nav-item" data-section="org">
+            <span>◇</span> Org
+          </button>
+          <button class="nav-item" data-section="approvals">
+            <span>✓</span> Approvals
+          </button>
+          <button class="nav-item" data-section="training">
+            <span>✦</span> Training
+          </button>
+        </nav>
+
+        <div class="system-stack">
+          <div>
+            <span class="system-dot hermes"></span>
+            <strong>Hermes</strong>
+            <small>2 active</small>
+          </div>
+          <div>
+            <span class="system-dot openclaw"></span>
+            <strong>OpenClaw</strong>
+            <small>9 active</small>
+          </div>
+          <div>
+            <span class="system-dot ondeck"></span>
+            <strong>On Deck</strong>
+            <small>30 shaping</small>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Piano shop operations</p>
+            <h2>Agent Operations Console</h2>
+          </div>
+          <div class="topbar-actions">
+            <button class="icon-button" title="Command Center" id="commandMenuButton">☰</button>
+            <button class="primary-button" type="button" id="newRequestButton">New Request</button>
+          </div>
+        </header>
+
+        <section class="workspace" id="command">
+          <div class="brand-hero">
+            <img src="assets/brand/showroom.jpg" alt="Brigham Larson Pianos showroom" />
+            <div class="brand-hero-copy">
+              <p class="eyebrow">Trusted since 1995</p>
+              <h3>Coordinate the agent team with the same care your shop brings to every piano.</h3>
+              <div class="hero-actions">
+                <button class="primary-button" type="button" id="shopWorkQueueButton">Shop Work Queue</button>
+                <button class="secondary-button" type="button" id="trainingVaultButton">Knowledge Vault</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="request-panel">
+            <div class="request-copy">
+              <p class="eyebrow">Request router</p>
+              <h3>Ask the agent team for data, projects, corrections, or training.</h3>
+            </div>
+            <form class="request-box">
+              <div class="request-template-row" aria-label="Quick request templates">
+                <button type="button" data-template="customer">Customer reply</button>
+                <button type="button" data-template="data">Data pull</button>
+                <button type="button" data-template="website">Website draft</button>
+                <button type="button" data-template="training">Training update</button>
+              </div>
+              <textarea id="requestText" aria-label="Agent request" placeholder="Example: summarize all open restoration leads and draft follow-ups for human approval."></textarea>
+              <div class="request-controls guided-controls">
+                <label>
+                  <span>Request type</span>
+                  <select id="requestType" aria-label="Request type">
+                    <option>Project</option>
+                    <option>Data pull</option>
+                    <option>Customer reply</option>
+                    <option>Website copy</option>
+                    <option>Correction</option>
+                    <option>Training update</option>
+                    <option>Knowledge Vault</option>
+                    <option>Research</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Route to</span>
+                  <select id="requestAudience" aria-label="Preferred route">
+                    <option>Auto-route</option>
+                    <option>Leadership</option>
+                    <option>Sales</option>
+                    <option>Service / Fieldwork</option>
+                    <option>Shop</option>
+                    <option>Marketing</option>
+                    <option>Finance / Admin</option>
+                    <option>Technical / Knowledge</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Approval</span>
+                  <select id="approvalMode" aria-label="Approval mode">
+                    <option>Human approval required</option>
+                    <option>Internal only</option>
+                    <option>Source required</option>
+                    <option>Draft only</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Needed by</span>
+                  <select id="requestDue" aria-label="Needed by">
+                    <option>Today</option>
+                    <option>Tomorrow</option>
+                    <option>This week</option>
+                    <option>No rush</option>
+                  </select>
+                </label>
+              </div>
+              <label class="request-source-field">
+                <span>Source or file link</span>
+                <input id="requestSource" type="text" placeholder="Optional: Drive folder, email thread, customer name, inventory page, or Knowledge Vault note" />
+              </label>
+              <div class="request-submit-row">
+                <span>Creates a reviewable task with routing, risk, source, and next-step guidance.</span>
+                <button type="button" class="primary-button" id="routeButton">Preview Route</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="router-result is-hidden" id="routerResult"></div>
+
+          <div class="metric-grid">
+            <article>
+              <span>Active agents</span>
+              <strong>11</strong>
+              <small>Hermes + OpenClaw</small>
+            </article>
+            <article>
+              <span>On deck</span>
+              <strong>30</strong>
+              <small>Awaiting activation data</small>
+            </article>
+            <article>
+              <span>Channels</span>
+              <strong>3</strong>
+              <small>Email, Discord, Telegram</small>
+            </article>
+            <article>
+              <span>Review mode</span>
+              <strong>On</strong>
+              <small>Customer-safe by default</small>
+            </article>
+          </div>
+
+          <div class="work-grid">
+            <section class="task-lane">
+              <div class="section-heading">
+                <h3>Live Work</h3>
+                <button class="text-button">View all</button>
+              </div>
+              <div class="task-list" id="taskList"></div>
+            </section>
+            <section class="detail-pane" id="detailPane"></section>
+          </div>
+        </section>
+
+        <section class="workspace is-hidden" id="workQueue">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Shared operations board</p>
+              <h3>Requests, projects, approvals, blockers, and completed agent work.</h3>
+            </div>
+          </div>
+          <div class="queue-toolbar" id="queueToolbar"></div>
+          <div class="queue-board" id="queueBoard"></div>
+        </section>
+
+        <section class="workspace is-hidden" id="roster">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Agent roster</p>
+              <h3>Active and on-deck teammates</h3>
+            </div>
+            <div class="filter-row" role="group" aria-label="Roster filters">
+              <button class="filter is-active" data-filter="all">All</button>
+              <button class="filter" data-filter="active">Active</button>
+              <button class="filter" data-filter="on-deck">On Deck</button>
+              <button class="filter" data-filter="Hermes">Hermes</button>
+              <button class="filter" data-filter="OpenClaw">OpenClaw</button>
+            </div>
+          </div>
+          <label class="search-wrap">
+            <span>Search</span>
+            <input id="agentSearch" type="search" placeholder="Name, role, department, system" />
+          </label>
+          <div class="agent-grid" id="agentGrid"></div>
+        </section>
+
+        <section class="workspace is-hidden" id="agentDesk">
+          <div class="agent-dashboard" id="agentDashboard"></div>
+        </section>
+
+        <section class="workspace is-hidden" id="agentHealth">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Agent readiness</p>
+              <h3>Health, workload, blockers, and training signals.</h3>
+            </div>
+          </div>
+          <div class="health-dashboard" id="healthDashboard"></div>
+        </section>
+
+        <section class="workspace is-hidden" id="agentLog">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Collective audit trail</p>
+              <h3>Every meaningful agent action leaves a receipt.</h3>
+            </div>
+          </div>
+          <div class="log-controls" id="logControls"></div>
+          <div class="agent-log-layout">
+            <div class="agent-log-list" id="agentLogList"></div>
+            <aside class="agent-log-detail" id="agentLogDetail"></aside>
+          </div>
+        </section>
+
+        <section class="workspace is-hidden" id="integrations">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Live agent bridge</p>
+              <h3>Connect systems carefully, visibly, and with approval gates.</h3>
+            </div>
+          </div>
+          <div class="integration-board" id="integrationBoard"></div>
+          <div class="openclaw-intake" id="openclawIntake"></div>
+          <div class="setup-detail is-hidden" id="setupDetail"></div>
+          <div class="permissions-matrix" id="permissionsMatrix"></div>
+          <div class="launch-roadmap" id="launchRoadmap"></div>
+          <div class="needed-panel" id="neededPanel"></div>
+        </section>
+
+        <section class="workspace is-hidden" id="org">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Org chart v5</p>
+              <h3>Departments, leads, and future buildout</h3>
+            </div>
+            <a class="secondary-light-button print-link" href="printable-org-chart.html">Open Printable Org Chart</a>
+          </div>
+          <div class="department-grid" id="departmentGrid"></div>
+        </section>
+
+        <section class="workspace is-hidden" id="approvals">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Human review</p>
+              <h3>Approvals queue</h3>
+            </div>
+          </div>
+          <div class="approval-list" id="approvalList"></div>
+        </section>
+
+        <section class="workspace is-hidden" id="training">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Agent improvement</p>
+              <h3>Corrections and training pipeline</h3>
+            </div>
+          </div>
+          <div class="activation-pipeline" id="activationPipeline"></div>
+          <div class="training-board" id="trainingBoard"></div>
+        </section>
+
+        <section class="workspace is-hidden" id="knowledgeVault">
+          <div class="knowledge-vault" id="knowledgeVaultPanel"></div>
+        </section>
+      </main>
+    </div>
+
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <button class="nav-item is-active" data-section="command">Ask</button>
+      <button class="nav-item" data-section="workQueue">Work</button>
+      <button class="nav-item" data-section="agentDesk">Desk</button>
+      <button class="nav-item" data-section="agentHealth">Health</button>
+      <button class="nav-item" data-section="training">Train</button>
+    </nav>
+
+    <div class="drawer-scrim is-hidden" id="drawerScrim"></div>
+    <aside class="agent-drawer is-hidden" id="agentDrawer" aria-label="Agent quick drawer"></aside>
+    <aside class="command-center is-hidden" id="commandCenter" aria-label="Command Center"></aside>
+
+    <dialog class="agent-action-dialog" id="agentActionDialog">
+      <form method="dialog" class="agent-action-form">
+        <header>
+          <div>
+            <p class="eyebrow" id="agentActionEyebrow">Agent action</p>
+            <h3 id="agentActionTitle">Work with agent</h3>
+          </div>
+          <button class="icon-button" value="cancel" aria-label="Close agent action">×</button>
+        </header>
+        <label>
+          <span id="agentActionPrompt">What should happen?</span>
+          <textarea id="agentActionNotes" placeholder="Add the message, assignment, correction, or training note."></textarea>
+        </label>
+        <div class="action-helper" id="agentActionHelper"></div>
+        <div class="dialog-actions">
+          <button class="secondary-light-button" value="cancel">Cancel</button>
+          <button class="primary-button" id="saveAgentAction" value="default">Save Action</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="file-viewer-dialog" id="fileViewerDialog">
+      <form method="dialog" class="file-viewer-shell">
+        <header>
+          <div>
+            <p class="eyebrow" id="fileViewerEyebrow">Backup file</p>
+            <h3 id="fileViewerTitle">Agent file</h3>
+          </div>
+          <button class="icon-button" value="cancel" aria-label="Close file viewer">×</button>
+        </header>
+        <iframe id="fileViewerFrame" title="Agent backup file preview"></iframe>
+        <div class="dialog-actions">
+          <a class="secondary-light-button" id="fileViewerOpenLink" href="#" target="_blank" rel="noreferrer">Open in new window</a>
+          <button class="primary-button" value="cancel">Done</button>
+        </div>
+      </form>
+    </dialog>
+
+    <button class="feedback-launcher" id="feedbackLauncher" type="button">Feedback</button>
+    <dialog class="feedback-dialog" id="feedbackDialog">
+      <form method="dialog" class="feedback-form">
+        <header>
+          <div>
+            <p class="eyebrow">Demo feedback</p>
+          </div>
+          <button class="icon-button" value="cancel" aria-label="Close feedback">×</button>
+        </header>
+        <label>
+          <span>Screen</span>
+          <select id="feedbackScreen">
+            <option>Command</option>
+            <option>Work Queue</option>
+            <option>Roster</option>
+            <option>Agent Desk</option>
+            <option>Agent Health</option>
+            <option>Integrations</option>
+            <option>Agent Log</option>
+            <option>Org</option>
+            <option>Approvals</option>
+            <option>Training</option>
+            <option>Knowledge Vault</option>
+          </select>
+        </label>
+        <label>
+          <span>Feedback type</span>
+          <select id="feedbackType">
+            <option>Love this</option>
+            <option>Change this</option>
+            <option>Missing this</option>
+            <option>Question</option>
+          </select>
+        </label>
+        <label>
+          <span>Notes</span>
+          <textarea id="feedbackNotes" placeholder="What should we keep, change, or build next?"></textarea>
+        </label>
+        <div class="dialog-actions">
+          <button class="secondary-light-button" value="cancel">Cancel</button>
+          <button class="primary-button" id="saveFeedback" value="default">Save Note</button>
+        </div>
+        <div class="feedback-log" id="feedbackLog"></div>
+      </form>
+    </dialog>
+
+    <script src="data/agents-data.js"></script>
+    <script src="data/openclaw-mapping-data.js"></script>
+    <script src="data/agent-backup-sources-data.js"></script>
+    <script src="data/live-operational-data.js"></script>
+    <script src="app-data.js"></script>
+    <script src="real-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

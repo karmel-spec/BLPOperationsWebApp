@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brigham Larson Pianos Onboarding</title>
+    <link rel="stylesheet" href="styles.css?v=blp-unified-20260603" />
+  </head>
+  <body>
+    <section class="login-screen" id="loginScreen" aria-label="New hire login">
+      <div class="login-panel">
+        <img src="assets/blp-logo.png" alt="Brigham Larson Pianos" />
+        <span class="eyebrow">BLP training division</span>
+        <h1>Sign in to your BLP dashboard</h1>
+        <p>Select your profile to open your onboarding pathway, training checklist, mentor sign-offs, and role resources.</p>
+        <div class="login-samples" id="loginSamples" aria-label="Sample demo profiles"></div>
+        <form id="loginForm" class="login-form">
+          <label>
+            <span>Profile</span>
+            <select id="loginProfile"></select>
+          </label>
+          <label>
+            <span>Access PIN</span>
+            <input id="loginPin" type="password" inputmode="numeric" placeholder="Try 1995" autocomplete="off" />
+          </label>
+          <button class="primary-action wide" type="submit">Open dashboard</button>
+          <button class="ghost-action dark wide" id="managerLoginBtn" type="button">Manager view</button>
+          <p class="login-help" id="loginHelp">Demo PIN: 1995</p>
+        </form>
+      </div>
+    </section>
+
+
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Role navigation">
+        <a class="brand" href="#overview" aria-label="Brigham Larson Pianos onboarding home">
+          <img
+            src="assets/blp-logo.png"
+            alt="Brigham Larson Pianos"
+          />
+        </a>
+        <div class="profile-card">
+          <span class="eyebrow">Onboarding command</span>
+          <h1>Welcome to the BLP Team</h1>
+          <p>3 Step Process: Complete the general WELCOME items first then select your team pathway to complete your ONBOARDING. Then proceed to TRAINING modules as applicable.</p>
+        </div>
+        <nav class="role-tabs" id="roleTabs" aria-label="Onboarding pathways"></nav>
+        <div class="sidebar-footer">
+          <span>Orem, Utah</span>
+          <strong>Trusted since 1995</strong>
+        </div>
+      </aside>
+
+
+      <main>
+        <section class="command-bar" aria-label="App controls">
+          <div>
+            <span class="eyebrow">Workspace</span>
+            <strong id="activeProfileName">New hire profile</strong>
+          </div>
+          <div class="command-actions">
+            <button class="tool-button" id="modeToggle" type="button">Admin mode</button>
+            <button class="tool-button" id="fieldToggle" type="button">Field mode</button>
+            <button class="tool-button" id="printBtn" type="button">Print packet</button>
+            <button class="tool-button" id="exportBtn" type="button">Export summary</button>
+            <button class="tool-button" id="logoutBtn" type="button">Log out</button>
+          </div>
+        </section>
+
+
+        <nav class="page-menu" id="pageMenu" aria-label="Onboarding pages">
+          <button type="button" data-page="dashboard">Dashboard</button>
+          <button type="button" data-page="welcome">Welcome</button>
+          <button type="button" data-page="pathway">Role pathway</button>
+          <button type="button" data-page="safety">Safety videos</button>
+          <button type="button" data-page="resources">Resources</button>
+        </nav>
+
+
+        <section class="dashboard-overview page-section" data-page-section="dashboard" aria-label="New hire dashboard">
+          <article>
+            <span class="eyebrow">Universal</span>
+            <strong id="dashboardUniversal">0%</strong>
+            <p>BLP team foundation</p>
+          </article>
+          <article>
+            <span class="eyebrow">Role pathway</span>
+            <strong id="dashboardRole">0%</strong>
+            <p id="dashboardRoleLabel">Pathway progress</p>
+          </article>
+          <article>
+            <span class="eyebrow">Next step</span>
+            <strong id="dashboardNext">Start onboarding</strong>
+            <p id="dashboardNextDetail">Open the next incomplete item.</p>
+          </article>
+        </section>
+
+
+        <section class="profile-workbench page-section" data-page-section="dashboard" aria-label="New hire profiles">
+          <div class="profile-list" id="profileList"></div>
+          <form class="profile-form" id="profileForm">
+            <label>
+              <span>Name</span>
+              <input id="profileNameInput" type="text" autocomplete="off" />
+            </label>
+            <label>
+              <span>Role</span>
+              <select id="profileRoleInput">
+                <option value="admin">Admin</option>
+                <option value="technician">Piano technician</option>
+                <option value="mover">Piano mover</option>
+                <option value="refinisher">Piano refinisher</option>
+              </select>
+            </label>
+            <label>
+              <span>Start date</span>
+              <input id="profileStartInput" type="date" />
+            </label>
+            <label>
+              <span>Mentor</span>
+              <input id="profileMentorInput" type="text" autocomplete="off" />
+            </label>
+            <button class="primary-action" type="submit">Save profile</button>
+          </form>
+        </section>
+
+
+        <section class="hero page-section" data-page-section="dashboard" id="overview">
+          <div class="hero-copy">
+            <span class="eyebrow">Internal onboarding center</span>
+            <h2 id="roleTitle">Admin checklist</h2>
+            <p id="roleIntro"></p>
+            <div class="hero-actions">
+              <button class="primary-action" id="nextTaskBtn" type="button">Open next task</button>
+              <button class="ghost-action" id="resetBtn" type="button">Reset pathway</button>
+            </div>
+          </div>
+          <div class="hero-panel" aria-label="Pathway progress">
+            <div>
+              <span class="eyebrow">Completion</span>
+              <strong id="completionText">0%</strong>
+            </div>
+            <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
+            <p id="progressSummary"></p>
+          </div>
+        </section>
+
+
+        <section class="metrics page-section" data-page-section="dashboard" aria-label="Onboarding metrics">
+          <article>
+            <span>Week focus</span>
+            <strong id="weekFocus"></strong>
+          </article>
+          <article>
+            <span>Mentor touchpoint</span>
+            <strong id="mentor"></strong>
+          </article>
+          <article>
+            <span>Sign-off owner</span>
+            <strong id="owner"></strong>
+          </article>
+        </section>
+
+
+        <section class="manager-board page-section" data-page-section="dashboard" aria-label="Manager onboarding dashboard">
+          <div class="section-heading">
+            <span class="eyebrow">Manager view</span>
+            <h3>Team readiness</h3>
+          </div>
+          <div class="readiness-grid" id="readinessGrid"></div>
+        </section>
+
+
+        <section class="universal-onboarding page-section" data-page-section="welcome" aria-label="Universal onboarding checklist">
+          <div class="section-heading">
+            <span class="eyebrow">Universal onboarding</span>
+            <h3>BLP team foundation</h3>
+          </div>
+          <div class="universal-grid">
+            <div class="universal-list" id="universalList"></div>
+            <aside class="universal-admin admin-only">
+              <div class="section-heading compact">
+                <span class="eyebrow">Admin intake</span>
+                <h3>Team setup details</h3>
+              </div>
+              <div class="admin-fields" id="universalAdminFields"></div>
+            </aside>
+          </div>
+        </section>
+
+
+        <section class="content-grid page-section" data-page-section="pathway">
+          <div class="main-column">
+            <div class="section-heading">
+              <span class="eyebrow">Pathway modules</span>
+              <h3>First 30 days</h3>
+            </div>
+            <div class="module-list" id="moduleList"></div>
+
+
+            <section class="roadmap-section">
+              <div class="section-heading">
+                <span class="eyebrow">Roadmap</span>
+                <h3>30 / 60 / 90 day growth</h3>
+              </div>
+              <div class="roadmap" id="roadmap"></div>
+            </section>
+
+
+            <section class="simulation-section">
+              <div class="section-heading">
+                <span class="eyebrow">Practice</span>
+                <h3>Role simulation</h3>
+              </div>
+              <div class="simulation-card" id="simulationCard"></div>
+            </section>
+
+
+            <section class="photo-learning-section">
+              <div class="section-heading">
+                <span class="eyebrow">Photo learning</span>
+                <h3>What to notice</h3>
+              </div>
+              <div class="photo-learning" id="photoLearning"></div>
+            </section>
+
+
+          </div>
+
+
+          <aside class="right-rail">
+            <section class="rail-card">
+              <div class="section-heading compact">
+                <span class="eyebrow">Today</span>
+                <h3>Start list</h3>
+              </div>
+              <div id="dailyList" class="daily-list"></div>
+            </section>
+
+
+            <section class="rail-card photo-card">
+              <img
+                id="roleImage"
+                src="assets/showroom.jpg"
+                alt="Brigham Larson Pianos showroom"
+              />
+              <div>
+                <span class="eyebrow">Shop standard</span>
+                <p id="standardText"></p>
+              </div>
+            </section>
+
+
+            <section class="rail-card">
+              <div class="section-heading compact">
+                <span class="eyebrow">Resources</span>
+                <h3>Quick links</h3>
+              </div>
+              <div id="resources" class="resources"></div>
+            </section>
+
+
+            <section class="rail-card">
+              <div class="section-heading compact">
+                <span class="eyebrow">Mentor notes</span>
+                <h3>Coaching log</h3>
+              </div>
+              <textarea id="mentorNotes" rows="6" placeholder="Add observations, questions, or next coaching steps."></textarea>
+              <p class="save-note" id="noteStatus">Notes save locally.</p>
+            </section>
+
+
+            <section class="rail-card admin-only">
+              <div class="section-heading compact">
+                <span class="eyebrow">Content studio</span>
+                <h3>Edit current role</h3>
+              </div>
+              <label class="editor-label">
+                <span>Pathway intro</span>
+                <textarea id="introEditor" rows="5"></textarea>
+              </label>
+              <label class="editor-label">
+                <span>Today checklist, one item per line</span>
+                <textarea id="dailyEditor" rows="6"></textarea>
+              </label>
+              <button class="primary-action wide" id="saveContentBtn" type="button">Save content</button>
+              <button class="ghost-action dark wide" id="restoreContentBtn" type="button">Restore defaults</button>
+            </section>
+          </aside>
+        </section>
+
+
+        <section class="safety-series-section page-section" data-page-section="safety" id="safetySeriesSection">
+          <div class="section-heading">
+            <span class="eyebrow">OSHA guided</span>
+            <h3>Safety video series</h3>
+          </div>
+          <div class="safety-series" id="safetySeries"></div>
+        </section>
+
+
+        <section class="resource-library-section page-section" data-page-section="resources">
+          <div class="section-heading">
+            <span class="eyebrow">Resource library</span>
+            <h3>Scripts and standards</h3>
+          </div>
+          <input class="library-search" id="librarySearch" type="search" placeholder="Search scripts, checklists, and standards" />
+          <div class="library-grid" id="libraryGrid"></div>
+        </section>
+      </main>
+    </div>
+
+
+    <dialog id="taskDialog">
+      <div class="dialog-top">
+        <span class="eyebrow" id="dialogKicker">Next task</span>
+        <button class="icon-button" id="closeDialog" type="button" aria-label="Close dialog">×</button>
+      </div>
+      <h3 id="dialogTitle"></h3>
+      <p id="dialogBody"></p>
+      <div id="dialogSteps" class="dialog-steps"></div>
+      <div id="mentorFollowUp" class="mentor-follow-up"></div>
+      <button class="primary-action wide" id="completeDialogTask" type="button">Mark complete</button>
+    </dialog>
+
+
+    <script src="app.js"></script>
+  </body>
+</html>

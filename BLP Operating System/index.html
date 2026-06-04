@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BLP Operating System</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar" aria-label="BLP platform navigation">
+      <div class="brand">
+        <img src="./assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div>
+          <p>Team Platform</p>
+          <h1>BLP Operating System</h1>
+        </div>
+      </div>
+
+      <nav aria-label="Sections">
+        <a href="#live">Command Home</a>
+        <a href="#preview">Preview Studio</a>
+        <a href="#planned">Expansion Map</a>
+        <a href="#access">Access Model</a>
+        <a href="#roadmap">Build Roadmap</a>
+      </nav>
+
+      <section class="status-card">
+        <span class="status-dot"></span>
+        <div>
+          <strong>Showroom command layer</strong>
+          <p>One refined home for BLP people, agents, and operating systems.</p>
+        </div>
+      </section>
+    </aside>
+
+    <main>
+      <header class="topbar" aria-label="Global command">
+        <div class="topbar-title">
+          <p class="eyebrow">Brigham Larson Pianos</p>
+          <strong>Good morning, team</strong>
+        </div>
+        <label class="command-search">
+          <span>Ask, search, or route work</span>
+          <input type="search" placeholder="Find a customer, assign an agent, open tuning schedule..." />
+        </label>
+        <a class="primary small" href="http://127.0.0.1:4175/index.html">New Request</a>
+      </header>
+
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Executive showroom</p>
+          <div class="hero-actions">
+            <a class="primary" href="#preview" id="heroOpenPreview">Open Agent Console</a>
+            <a class="secondary" href="#live">View modules</a>
+          </div>
+        </div>
+        <div class="hero-panel" aria-label="Operating snapshot">
+          <div class="showroom-photo" role="img" aria-label="Brigham Larson Pianos showroom"></div>
+          <div class="snapshot-grid" id="snapshotGrid"></div>
+        </div>
+      </header>
+
+      <section id="live" class="section-heading">
+        <div>
+          <p class="eyebrow">Command home</p>
+          <h3>Live BLP modules</h3>
+        </div>
+        <span id="liveCount">5 active modules</span>
+      </section>
+      <section class="command-layout">
+        <section class="module-grid" id="liveModules"></section>
+        <aside class="today-panel" aria-label="Today at BLP">
+          <div class="panel-heading">
+            <p class="eyebrow">Today at BLP</p>
+            <h3>Operating signals</h3>
+          </div>
+          <div id="signalList" class="signal-list"></div>
+        </aside>
+      </section>
+
+      <section id="preview" class="section-heading">
+        <div>
+          <p class="eyebrow">Preview Studio</p>
+          <h3>Open modules inside the BLP frame</h3>
+        </div>
+        <span id="previewStatus">Agent Operations Console</span>
+      </section>
+      <section class="module-preview" data-size="desktop">
+        <header class="preview-toolbar">
+          <div>
+            <p class="eyebrow" id="previewOwner">Agent team operations</p>
+            <h3 id="previewTitle">Agent Operations Console</h3>
+          </div>
+          <div class="preview-actions">
+            <div class="viewport-controls" aria-label="Preview viewport size">
+              <button type="button" data-preview-size="desktop" class="is-active">Desktop</button>
+              <button type="button" data-preview-size="tablet">Tablet</button>
+              <button type="button" data-preview-size="mobile">Mobile</button>
+              <button type="button" data-preview-size="wide">Wide</button>
+            </div>
+            <a class="secondary small" id="previewOpenLink" href="http://127.0.0.1:4175/index.html" target="_blank" rel="noreferrer">Open separately</a>
+          </div>
+        </header>
+        <div class="preview-frame-shell">
+          <iframe
+            id="moduleFrame"
+            class="preview-frame"
+            title="Agent Operations Console"
+            src="http://127.0.0.1:4175/index.html"
+          ></iframe>
+        </div>
+      </section>
+
+      <section id="planned" class="section-heading">
+        <div>
+          <p class="eyebrow">Expansion map</p>
+          <h3>Future operating modules</h3>
+        </div>
+        <span>Designed to grow</span>
+      </section>
+      <section class="module-grid compact" id="plannedModules"></section>
+
+      <section id="access" class="split-section">
+        <article>
+          <p class="eyebrow">Access and permissions</p>
+          <h3>Role-based views for human and agent teams</h3>
+          <p>
+            The combined platform should show each person only the sections they need, while preserving owner visibility across the whole business.
+          </p>
+        </article>
+        <div class="access-list" id="accessList"></div>
+      </section>
+
+      <section id="roadmap" class="roadmap">
+        <p class="eyebrow">Next build steps</p>
+        <h3>How we combine future codebases without losing momentum</h3>
+        <div id="roadmapList"></div>
+      </section>
+    </main>
+
+    <script src="./app.js?v=frame-preview-20260603"></script>
+  </body>
+</html>

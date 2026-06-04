@@ -1,0 +1,15 @@
+{
+  "records": [
+    {"tech": "Jake Pulver", "skill": "DHRT", "time": "2.5", "unit": "days", "date": "2025-06-15", "project": "Steinway C 49799"},
+    {"tech": "Jake Pulver", "skill": "Restringing", "time": "3.0", "unit": "days", "date": "2025-08-20", "project": "Baldwin 41826"},
+    {"tech": "Jake Pulver", "skill": "QC", "time": "0.5", "unit": "days", "date": "2026-03-10", "project": "Yamaha YUA 3337112"},
+    {"tech": "Curtis", "skill": "Voicing", "time": "1.0", "unit": "days", "date": "2025-11-05", "project": "Steinway 154950"},
+    {"tech": "Curtis", "skill": "PRSB", "time": "5.0", "unit": "days", "date": "2025-07-12", "project": "M&H 7912"},
+    {"tech": "Curtis", "skill": "QC", "time": "0.8", "unit": "days", "date": "2025-09-28", "project": "Knabe 128695"},
+    {"tech": "Korban", "skill": "Tuning", "time": "0.3", "unit": "days", "date": "2026-04-22", "project": "Steinway 181349"},
+    {"tech": "Korban", "skill": "QC", "time": "0.4", "unit": "days", "date": "2026-01-15", "project": "Kawai 625675"},
+    {"tech": "Doris", "skill": "Refinishing", "time": "4.0", "unit": "days", "date": "2025-12-01", "project": "Steinway 154950"},
+    {"tech": "Garrett", "skill": "Restringing", "time": "2.0", "unit": "days", "date": "2025-10-18", "project": "Knabe 41783"},
+    {"tech": "Matthew", "skill": "PRSB", "time": "3.5", "unit": "days", "date": "2025-05-22", "project": "Kreiter 16404"}
+  ]
+}

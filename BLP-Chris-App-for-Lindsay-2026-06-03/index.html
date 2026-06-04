@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLP Shop Manager</title>
+<link rel="stylesheet" href="/static/styles.css?v=weekly-wizard-20260509-existing-events">
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <img src="https://cdn.shopify.com/s/files/1/0772/7713/5154/files/New_Logo-_BLP.png?height=40" alt="BLP" style="height:36px;width:auto">
+  </div>
+  <div class="header-controls">
+    <div class="filter-group">
+      <label>View:</label>
+      <select id="view-filter" onchange="applyFilters()">
+        <option value="all">All Pianos</option>
+        <option value="shop_work">Current Shop Work</option>
+        <option value="sold">Sold</option>
+        <option value="for_sale">For Sale</option>
+      </select>
+      <label>Stage:</label>
+      <select id="stage-filter" onchange="applyFilters()">
+        <option value="all">All Stages</option>
+        <option value="pending">Not Started</option>
+        <option value="cap">CAP</option>
+        <option value="prsb">PRSB</option>
+        <option value="plating">PLATE</option>
+        <option value="restringing">Restringing</option>
+        <option value="dhrt">DHRT</option>
+        <option value="refinishing">Refinishing</option>
+        <option value="tune_voice">TUNE/VOICE</option>
+        <option value="qc">QC</option>
+        <option value="done">Complete</option>
+      </select>
+      <label>Search:</label>
+      <input type="text" id="search-input" placeholder="Piano, make, serial..." oninput="applyFilters()">
+      <label>Tech:</label>
+      <select id="tech-filter" onchange="applyFilters()" style="width:130px">
+        <option value="">All Techs</option>
+      </select>
+    </div>
+    <div class="dropdown-wrap">
+      <div class="dropdown-menu">
+        <button class="dropbtn">☰ Menu</button>
+        <div class="dropdown-content">
+          <a href="#" onclick="showFloorPlan();return false">🗺️ Map</a>
+          <a href="#" onclick="showSkillsMatrix();return false">📊 Skills</a>
+          <a href="#" onclick="showCustomerSearch();return false">👥 Customers</a>
+          <a href="#" onclick="showNewPianoForm();return false">➕ New Piano</a>
+          <a href="#" onclick="showTechDashboard();return false">👥 Tech Dashboard</a>
+          <a href="#" onclick="showShoppingList();return false">🛒 Shopping List</a>
+          <a href="#" onclick="showWeeklyPlan();return false">📋 Weekly Wizard</a>
+          <a href="#" onclick="showFridayReports();return false">📋 Friday Reports</a>
+          <a href="mailto:chris@brighamlarsonpianos.com?cc=karmel@brighamlarsonpianos.com&subject=Shop%20App%20Request&body=Describe%20your%20suggestion%20or%20request%20here...">💬 App Request</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="stats-bar" id="stats-bar">
+  <div class="stat"><span class="stat-num" id="stat-total">0</span> Total</div>
+  <div class="stat"><span class="stat-num" id="stat-shop">0</span> In Shop</div>
+  <div class="stat"><span class="stat-num" id="stat-stalled">0</span> Stalled</div>
+  <div class="stat"><span class="stat-num" id="stat-incomplete">0</span> Missing Stage</div>
+  <div class="stat" id="fr-stat" style="display:none"><span class="stat-num" id="stat-fr-missing">0</span> Reports</div>
+</div>
+
+<main>
+  <div class="table-container">
+    <table id="piano-table">
+      <thead>
+        <tr>
+          <th>Piano</th>
+          <th>Make / Model</th>
+          <th>Project</th>
+          <th>Map</th>
+          <th>Status</th>
+          <th colspan="8">Progress Pipeline</th>
+        </tr>
+        <tr class="stage-header">
+          <th></th><th></th><th></th><th></th><th></th>
+          <th class="stage-col cap">CAP</th>
+          <th class="stage-col prsb">PRSB</th>
+          <th class="stage-col plate">PLATE</th>
+          <th class="stage-col restring">Restring</th>
+          <th class="stage-col dhrt">DHRT</th>
+          <th class="stage-col refinish">Refinish</th>
+          <th class="stage-col tune-voice">Tune/Voice</th>
+          <th class="stage-col qc">QC</th>
+        </tr>
+      </thead>
+      <tbody id="piano-tbody">
+        <tr><td colspan="13" class="loading">Loading pianos...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Tech Dashboard Panel -->
+<div id="tech-dashboard" class="tech-dash" style="display:none">
+  <div class="tech-dash-header">
+    <h2>👥 Tech Dashboard</h2>
+    <div style="display:flex;align-items:center;gap:10px">
+      <select id="tech-dash-selector" onchange="loadTechDashboard()" style="padding:6px 10px;border:1px solid #d4c9b8;border-radius:6px;font-size:13px;min-width:180px">
+        <option value="">Select a tech...</option>
+      </select>
+      <button class="refresh-btn" onclick="showMainView()">← Back to All Pianos</button>
+    </div>
+  </div>
+  <div id="tech-dash-content" class="tech-dash-content">
+    <div class="loading" style="padding:60px">Select a technician to view their dashboard</div>
+  </div>
+</div>
+
+<!-- Skills Matrix Panel -->
+<div id="skills-panel" class="tech-dash" style="display:none">
+  <div class="tech-dash-header" style="flex-wrap:wrap">
+    <h2>📊 Skills Matrix</h2>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <input type="text" id="skills-search" placeholder="Search tech..." onkeydown="if(event.key==='Enter')renderSkillsMatrix()"
+        style="width:200px;padding:6px 10px;border:1px solid #d4c9b8;border-radius:6px;font-size:13px">
+      <span style="font-size:11px;color:#666">🟢 Trainee  🔵 Tech  🟣 Rebuilder  🏆 Expert</span>
+      <button class="refresh-btn" onclick="renderSkillsMatrix()">⟳ Refresh</button>
+      <button class="refresh-btn" onclick="showMainView()">← Back</button>
+    </div>
+  </div>
+  <div id="skills-content"></div>
+</div>
+
+<!-- Customer Search Panel -->
+<div id="customer-panel" class="tech-dash" style="display:none">
+  <div class="tech-dash-header">
+    <h2>👥 Customer Search</h2>
+    <div style="display:flex;align-items:center;gap:10px">
+      <input type="text" id="customer-search-input" placeholder="Search by name, phone, or email..." onkeydown="if(event.key==='Enter')searchCustomers()"
+        style="width:300px;padding:8px 12px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+      <button class="refresh-btn" onclick="searchCustomers()" style="background:#34495e">🔍 Search</button>
+      <button class="refresh-btn" onclick="showMainView()">← Back</button>
+    </div>
+  </div>
+  <div id="customer-results" class="tech-dash-content"></div>
+</div>
+
+<!-- Weekly Plan Panel -->
+<div id="weekly-plan-panel" class="tech-dash" style="display:none">
+  <div class="tech-dash-header" style="flex-wrap:wrap">
+    <h2>📋 Weekly Plan</h2>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span id="plan-generated" style="font-size:12px;color:#666"></span>
+      <button class="refresh-btn" onclick="loadWeeklyPlan()">⟳ Refresh</button>
+      <button class="refresh-btn" onclick="showMainView()">← Back</button>
+    </div>
+  </div>
+  <div id="weekly-plan-content" class="tech-dash-content"></div>
+</div>
+
+<!-- Friday Reports Panel -->
+<div id="friday-reports-panel" class="tech-dash" style="display:none">
+  <div class="tech-dash-header" style="flex-wrap:wrap">
+    <h2>📋 Friday Reports</h2>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span id="fr-week-label" style="font-size:14px;font-weight:600;color:#8B2C2C"></span>
+      <span style="font-size:12px;color:#666">Current week</span>
+      <button class="refresh-btn" onclick="loadFridayReports()">⟳ Refresh</button>
+      <button class="refresh-btn" onclick="showMainView()">← Back</button>
+    </div>
+  </div>
+  <div id="friday-reports-content" class="tech-dash-content">
+    <div class="loading" style="padding:60px;text-align:center">Loading Friday reports...</div>
+  </div>
+</div>
+
+<!-- Shopping List Panel -->
+<div id="shopping-list-panel" class="tech-dash" style="display:none">
+  <div class="tech-dash-header">
+    <h2>🛒 Shopping List</h2>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="refresh-btn" onclick="showSupplyRequestForm()" style="background:#8B2C2C">➕ Request Supply</button>
+      <button class="refresh-btn" onclick="showMainView()">← Back</button>
+    </div>
+  </div>
+  <div id="shopping-list-content" class="tech-dash-content">
+    <div class="loading" style="padding:60px;grid-column:1/-1;text-align:center">Loading shopping list...</div>
+  </div>
+</div>
+
+<!-- Supply Request Modal -->
+<!-- New Piano Form Modal -->
+<div id="new-piano-modal" class="modal" style="display:none">
+  <div class="modal-backdrop" onclick="document.getElementById('new-piano-modal').style.display='none'"></div>
+  <div class="modal-content" style="max-width:600px">
+    <div class="modal-header">
+      <h2>➕ Add New Piano</h2>
+      <button class="modal-close" onclick="document.getElementById('new-piano-modal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="modal-section" style="margin:0">
+          <h3>Make *</h3>
+          <input type="text" id="np-make" list="makes" placeholder="Steinway" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+          <datalist id="makes">
+            <option value="Baldwin"><option value="C. Bechstein"><option value="Bosendorfer">
+            <option value="Brogdon"><option value="Chickering"><option value="Fazioli">
+            <option value="Hailun"><option value="Kawai"><option value="Kimball">
+            <option value="Knabe"><option value="Knight"><option value="Kohler & Campbell">
+            <option value="Mason & Hamlin"><option value="Mason & Risch"><option value="Samick">
+            <option value="Schimmel"><option value="Steinway & Sons"><option value="Weber">
+            <option value="Wurlitzer"><option value="Yamaha"><option value="Young Chang">
+          </datalist>
+        </div>
+        <div class="modal-section" style="margin:0">
+          <h3>Model</h3>
+          <input type="text" id="np-model" placeholder="Model D" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+        </div>
+        <div class="modal-section" style="margin:0">
+          <h3>Serial Number *</h3>
+          <input type="text" id="np-serial" placeholder="38930" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+        </div>
+        <div class="modal-section" style="margin:0">
+          <h3>Year</h3>
+          <input type="text" id="np-year" list="years" placeholder="1919" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+          <datalist id="years">
+            <option value="2026"><option value="2025"><option value="2024"><option value="2023"><option value="2022"><option value="2021"><option value="2020">
+            <option value="2010s"><option value="2000s"><option value="1990s"><option value="1980s"><option value="1970s"><option value="1960s"><option value="1950s">
+            <option value="1940s"><option value="1930s"><option value="1920s"><option value="1910s"><option value="1900s"><option value="1890s"><option value="1880s">
+          </datalist>
+        </div>
+        <div class="modal-section" style="margin:0">
+          <h3>Size</h3>
+          <input type="text" id="np-size" list="sizes" placeholder="5'7\"" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+          <datalist id="sizes">
+            <option value="4' 10\""><option value="5' 1\""><option value="5' 3\""><option value="5' 5\""><option value="5' 7\"">
+            <option value="5' 8\""><option value="5' 10\""><option value="6' 0\""><option value="6' 2\""><option value="6' 4\"">
+            <option value="6' 7\""><option value="7' 0\""><option value="7' 4\""><option value="7' 6\"">
+            <option value="9' 0\"">
+          </datalist>
+        </div>
+        <div class="modal-section" style="margin:0">
+          <h3>Type</h3>
+          <select id="np-type" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px;background:#fff">
+            <option value="">— Select —</option>
+            <option value="Grand">Grand</option>
+            <option value="Upright">Upright</option>
+          </select>
+        </div>
+        <div class="modal-section" style="margin:0">
+          <h3>Condition</h3>
+          <select id="np-condition" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px;background:#fff">
+            <option value="">— Select —</option>
+            <option value="New">New</option>
+            <option value="Used">Used</option>
+          </select>
+        </div>
+        <div class="modal-section" style="margin:0">
+          <h3>Finish</h3>
+          <input type="text" id="np-finish" list="finishes" placeholder="Black, Satin" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+          <datalist id="finishes">
+            <option value="Black Satin"><option value="Black Polish"><option value="Ebony Satin"><option value="Ebony Polish">
+            <option value="Walnut Satin"><option value="Walnut Polish"><option value="Mahogany Satin"><option value="Mahogany Polish">
+            <option value="Cherry Satin"><option value="Cherry Polish"><option value="White Satin"><option value="White Polish">
+            <option value="Ivory Satin"><option value="Ivory Polish"><option value="Rosewood"><option value="Teak">
+            <option value="Oak"><option value="Pecan"><option value="Burgundy">
+          </datalist>
+        </div>
+        <div class="modal-section" style="margin:0">
+          <h3>Trim</h3>
+          <input type="hidden" id="np-trim" value="">
+          <div style="position:relative">
+            <input type="text" id="trim-trigger" readonly placeholder="Select trim options..." onclick="toggleTrimDropdown()" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px;background:#fff;color:#999;cursor:pointer;font-family:inherit;box-sizing:border-box;outline:none">
+            <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:#999;pointer-events:none">▼</span>
+            <div id="trim-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:300;background:#fff;border:1px solid #d4c9b8;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.12);max-height:240px;overflow-y:auto;margin-top:2px;padding:4px 0">
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Brass" onchange="updateTrim()"> Brass</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Satin Brass" onchange="updateTrim()"> Satin Brass</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Polished Brass" onchange="updateTrim()"> Polished Brass</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Nickel" onchange="updateTrim()"> Nickel</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Satin Nickel" onchange="updateTrim()"> Satin Nickel</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Polished Nickel" onchange="updateTrim()"> Polished Nickel</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Gold" onchange="updateTrim()"> Gold</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Satin Gold" onchange="updateTrim()"> Satin Gold</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Polished Gold" onchange="updateTrim()"> Polished Gold</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Chrome" onchange="updateTrim()"> Chrome</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Satin Chrome" onchange="updateTrim()"> Satin Chrome</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Polished Chrome" onchange="updateTrim()"> Polished Chrome</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Bronze" onchange="updateTrim()"> Bronze</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Copper" onchange="updateTrim()"> Copper</label>
+              <label style="display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;font-size:14px"><input type="checkbox" value="Black" onchange="updateTrim()"> Black</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-section" style="margin:0">
+          <h3>Status</h3>
+          <select id="np-status" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px;background:#fff">
+            <option value="New, For Sale">New, For Sale</option>
+            <option value="Used, For Sale">Used, For Sale</option>
+            <option value="Current Shop Work">Current Shop Work</option>
+            <option value="Available to Restore">Available to Restore</option>
+            <option value="For Rent">For Rent</option>
+            <option value="Sold">Sold</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-section" style="margin-top:12px">
+        <h3>Section / Log Category</h3>
+        <select id="np-section" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px;background:#fff">
+          <option value="">— Select section —</option>
+        </select>
+      </div>
+      <div class="modal-section" style="margin-top:12px">
+        <h3>Owner Name</h3>
+        <input type="text" id="np-owner" placeholder="John Smith" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="modal-section" style="margin:0">
+          <h3>Phone</h3>
+          <input type="text" id="np-phone" placeholder="801-555-0123" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+        </div>
+        <div class="modal-section" style="margin:0">
+          <h3>Email</h3>
+          <input type="text" id="np-email" placeholder="john@example.com" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+        </div>
+      </div>
+      <div class="modal-section" style="margin:0">
+        <h3>Address</h3>
+        <input type="text" id="np-address" placeholder="123 Main St, Orem, UT 84058" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+      </div>
+      <div class="modal-section" style="margin-top:12px">
+        <h3>Location / Spot #</h3>
+        <input type="text" id="np-location" list="spots" placeholder="e.g. 42" style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+        <datalist id="spots">
+          <option value="Showroom"><option value="Shop - Bench 1"><option value="Shop - Bench 2"><option value="Shop - Bench 3">
+          <option value="Shop - Storage"><option value="Finishing Room"><option value="Plating Room">
+          <option value="Warehouse"><option value="Delivery Bay"><option value="Customer Home">
+          <option value="1"><option value="2"><option value="3"><option value="4"><option value="5"><option value="6"><option value="7"><option value="8"><option value="9"><option value="10">
+          <option value="11"><option value="12"><option value="13"><option value="14"><option value="15"><option value="16"><option value="17"><option value="18"><option value="19"><option value="20">
+          <option value="21"><option value="22"><option value="23"><option value="24"><option value="25"><option value="26"><option value="27"><option value="28"><option value="29"><option value="30">
+          <option value="31"><option value="32"><option value="33"><option value="34"><option value="35"><option value="36"><option value="37"><option value="38"><option value="39"><option value="40">
+          <option value="41"><option value="42"><option value="43"><option value="44"><option value="45"><option value="46"><option value="47"><option value="48"><option value="49"><option value="50">
+        </datalist>
+      </div>
+      <div class="modal-section" style="margin:0">
+        <h3>Notes</h3>
+        <textarea id="np-notes" rows="3" placeholder="Any additional notes..." style="width:100%;padding:8px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px;font-family:inherit"></textarea>
+      </div>
+      <button class="action-btn" onclick="submitNewPiano()" style="margin-top:16px;padding:10px 24px;font-size:15px;background:#27ae60;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer">➕ Add Piano to Log</button>
+      <span id="np-status-msg" style="margin-left:12px;font-size:13px"></span>
+    </div>
+  </div>
+</div>
+
+<div id="supply-modal" class="modal" style="display:none">
+  <div class="modal-backdrop" onclick="document.getElementById('supply-modal').style.display='none'"></div>
+  <div class="modal-content" style="max-width:500px">
+    <div class="modal-header">
+      <h2>📦 Request Supply</h2>
+      <button class="modal-close" onclick="document.getElementById('supply-modal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <h3>Item *</h3>
+        <input type="text" id="supply-item" placeholder="e.g. 150 grit sandpaper, latex gloves (large)" style="width:100%;padding:8px 10px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+      </div>
+      <div class="modal-section">
+        <h3>Quantity</h3>
+        <input type="text" id="supply-qty" placeholder="e.g. 2 boxes, 5 packs" style="width:100%;padding:8px 10px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+      </div>
+      <div class="modal-section">
+        <h3>Requested By</h3>
+        <select id="supply-requester" style="width:100%;padding:8px 10px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px">
+          <option value="">— Select —</option>
+        </select>
+      </div>
+      <div class="modal-section">
+        <h3>Notes</h3>
+        <textarea id="supply-notes" rows="3" placeholder="Any additional details..." style="width:100%;padding:8px 10px;border:1px solid #d4c9b8;border-radius:6px;font-size:14px;font-family:inherit"></textarea>
+      </div>
+      <button class="action-btn" onclick="submitSupplyRequest()" style="padding:8px 20px;font-size:14px">Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Floor Plan Panel -->
+<div id="floor-plan-panel" class="tech-dash" style="display:none">
+  <div class="tech-dash-header">
+    <h2>🗺️ Shop Map</h2>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <select id="floor-plan-filter" onchange="loadFloorPlan()" style="padding:6px 10px;border:1px solid #d4c9b8;border-radius:6px;font-size:13px">
+        <option value="all">All Pianos</option>
+        <option value="shop">Shop Work Only</option>
+        <option value="showroom">Showroom Only</option>
+      </select>
+      <button class="refresh-btn" onclick="showMainView()">← Back</button>
+    </div>
+  </div>
+  <div id="floor-plan-content"></div>
+</div>
+
+<!-- Spot Detail Modal -->
+<div id="spot-modal" class="modal" style="display:none">
+  <div class="modal-backdrop" onclick="document.getElementById('spot-modal').style.display='none'"></div>
+  <div class="modal-content" style="max-width:500px">
+    <div class="modal-header">
+      <h2 id="spot-modal-title">Spot Details</h2>
+      <button class="modal-close" onclick="document.getElementById('spot-modal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body" id="spot-modal-body"></div>
+  </div>
+</div>
+
+<div id="piano-modal" class="modal" style="display:none">
+  <div class="modal-backdrop" onclick="closeModal()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modal-title">Piano Details</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" style="display:none"></div>
+
+</script>
+<script src="/static/app.js?v=weekly-wizard-20260509-existing-events"></script>
+<script src="/static/tech-dashboard-enhancements.js"></script>
+</body>
+</html>

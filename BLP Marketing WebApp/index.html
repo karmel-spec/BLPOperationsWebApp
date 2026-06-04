@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BLP Marketing Command Center</title>
+    <link rel="stylesheet" href="./styles.css?v=blp-unified-20260603" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary">
+        <div class="brand-block">
+          <img class="brand-logo" src="./assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+          <div>
+            <p class="eyebrow">Growth division</p>
+            <h1>Marketing Command Center</h1>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Dashboard sections">
+          <a href="#growth" class="active">Growth</a>
+          <a href="#attribution">Attribution</a>
+          <a href="#agents">AI Agents</a>
+          <a href="#channels">Channels</a>
+          <a href="#funnel">Lead Funnel</a>
+          <a href="#integrations">Integrations</a>
+        </nav>
+
+        <div class="mission-panel">
+          <p class="eyebrow">North Star</p>
+          <strong>Become the most trusted piano sales, service, and restoration authority in every market BLP touches.</strong>
+          <span>Use every signal to convert attention into leads, revenue, reviews, and global brand authority.</span>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Brigham Larson Pianos</p>
+            <h2>Marketing intelligence for piano sales, service, and restoration growth</h2>
+          </div>
+          <div class="top-actions" role="group" aria-label="Dashboard controls">
+            <button class="icon-button" id="refreshButton" aria-label="Refresh dashboard" title="Refresh dashboard">R</button>
+            <button class="icon-button" id="compactButton" aria-label="Toggle compact view" title="Toggle compact view">C</button>
+          </div>
+        </header>
+
+        <section id="growth" class="hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Executive growth view</p>
+            <h2>Turn craftsmanship, restoration stories, and showroom authority into measurable demand.</h2>
+            <p>
+              A command center that watches every marketing channel, exposes revenue gaps, and tells the human team which AI agent should act next.
+            </p>
+            <div class="hero-actions">
+              <button class="primary-action" id="prioritizeButton">Prioritize this week</button>
+              <button class="secondary-action" id="showBlockedButton">Show blocked data</button>
+            </div>
+          </div>
+          <div class="piano-visual" aria-label="Abstract piano growth visualization">
+            <div class="photo-label">
+              <span>Showroom signal</span>
+              <strong>30+ years. 20,000+ pianos serviced.</strong>
+            </div>
+            <div class="soundboard">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="keys" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+        </section>
+
+        <section class="metric-grid" id="metricGrid" aria-label="Executive metrics"></section>
+
+        <section class="workbench">
+          <article class="panel wide" id="attribution">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Revenue intelligence</p>
+                <h3>Channel attribution readiness</h3>
+              </div>
+              <select id="attributionMode" aria-label="Attribution mode">
+                <option value="revenue">Revenue potential</option>
+                <option value="traffic">Traffic volume</option>
+                <option value="risk">Tracking risk</option>
+              </select>
+            </div>
+            <div class="bar-chart" id="attributionChart"></div>
+          </article>
+
+          <article class="panel" id="opportunities">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">AI recommendations</p>
+                <h3>Highest leverage actions</h3>
+              </div>
+            </div>
+            <div class="opportunity-list" id="opportunityList"></div>
+          </article>
+        </section>
+
+        <section class="section-header" id="agents">
+          <div>
+            <p class="eyebrow">AI agent command center</p>
+            <h2>Assign the right work to the right agent</h2>
+          </div>
+          <div class="segmented" role="group" aria-label="Agent filter">
+            <button class="selected" data-agent-filter="all">All</button>
+            <button data-agent-filter="approval">Needs approval</button>
+            <button data-agent-filter="blocked">Blocked</button>
+          </div>
+        </section>
+        <section class="agent-grid" id="agentGrid" aria-label="AI marketing agents"></section>
+
+        <section class="workbench">
+          <article class="panel wide" id="channels">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Channel performance</p>
+                <h3>Attention, intent, and conversion signals</h3>
+              </div>
+            </div>
+            <div class="channel-table" id="channelTable"></div>
+          </article>
+
+          <article class="panel" id="funnel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Lead velocity</p>
+                <h3>Lead-to-close tracking</h3>
+              </div>
+            </div>
+            <div class="funnel-list" id="funnelList"></div>
+          </article>
+        </section>
+
+        <section class="panel" id="integrations">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Data operations</p>
+              <h3>Live, manual, and blocked integrations</h3>
+            </div>
+            <button class="secondary-action small" id="credentialButton">Credential map</button>
+          </div>
+          <div class="integration-grid" id="integrationGrid"></div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="insightDialog">
+      <form method="dialog">
+        <button class="dialog-close" aria-label="Close">x</button>
+      </form>
+      <div id="dialogContent"></div>
+    </dialog>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
