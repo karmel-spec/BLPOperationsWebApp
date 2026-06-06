@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Newsletters</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --muted: #716a61;
+        --paper: #fffdf8;
+        --ivory: #f7f3eb;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --blue: #405a6d;
+        --green: #4f695b;
+        --gold: #b68a37;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; color: var(--ink); background: radial-gradient(circle at 88% 8%, rgba(64, 90, 109, 0.12), transparent 24rem), linear-gradient(180deg, #fffdf8, var(--ivory)); }
+      .module-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+      .sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 18px; padding: 28px 22px; background: rgba(255, 253, 248, 0.96); border-right: 1px solid var(--line); }
+      .sidebar img { width: 170px; height: auto; }
+      .sidebar-title { padding-top: 16px; border-top: 1px solid var(--line); }
+      .eyebrow { margin: 0 0 8px; color: var(--red); font-size: 11px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+      h1, h2, h3, strong { font-family: Georgia, "Times New Roman", serif; }
+      h1, h2, h3, p { margin: 0; }
+      p { color: var(--muted); line-height: 1.5; }
+      .sidebar-title strong { display: block; font-size: 25px; line-height: 1.04; }
+      .sidebar-menu { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+      .sidebar-menu a, .sidebar-menu button, .button { display: inline-flex; align-items: center; justify-content: flex-start; min-height: 42px; padding: 0 14px; color: var(--ink); background: var(--ivory); border: 1px solid var(--line); border-radius: 7px; font: inherit; font-weight: 900; text-decoration: none; cursor: pointer; }
+      .sidebar-menu a:hover, .sidebar-menu button:hover, .sidebar-menu button.is-active { color: var(--paper); background: var(--red); border-color: var(--red); }
+      .sidebar-note { margin-top: auto; padding: 14px; background: var(--ivory); border: 1px solid var(--line); border-radius: 8px; }
+      main { display: grid; gap: 18px; padding: 24px 28px 36px; }
+      .topbar, .hero, .panel, .metric, .campaign-card, .segment-card, .approval-card, .performance-card { background: rgba(255, 253, 248, 0.95); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 16px 42px rgba(39, 31, 24, 0.07); }
+      .topbar { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: auto minmax(280px, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; }
+      .topbar-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+      .topbar-brand img { width: 82px; }
+      .topbar-brand strong { font-size: 18px; line-height: 1.02; }
+      .command-search span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+      .command-search input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 7px; background: #fff; font: inherit; }
+      .command-search input, select { min-height: 40px; padding: 0 12px; }
+      textarea { min-height: 118px; padding: 12px; resize: vertical; }
+      .button.primary { justify-content: center; color: var(--paper); background: var(--red); border-color: var(--red); }
+      .hero { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(330px, 0.88fr); gap: 18px; padding: 26px; }
+      h1 { max-width: 920px; font-size: clamp(40px, 5vw, 68px); line-height: 0.98; }
+      .hero p { max-width: 760px; margin-top: 14px; font-size: 17px; }
+      .newsletter-card { display: grid; gap: 12px; padding: 18px; background: var(--ivory); border: 1px solid var(--line); border-radius: 8px; }
+      .status-pill, .tag { display: inline-flex; width: fit-content; align-items: center; border-radius: 999px; font-weight: 900; }
+      .status-pill { padding: 8px 11px; color: var(--paper); background: var(--red); font-size: 12px; }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+      .tag { padding: 5px 8px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); font-size: 11px; }
+      .metric-grid, .two-column, .campaign-grid, .segment-grid, .approval-grid, .performance-grid { display: grid; gap: 14px; }
+      .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .metric, .panel, .campaign-card, .segment-card, .approval-card, .performance-card { padding: 18px; }
+      .metric span, .campaign-card span, .segment-card span, .approval-card span, .performance-card span { color: var(--red); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+      .metric strong { display: block; margin-top: 8px; font-size: 31px; }
+      .two-column { grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr); }
+      .panel-header { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 14px; }
+      .panel h2 { font-size: 30px; }
+      .campaign-grid, .segment-grid, .approval-grid, .performance-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .campaign-card { border-top: 4px solid var(--blue); }
+      .segment-card { border-left: 4px solid var(--gold); }
+      .approval-card { border-top: 4px solid var(--green); }
+      .performance-card { border-left: 4px solid var(--red); }
+      .campaign-card strong, .segment-card strong, .approval-card strong, .performance-card strong { display: block; margin-top: 8px; font-size: 22px; line-height: 1.08; }
+      @media (max-width: 980px) { .module-shell, .hero, .two-column, .topbar { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } .metric-grid, .campaign-grid, .segment-grid, .approval-grid, .performance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 640px) { main { padding: 18px; } .metric-grid, .campaign-grid, .segment-grid, .approval-grid, .performance-grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Marketing communication</p>
+          <strong>Newsletters</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="Newsletter sections">
+          <a href="../../index.html?v=from-newsletters#preview" target="_top">Web App Home</a>
+          <button class="is-active" type="button">Campaign Calendar</button>
+          <button type="button">Segments</button>
+          <button type="button">Stories</button>
+          <button type="button">Approvals</button>
+          <button type="button">Send Dates</button>
+          <button type="button">Performance</button>
+        </nav>
+        <section class="sidebar-note">
+          <strong>Agent Marcus</strong>
+          <p>Draft owner for customer and teacher newsletters, campaign calendars, story ideas, approvals, segments, send dates, and performance follow-up.</p>
+        </section>
+      </aside>
+
+      <main>
+        <header class="topbar" aria-label="Global command">
+          <a class="topbar-brand" href="../../index.html?v=from-newsletters#preview" target="_top">
+            <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+            <strong>BLP Team Operating System</strong>
+          </a>
+          <label class="command-search">
+            <span>Ask, search, or route work</span>
+            <input type="search" placeholder="Search campaign, segment, story idea, approval, send date, teacher list, or performance signal..." />
+          </label>
+          <a class="button primary" href="mailto:marcus@brighamlarsonpianos.com?subject=Newsletter%20Dashboard%20Update">Send Marcus update</a>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Priority draft 13</p>
+            <h1>Plan every BLP newsletter from story idea to measured follow-up.</h1>
+            <p>
+              A newsletter command center for customer and teacher campaigns, campaign calendars, audience segments, story ideas, approvals, send dates, performance review, and next-best follow-up work.
+            </p>
+            <div class="tag-row">
+              <span class="status-pill">Draft for review</span>
+              <span class="tag">Agent Marcus</span>
+              <span class="tag">Customers</span>
+              <span class="tag">Teachers</span>
+              <span class="tag">Approvals</span>
+              <span class="tag">Performance</span>
+            </div>
+          </div>
+          <article class="newsletter-card">
+            <p class="eyebrow">Newsletter rule</p>
+            <h2>Stories should lead to action</h2>
+            <p>Each campaign needs an audience, a purpose, a send date, an approval owner, and a follow-up path into sales, service, recitals, or teacher relationships.</p>
+            <div class="tag-row">
+              <span class="tag">Audience</span>
+              <span class="tag">Story</span>
+              <span class="tag">Approval</span>
+              <span class="tag">Follow-up</span>
+            </div>
+          </article>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric"><span>Campaign types</span><strong>6</strong><p>Customer, teacher, sales, service, recitals, restoration stories.</p></article>
+          <article class="metric"><span>Review status</span><strong>Required</strong><p>Human approval before any public send.</p></article>
+          <article class="metric"><span>Segments</span><strong>Ready</strong><p>Customers, teachers, piano owners, leads, service clients, and VIPs.</p></article>
+          <article class="metric"><span>Performance</span><strong>Tracked</strong><p>Opens, clicks, replies, leads, booked service, and sales follow-up.</p></article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Campaign calendar</p>
+              <h2>What should be in motion</h2>
+            </div>
+            <span class="status-pill">Draft calendar</span>
+          </div>
+          <div class="campaign-grid">
+            <article class="campaign-card"><span>Monthly</span><strong>Customer newsletter</strong><p>Showroom stories, piano care, restoration highlights, events, and calls to action.</p></article>
+            <article class="campaign-card"><span>Monthly</span><strong>Teacher newsletter</strong><p>Recitals, teacher resources, studio support, student opportunities, and relationship care.</p></article>
+            <article class="campaign-card"><span>Seasonal</span><strong>Piano care tips</strong><p>Humidity, tuning timing, moving reminders, maintenance education, and service booking.</p></article>
+            <article class="campaign-card"><span>Sales</span><strong>Inventory spotlight</strong><p>Featured pianos, buying education, trade-in guidance, and showroom appointments.</p></article>
+            <article class="campaign-card"><span>Restoration</span><strong>Before and after</strong><p>Craftsmanship stories, sentimental restorations, project updates, and photo galleries.</p></article>
+            <article class="campaign-card"><span>Events</span><strong>Recitals and community</strong><p>Teacher recitals, community events, reminders, and post-event galleries.</p></article>
+          </div>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">New campaign</p>
+                <h2>Capture a newsletter idea</h2>
+              </div>
+            </div>
+            <select aria-label="Campaign type">
+              <option>Customer newsletter</option>
+              <option>Teacher newsletter</option>
+              <option>Inventory spotlight</option>
+              <option>Restoration story</option>
+              <option>Service reminder</option>
+              <option>Recital announcement</option>
+            </select>
+            <div style="height: 10px"></div>
+            <textarea placeholder="Audience, story idea, desired send date, source files, approval owner, and the follow-up action this campaign should create."></textarea>
+            <div class="tag-row">
+              <a class="button primary" href="#">Create campaign</a>
+              <a class="button" href="#">Draft with Marcus</a>
+              <a class="button" href="#">Send for approval</a>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Segments</p>
+                <h2>Send the right story to the right people</h2>
+              </div>
+            </div>
+            <div class="segment-grid">
+              <article class="segment-card"><span>Customers</span><strong>Piano owners</strong><p>Purchase history, service history, piano type, location, and preferences.</p></article>
+              <article class="segment-card"><span>Teachers</span><strong>Studio partners</strong><p>Teacher CRM, recital history, student count, and relationship stage.</p></article>
+              <article class="segment-card"><span>Leads</span><strong>Sales prospects</strong><p>Lead type, heat, piano interest, quote stage, and follow-up owner.</p></article>
+              <article class="segment-card"><span>Service</span><strong>Tuning clients</strong><p>Due dates, geography, piano type, and seasonal care needs.</p></article>
+              <article class="segment-card"><span>Restoration</span><strong>Project audience</strong><p>Sentimental restoration interest, photos, quotes, and before/after story fit.</p></article>
+              <article class="segment-card"><span>VIP</span><strong>High-touch list</strong><p>Owners, donors, partners, teachers, and customers needing special care.</p></article>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Approval flow</p>
+              <h2>Protect the brand before send</h2>
+            </div>
+          </div>
+          <div class="approval-grid">
+            <article class="approval-card"><span>Draft</span><strong>Story and offer</strong><p>Marcus drafts subject, story, CTA, links, segment, and follow-up path.</p></article>
+            <article class="approval-card"><span>Brand</span><strong>Tone review</strong><p>Check warmth, authority, clarity, design, and BLP voice.</p></article>
+            <article class="approval-card"><span>Source</span><strong>Data check</strong><p>Confirm dates, product links, prices, photos, names, and customer-safe claims.</p></article>
+            <article class="approval-card"><span>Owner</span><strong>Final approval</strong><p>Owner or manager approves send date, audience, and public-facing message.</p></article>
+            <article class="approval-card"><span>Send</span><strong>Campaign release</strong><p>Send through the approved email platform and record campaign ID.</p></article>
+            <article class="approval-card"><span>Follow-up</span><strong>Route responses</strong><p>Replies, clicks, and leads flow to sales, service, recitals, or customer service.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Performance review</p>
+              <h2>Measure what happened after the send</h2>
+            </div>
+          </div>
+          <div class="performance-grid">
+            <article class="performance-card"><span>Engagement</span><strong>Open and click signals</strong><p>Opens, clicks, top links, replies, unsubscribes, and segment response.</p></article>
+            <article class="performance-card"><span>Revenue</span><strong>Lead and sale attribution</strong><p>Connect campaign responses to sales leads, service bookings, recital signups, and inventory interest.</p></article>
+            <article class="performance-card"><span>Learning</span><strong>Improve the next send</strong><p>Subject performance, story resonance, best segment, missed opportunity, and next campaign idea.</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

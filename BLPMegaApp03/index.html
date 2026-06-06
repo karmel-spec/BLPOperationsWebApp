@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BLP Operating System</title>
+    <link rel="stylesheet" href="./styles.css?v=soft-preview-frame-20260604" />
+  </head>
+  <body>
+    <aside class="sidebar" aria-label="BLP platform navigation">
+      <div class="brand">
+        <img src="./assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div>
+          <h1>BLP Team Operating System</h1>
+        </div>
+      </div>
+
+      <nav aria-label="Sections">
+        <a href="#preview">Command Home</a>
+        <a href="#preview">Preview Studio</a>
+        <a href="#planned">Expansion Map</a>
+        <a href="#access">Access Model</a>
+      </nav>
+
+      <section class="sidebar-signals" aria-label="Operating status">
+        <div id="signalList" class="signal-list"></div>
+      </section>
+    </aside>
+
+    <main>
+      <header class="topbar" aria-label="Global command">
+        <a class="topbar-brand" href="#preview" aria-label="BLP Team Operating System home">
+          <img src="./assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+          <strong>BLP Team Operating System</strong>
+        </a>
+        <label class="command-search">
+          <span>Ask, search, or route work</span>
+          <input type="search" placeholder="Find a customer, assign an agent, open tuning schedule..." />
+        </label>
+        <a class="primary small" href="./i-have-11-agents-2-in/index.html">New Request</a>
+      </header>
+
+      <section class="role-login-panel" aria-label="Login and permission preview">
+        <div>
+          <p class="eyebrow">Login preview</p>
+          <h3>Role-based operating view</h3>
+          <p id="roleLoginDescription">Choose a permission group to preview which modules that team should see.</p>
+        </div>
+        <label class="role-select-label">
+          <span>Continue as</span>
+          <select id="roleProfileSelect" aria-label="Choose permission group"></select>
+        </label>
+        <div class="role-session-card" id="roleSessionCard"></div>
+      </section>
+
+      <section class="home-task-board" aria-label="Admin and manager task board">
+        <div class="home-team-switcher" id="homeTeamSwitcher" aria-label="Select a BLP team member task board"></div>
+        <header class="home-task-header">
+          <div>
+            <p class="eyebrow">Admin and manager priorities</p>
+            <h3 id="homeBoardTitle">Today’s operating board</h3>
+            <p id="homeBoardRole">Owner priorities</p>
+          </div>
+          <a class="secondary small" href="./modules/admin-task-board/index.html" target="_blank" rel="noreferrer">Open full board</a>
+        </header>
+        <div class="home-kanban" id="homeKanban"></div>
+      </section>
+
+      <section id="preview" class="section-heading">
+        <div>
+          <p class="eyebrow">Preview Studio</p>
+          <h3>Open modules inside the BLP frame</h3>
+        </div>
+        <span id="previewStatus">Agent Operations Console</span>
+      </section>
+      <section class="module-preview" data-size="desktop">
+        <header class="preview-toolbar">
+          <div>
+            <p class="eyebrow" id="previewOwner">Agent team operations</p>
+            <h3 id="previewTitle">Agent Operations Console</h3>
+          </div>
+          <div class="preview-actions">
+            <div class="viewport-controls" aria-label="Preview viewport size">
+              <button type="button" data-preview-size="desktop" class="is-active">Desktop</button>
+              <button type="button" data-preview-size="tablet">Tablet</button>
+              <button type="button" data-preview-size="mobile">Mobile</button>
+              <button type="button" data-preview-size="wide">Wide</button>
+            </div>
+            <a class="secondary small" id="previewOpenLink" href="./i-have-11-agents-2-in/index.html" target="_blank" rel="noreferrer">Open separately</a>
+          </div>
+        </header>
+        <div class="preview-frame-shell">
+          <iframe
+            id="moduleFrame"
+            class="preview-frame"
+            title="Agent Operations Console"
+            src="./i-have-11-agents-2-in/index.html"
+          ></iframe>
+        </div>
+      </section>
+
+      <section id="planned" class="section-heading">
+        <div>
+          <p class="eyebrow">Expansion map</p>
+          <h3>Future operating modules</h3>
+        </div>
+        <span>Designed to grow</span>
+      </section>
+      <section class="module-grid compact" id="plannedModules"></section>
+
+      <section id="access" class="split-section">
+        <article>
+          <p class="eyebrow">Access and permissions</p>
+          <h3>Role-based views for human and agent teams</h3>
+          <p>
+            The combined platform should show each person only the sections they need, while preserving owner visibility across the whole business.
+          </p>
+        </article>
+        <div class="access-list" id="accessList"></div>
+      </section>
+
+      <section class="permissions-setup">
+        <div class="section-heading compact">
+          <div>
+            <p class="eyebrow">Login setup</p>
+            <h3>Permission groups to wire next</h3>
+          </div>
+          <span>Draft access map</span>
+        </div>
+        <div class="login-role-grid" id="loginRoleGrid"></div>
+      </section>
+
+    </main>
+
+    <script src="./app.js?v=sales-console-module-20260604"></script>
+  </body>
+</html>

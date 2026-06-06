@@ -1,0 +1,31 @@
+{
+  "databasePurpose": "Live source of truth for agent team work currently tracked in Notion.",
+  "recommendedDatabaseName": "BLP Agent Work",
+  "requiredEnvironmentVariables": {
+    "BLP_NOTION_TOKEN": "Secret token from a Notion internal integration.",
+    "BLP_NOTION_WORK_DATABASE_ID": "The Notion database ID for the agent work tracker."
+  },
+  "recommendedProperties": [
+    { "name": "Task", "type": "Title", "required": true },
+    { "name": "Agent", "type": "Select", "required": true, "options": ["Lindsay", "Cody", "Walter", "Dawn", "Marcus", "Monte", "Sally", "Libby", "Ivory", "Melody", "Chris"] },
+    { "name": "Status", "type": "Status", "required": true, "options": ["Intake", "Queued", "Working", "Needs Review", "Blocked", "Done"] },
+    { "name": "Priority", "type": "Select", "required": false, "options": ["Low", "Normal", "High", "Urgent"] },
+    { "name": "Department", "type": "Select", "required": false },
+    { "name": "Due Date", "type": "Date", "required": false },
+    { "name": "Summary", "type": "Text", "required": false },
+    { "name": "Next Step", "type": "Text", "required": false },
+    { "name": "Human Owner", "type": "People", "required": false },
+    { "name": "Agent Response", "type": "Text", "required": false },
+    { "name": "Console ID", "type": "Text", "required": false }
+  ],
+  "supportedPropertyAliases": {
+    "title": ["Task", "Name", "Title", "Project", "Request"],
+    "agent": ["Agent", "Owner Agent", "Assigned Agent", "Assignee", "Owner"],
+    "status": ["Status", "Stage", "State"],
+    "priority": ["Priority", "Risk"],
+    "due": ["Due", "Due Date", "Deadline"],
+    "department": ["Department", "Team", "Area"],
+    "summary": ["Summary", "Notes", "Description", "Brief"],
+    "nextStep": ["Next Step", "Next", "Action", "Next Action"]
+  }
+}

@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BLP CRM</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --muted: #746d64;
+        --paper: #fffdf8;
+        --ivory: #f8f5ee;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --blue: #405a6d;
+        --green: #4f695b;
+        --gold: #b68a37;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          linear-gradient(rgba(248, 245, 238, 0.88), rgba(248, 245, 238, 0.88)),
+          repeating-linear-gradient(90deg, rgba(64, 90, 109, 0.06) 0 1px, transparent 1px 54px);
+      }
+
+      .module-shell {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 28px 22px;
+        background: rgba(255, 253, 248, 0.96);
+        border-right: 1px solid var(--line);
+      }
+
+      .sidebar img {
+        width: 170px;
+        height: auto;
+      }
+
+      .sidebar-title {
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      strong {
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .sidebar-title strong {
+        display: block;
+        font-size: 25px;
+        line-height: 1.04;
+      }
+
+      .sidebar-menu {
+        display: grid;
+        gap: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .sidebar-menu a,
+      .sidebar-menu button,
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 42px;
+        padding: 0 14px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font: inherit;
+        font-weight: 900;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .sidebar-menu a:hover,
+      .sidebar-menu button:hover,
+      .sidebar-menu button.is-active {
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+
+      .sidebar-note {
+        margin-top: auto;
+        padding: 14px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .sidebar-note strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      main {
+        display: grid;
+        gap: 18px;
+        padding: 24px 28px 36px;
+      }
+
+      .topbar,
+      .hero,
+      .panel,
+      .metric,
+      .source-card,
+      .record-row {
+        background: rgba(255, 253, 248, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 16px 42px rgba(39, 31, 24, 0.07);
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: auto minmax(280px, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+      }
+
+      .topbar-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      .topbar-brand img {
+        width: 82px;
+      }
+
+      .topbar-brand strong {
+        font-size: 18px;
+        line-height: 1.02;
+      }
+
+      .command-search span {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .command-search input {
+        width: 100%;
+        min-height: 40px;
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        font: inherit;
+      }
+
+      .button.primary {
+        justify-content: center;
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 18px;
+        padding: 26px;
+      }
+
+      h1 {
+        max-width: 860px;
+        font-size: clamp(40px, 5vw, 68px);
+        line-height: 0.98;
+      }
+
+      .hero p {
+        max-width: 760px;
+        margin-top: 14px;
+        font-size: 17px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        padding: 8px 11px;
+        color: var(--paper);
+        background: var(--blue);
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 14px;
+      }
+
+      .tag {
+        display: inline-flex;
+        padding: 5px 8px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .search-card {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .search-card input,
+      .search-card select {
+        min-height: 42px;
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        font: inherit;
+      }
+
+      .metric-grid,
+      .two-column,
+      .source-grid,
+      .stream-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .metric {
+        padding: 18px;
+      }
+
+      .metric span,
+      .source-card span,
+      .record-row span {
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 31px;
+      }
+
+      .two-column {
+        grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      }
+
+      .panel {
+        padding: 20px;
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+        margin-bottom: 14px;
+      }
+
+      .panel h2 {
+        font-size: 30px;
+      }
+
+      .source-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .source-card {
+        padding: 16px;
+      }
+
+      .source-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 22px;
+      }
+
+      .source-card[data-state="ready"] {
+        border-top: 4px solid var(--green);
+      }
+
+      .source-card[data-state="mapping"] {
+        border-top: 4px solid var(--gold);
+      }
+
+      .source-card[data-state="needed"] {
+        border-top: 4px solid var(--blue);
+      }
+
+      .record-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .record-row {
+        display: grid;
+        grid-template-columns: minmax(180px, 0.75fr) minmax(0, 1.25fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px;
+        box-shadow: none;
+      }
+
+      .record-row strong {
+        display: block;
+        font-size: 18px;
+      }
+
+      .merge-map {
+        display: grid;
+        gap: 10px;
+      }
+
+      .merge-item {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+      }
+
+      .bar {
+        height: 10px;
+        overflow: hidden;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+      }
+
+      .bar span {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, var(--green), var(--gold));
+      }
+
+      .stream-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      @media (max-width: 980px) {
+        .module-shell,
+        .hero,
+        .two-column,
+        .topbar {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: relative;
+          height: auto;
+        }
+
+        .metric-grid,
+        .source-grid,
+        .stream-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding: 18px;
+        }
+
+        .metric-grid,
+        .source-grid,
+        .stream-grid,
+        .record-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Customer database</p>
+          <strong>BLP CRM</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="CRM sections">
+          <a href="../../index.html?v=from-blp-crm#preview" target="_top">Web App Home</a>
+          <button class="is-active" type="button">Customer 360</button>
+          <button type="button">Source Imports</button>
+          <button type="button">Merge Queue</button>
+          <button type="button">Revenue Streams</button>
+          <button type="button">Data Health</button>
+        </nav>
+        <section class="sidebar-note">
+          <strong>Agent Cody</strong>
+          <p>Draft owner for the central customer database that ties every revenue stream and web app together.</p>
+        </section>
+      </aside>
+
+      <main>
+        <header class="topbar" aria-label="Global command">
+          <a class="topbar-brand" href="../../index.html?v=from-blp-crm#preview" target="_top">
+            <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+            <strong>BLP Team Operating System</strong>
+          </a>
+          <label class="command-search">
+            <span>Ask, search, or route work</span>
+            <input type="search" placeholder="Find a customer, family piano, teacher, tuning account, sale, lead, move, or invoice..." />
+          </label>
+          <a class="button primary" href="mailto:cody@brighamlarsonpianos.com?subject=BLP%20CRM%20Data%20Source%20Update">Send Cody source update</a>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Priority draft 02</p>
+            <h1>One customer backbone for the whole piano business.</h1>
+            <p>
+              The BLP CRM becomes the shared customer database for sales, teachers, tuning, moving, restoration, leads, accounting, marketing, and client portals. Every module can read from the same customer truth instead of rebuilding its own silo.
+            </p>
+            <div class="tag-row">
+              <span class="status-pill">Draft for review</span>
+              <span class="tag">Gazelle CSV</span>
+              <span class="tag">QBO customers</span>
+              <span class="tag">Agile history</span>
+              <span class="tag">Google Sheets</span>
+            </div>
+          </div>
+          <form class="search-card">
+            <p class="eyebrow">Customer 360 search</p>
+            <input type="search" placeholder="Search Smith, Yamaha U1, teacher referral, phone, serial number..." />
+            <select>
+              <option>All customer types</option>
+              <option>Sales leads</option>
+              <option>Tuning clients</option>
+              <option>Teachers</option>
+              <option>Moving customers</option>
+              <option>Restoration clients</option>
+            </select>
+            <a class="button primary" href="#">Open customer record</a>
+          </form>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric"><span>Total profiles</span><strong>42k+</strong><p>Unified records expected after Gazelle, QBO, Agile, and sheet imports.</p></article>
+          <article class="metric"><span>Merge queue</span><strong>Ready</strong><p>Duplicate detection draft for phone, email, address, and family piano matches.</p></article>
+          <article class="metric"><span>Revenue streams</span><strong>8</strong><p>Sales, tuning, restoration, moving, teachers, recitals, service, and marketing.</p></article>
+          <article class="metric"><span>Data owner</span><strong>Cody</strong><p>Agent stewardship for imports, schema, and field quality checks.</p></article>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Customer 360 record</p>
+                <h2>Unified profile preview</h2>
+              </div>
+              <span class="status-pill">Golden record</span>
+            </div>
+            <div class="record-list">
+              <article class="record-row">
+                <div><span>Customer</span><strong>Example Family</strong><p>Orem, Utah · lifetime piano relationship</p></div>
+                <div><span>Family piano</span><strong>1912 Steinway upright</strong><p>Sales inquiry, restoration estimate, two tuning visits, and photo history.</p></div>
+                <a class="button" href="#">Review</a>
+              </article>
+              <article class="record-row">
+                <div><span>Teacher profile</span><strong>Example Studio</strong><p>Teacher CRM, recital history, referrals, and newsletter segment.</p></div>
+                <div><span>Connected records</span><strong>7 students · 2 recitals · 4 referrals</strong><p>Supports teacher communications and recital scheduling.</p></div>
+                <a class="button" href="#">Review</a>
+              </article>
+              <article class="record-row">
+                <div><span>Business customer</span><strong>Example School</strong><p>Institutional tuning, service notes, piano inventory, and invoices.</p></div>
+                <div><span>Connected records</span><strong>9 pianos · QBO account · service calendar</strong><p>Feeds tuning, accounting, and technician dashboards.</p></div>
+                <a class="button" href="#">Review</a>
+              </article>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Data merge readiness</p>
+                <h2>Field map</h2>
+              </div>
+            </div>
+            <div class="merge-map">
+              <div class="merge-item"><strong>Identity</strong><div class="bar"><span style="width: 92%"></span></div></div>
+              <div class="merge-item"><strong>Contact</strong><div class="bar"><span style="width: 86%"></span></div></div>
+              <div class="merge-item"><strong>Pianos</strong><div class="bar"><span style="width: 74%"></span></div></div>
+              <div class="merge-item"><strong>Transactions</strong><div class="bar"><span style="width: 63%"></span></div></div>
+              <div class="merge-item"><strong>Consent</strong><div class="bar"><span style="width: 38%"></span></div></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Source imports</p>
+              <h2>Systems to merge into the BLP customer truth</h2>
+            </div>
+            <span class="status-pill">Draft source map</span>
+          </div>
+          <div class="source-grid">
+            <article class="source-card" data-state="mapping"><span>CSV import</span><strong>Gazelle</strong><p>Tuning/customer records and service history imports.</p></article>
+            <article class="source-card" data-state="mapping"><span>Accounting</span><strong>QuickBooks Online</strong><p>Customers, invoices, estimates, balances, and financial relationship data.</p></article>
+            <article class="source-card" data-state="needed"><span>Legacy CRM</span><strong>Agile</strong><p>Historic leads, sales notes, opportunity stages, and follow-up records.</p></article>
+            <article class="source-card" data-state="ready"><span>Sheets</span><strong>Google Sheets</strong><p>Sales leads, tuning CRM, piano log, warranty tracking, and agent data sheets.</p></article>
+            <article class="source-card" data-state="needed"><span>Email</span><strong>Gmail threads</strong><p>Customer history from info@ and relevant rep inboxes.</p></article>
+            <article class="source-card" data-state="needed"><span>Phone/text</span><strong>Customer Service</strong><p>Future call recordings, text history, tickets, and follow-up outcomes.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Revenue stream views</p>
+              <h2>Every department gets the right customer slice</h2>
+            </div>
+          </div>
+          <div class="stream-grid">
+            <article class="source-card" data-state="ready"><span>Sales</span><strong>Leads & showroom</strong><p>Inquiry source, piano preferences, follow-up, quote history.</p></article>
+            <article class="source-card" data-state="ready"><span>Tuning</span><strong>Service due</strong><p>Schedule history, piano condition, technician notes, overdue status.</p></article>
+            <article class="source-card" data-state="mapping"><span>Restoration</span><strong>Project history</strong><p>Contracts, estimates, photos, selections, queue status, delivery.</p></article>
+            <article class="source-card" data-state="needed"><span>Teachers</span><strong>Teacher CRM</strong><p>Studios, students, referrals, recitals, communications.</p></article>
+            <article class="source-card" data-state="needed"><span>Moving</span><strong>Move history</strong><p>Origin, destination, piano details, crew, delivery notes.</p></article>
+            <article class="source-card" data-state="mapping"><span>Marketing</span><strong>Segments</strong><p>Newsletter lists, campaign source, consent, content relevance.</p></article>
+            <article class="source-card" data-state="needed"><span>Accounting</span><strong>Financial account</strong><p>QBO customer, invoices, payments, deposits, estimates.</p></article>
+            <article class="source-card" data-state="mapping"><span>Client portal</span><strong>Client dashboard</strong><p>Customer-facing status and approved document access.</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

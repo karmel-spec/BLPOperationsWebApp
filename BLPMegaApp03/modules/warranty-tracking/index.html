@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Warranty Tracking</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --muted: #716a61;
+        --paper: #fffdf8;
+        --ivory: #f7f3eb;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --blue: #405a6d;
+        --green: #4f695b;
+        --gold: #b68a37;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 88% 10%, rgba(182, 138, 55, 0.12), transparent 24rem),
+          linear-gradient(180deg, #fffdf8, var(--ivory));
+      }
+
+      .module-shell {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 28px 22px;
+        background: rgba(255, 253, 248, 0.96);
+        border-right: 1px solid var(--line);
+      }
+
+      .sidebar img {
+        width: 170px;
+        height: auto;
+      }
+
+      .sidebar-title {
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      strong {
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .sidebar-title strong {
+        display: block;
+        font-size: 25px;
+        line-height: 1.04;
+      }
+
+      .sidebar-menu {
+        display: grid;
+        gap: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .sidebar-menu a,
+      .sidebar-menu button,
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 42px;
+        padding: 0 14px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font: inherit;
+        font-weight: 900;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .sidebar-menu a:hover,
+      .sidebar-menu button:hover,
+      .sidebar-menu button.is-active {
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+
+      .sidebar-note {
+        margin-top: auto;
+        padding: 14px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .sidebar-note strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      main {
+        display: grid;
+        gap: 18px;
+        padding: 24px 28px 36px;
+      }
+
+      .topbar,
+      .hero,
+      .panel,
+      .metric,
+      .queue-card,
+      .record-card {
+        background: rgba(255, 253, 248, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 16px 42px rgba(39, 31, 24, 0.07);
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: auto minmax(280px, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+      }
+
+      .topbar-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      .topbar-brand img {
+        width: 82px;
+      }
+
+      .topbar-brand strong {
+        font-size: 18px;
+        line-height: 1.02;
+      }
+
+      .command-search span {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .command-search input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        font: inherit;
+      }
+
+      .command-search input,
+      select {
+        min-height: 40px;
+        padding: 0 12px;
+      }
+
+      textarea {
+        min-height: 118px;
+        padding: 12px;
+        resize: vertical;
+      }
+
+      .button.primary {
+        justify-content: center;
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 18px;
+        padding: 26px;
+      }
+
+      h1 {
+        max-width: 900px;
+        font-size: clamp(40px, 5vw, 68px);
+        line-height: 0.98;
+      }
+
+      .hero p {
+        max-width: 760px;
+        margin-top: 14px;
+        font-size: 17px;
+      }
+
+      .sync-card {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .status-pill,
+      .tag {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        border-radius: 999px;
+        font-weight: 900;
+      }
+
+      .status-pill {
+        padding: 8px 11px;
+        color: var(--paper);
+        background: var(--red);
+        font-size: 12px;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 14px;
+      }
+
+      .tag {
+        padding: 5px 8px;
+        color: var(--ink);
+        background: var(--paper);
+        border: 1px solid var(--line);
+        font-size: 11px;
+      }
+
+      .metric-grid,
+      .two-column,
+      .queue-grid,
+      .record-grid,
+      .field-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .metric,
+      .panel,
+      .queue-card,
+      .record-card {
+        padding: 18px;
+      }
+
+      .metric span,
+      .queue-card span,
+      .record-card span {
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 31px;
+      }
+
+      .two-column {
+        grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+        margin-bottom: 14px;
+      }
+
+      .panel h2 {
+        font-size: 30px;
+      }
+
+      .field-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-bottom: 12px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .queue-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .queue-card {
+        border-top: 4px solid var(--gold);
+      }
+
+      .queue-card strong,
+      .record-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 23px;
+        line-height: 1.08;
+      }
+
+      .record-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .record-card {
+        border-left: 4px solid var(--green);
+      }
+
+      .checklist {
+        display: grid;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .check-row {
+        display: grid;
+        grid-template-columns: 160px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 12px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      @media (max-width: 980px) {
+        .module-shell,
+        .hero,
+        .two-column,
+        .topbar {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: relative;
+          height: auto;
+        }
+
+        .metric-grid,
+        .queue-grid,
+        .record-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding: 18px;
+        }
+
+        .metric-grid,
+        .queue-grid,
+        .record-grid,
+        .field-grid,
+        .check-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Warranty operations</p>
+          <strong>Warranty Tracking</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="Warranty sections">
+          <a href="../../index.html?v=from-warranty#preview" target="_top">Web App Home</a>
+          <button class="is-active" type="button">Warranty Board</button>
+          <button type="button">Contact Sync</button>
+          <button type="button">Expiring Soon</button>
+          <button type="button">Claims</button>
+          <button type="button">Agent Warren</button>
+        </nav>
+        <section class="sidebar-note">
+          <strong>Agent Warren</strong>
+          <p>Draft owner for warranty records, renewal reminders, customer outreach, claim documentation, and contacts spreadsheet sync.</p>
+        </section>
+      </aside>
+
+      <main>
+        <header class="topbar" aria-label="Global command">
+          <a class="topbar-brand" href="../../index.html?v=from-warranty#preview" target="_top">
+            <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+            <strong>BLP Team Operating System</strong>
+          </a>
+          <label class="command-search">
+            <span>Ask, search, or route work</span>
+            <input type="search" placeholder="Search customer, piano, serial number, warranty status, claim, or follow-up..." />
+          </label>
+          <a class="button primary" href="mailto:warren@brighamlarsonpianos.com?subject=Warranty%20Tracking%20Update">Send Warren update</a>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Priority draft 04</p>
+            <h1>Keep every piano warranty visible, current, and easy to act on.</h1>
+            <p>
+              A warranty command center for purchased pianos, service-backed promises, expiring coverage, claim follow-up, customer communication, and live sync to the warranty contacts spreadsheet once the source link is confirmed.
+            </p>
+            <div class="tag-row">
+              <span class="status-pill">Draft for review</span>
+              <span class="tag">Agent Warren</span>
+              <span class="tag">Contacts spreadsheet sync</span>
+              <span class="tag">Customer follow-up</span>
+              <span class="tag">Claim records</span>
+            </div>
+          </div>
+          <article class="sync-card">
+            <p class="eyebrow">Live source status</p>
+            <h2>Spreadsheet link needed</h2>
+            <p>The priority doc says this should sync to the live Google contacts spreadsheet, but the link is blank. This draft keeps that connection path visible so the real adapter can be added as soon as the source sheet is provided.</p>
+            <div class="tag-row">
+              <span class="tag">Read: warranty contacts</span>
+              <span class="tag">Write: status updates</span>
+              <span class="tag">Audit: claims and outreach</span>
+            </div>
+          </article>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric"><span>Coverage states</span><strong>5</strong><p>Active, expiring, expired, claim open, claim resolved.</p></article>
+          <article class="metric"><span>Next reminders</span><strong>30/60/90</strong><p>Outreach rhythms for renewals, expirations, and service follow-up.</p></article>
+          <article class="metric"><span>Source sync</span><strong>Ready</strong><p>Adapter placeholder for live contacts spreadsheet connection.</p></article>
+          <article class="metric"><span>Human review</span><strong>On</strong><p>Customer-facing warranty messages stay approval-safe.</p></article>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Warranty intake</p>
+                <h2>Add or update a warranty record</h2>
+              </div>
+              <span class="status-pill">Draft form</span>
+            </div>
+            <div class="field-grid">
+              <label>Customer<input type="text" placeholder="Customer name" /></label>
+              <label>Piano<input type="text" placeholder="Make, model, serial number" /></label>
+              <label>Warranty type<select><option>New piano warranty</option><option>Restoration warranty</option><option>Service warranty</option><option>Parts warranty</option><option>Extended coverage</option></select></label>
+              <label>Status<select><option>Active</option><option>Expiring soon</option><option>Expired</option><option>Claim open</option><option>Resolved</option></select></label>
+              <label>Start date<input type="date" /></label>
+              <label>Expiration date<input type="date" /></label>
+            </div>
+            <label>Warranty notes<textarea placeholder="Coverage details, exceptions, service history, claim notes, promised follow-up, or customer communication summary."></textarea></label>
+            <div class="tag-row">
+              <a class="button primary" href="#">Save draft record</a>
+              <a class="button" href="#">Queue customer follow-up</a>
+              <a class="button" href="#">Send to Warren</a>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Action queues</p>
+                <h2>What needs attention</h2>
+              </div>
+            </div>
+            <div class="queue-grid">
+              <article class="queue-card"><span>Now</span><strong>Open claims</strong><p>Claims that need service notes, photos, technician review, or owner approval.</p></article>
+              <article class="queue-card"><span>This week</span><strong>Expiring soon</strong><p>Coverage windows nearing expiration that may need client outreach.</p></article>
+              <article class="queue-card"><span>Review</span><strong>Missing proof</strong><p>Records missing serial number, sales date, service date, coverage type, or source document.</p></article>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Warranty record model</p>
+              <h2>Fields this module should sync</h2>
+            </div>
+            <span class="status-pill">Data contract draft</span>
+          </div>
+          <div class="record-grid">
+            <article class="record-card"><span>Customer</span><strong>Identity and contact</strong><p>Name, email, phone, address, preferred contact, original salesperson, and account owner.</p></article>
+            <article class="record-card"><span>Piano</span><strong>Instrument details</strong><p>Make, model, serial number, year, finish, size, purchase source, and related Piano Log ID.</p></article>
+            <article class="record-card"><span>Coverage</span><strong>Warranty terms</strong><p>Type, start date, expiration date, included work, exclusions, documents, and approval owner.</p></article>
+            <article class="record-card"><span>Service</span><strong>History link</strong><p>Tuning visits, restoration work, technician notes, parts replaced, photos, and customer promises.</p></article>
+            <article class="record-card"><span>Claims</span><strong>Resolution path</strong><p>Claim opened date, issue, severity, assigned owner, status, next action, and final resolution.</p></article>
+            <article class="record-card"><span>Audit</span><strong>Change history</strong><p>Who edited the record, what changed, source spreadsheet row, and last synced timestamp.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Connection checklist</p>
+              <h2>What we need before this becomes live</h2>
+            </div>
+          </div>
+          <div class="checklist">
+            <article class="check-row"><strong>Source sheet</strong><p>Confirm the Google contacts spreadsheet URL and the exact tab used for warranty records.</p><span class="tag">Needed</span></article>
+            <article class="check-row"><strong>Columns</strong><p>Map warranty columns to this record model and identify any missing fields.</p><span class="tag">Needed</span></article>
+            <article class="check-row"><strong>Permissions</strong><p>Grant read/write access for the app service account or Apps Script web app.</p><span class="tag">Needed</span></article>
+            <article class="check-row"><strong>Sync rules</strong><p>Decide which edits require human approval before updating the live spreadsheet.</p><span class="tag">Review</span></article>
+            <article class="check-row"><strong>Customer messages</strong><p>Create approved templates for expiring warranties, claim updates, and coverage confirmations.</p><span class="tag">Draft</span></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

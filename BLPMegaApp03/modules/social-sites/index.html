@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Social Sites</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --muted: #716a61;
+        --paper: #fffdf8;
+        --ivory: #f7f3eb;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --blue: #405a6d;
+        --green: #4f695b;
+        --gold: #b68a37;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; color: var(--ink); background: radial-gradient(circle at 88% 8%, rgba(64, 90, 109, 0.13), transparent 24rem), linear-gradient(180deg, #fffdf8, var(--ivory)); }
+      .module-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+      .sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 18px; padding: 28px 22px; background: rgba(255, 253, 248, 0.96); border-right: 1px solid var(--line); }
+      .sidebar img { width: 170px; height: auto; }
+      .sidebar-title { padding-top: 16px; border-top: 1px solid var(--line); }
+      .eyebrow { margin: 0 0 8px; color: var(--red); font-size: 11px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+      h1, h2, h3, strong { font-family: Georgia, "Times New Roman", serif; }
+      h1, h2, h3, p { margin: 0; }
+      p { color: var(--muted); line-height: 1.5; }
+      .sidebar-title strong { display: block; font-size: 25px; line-height: 1.04; }
+      .sidebar-menu { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+      .sidebar-menu a, .sidebar-menu button, .button { display: inline-flex; align-items: center; justify-content: flex-start; min-height: 42px; padding: 0 14px; color: var(--ink); background: var(--ivory); border: 1px solid var(--line); border-radius: 7px; font: inherit; font-weight: 900; text-decoration: none; cursor: pointer; }
+      .sidebar-menu a:hover, .sidebar-menu button:hover, .sidebar-menu button.is-active { color: var(--paper); background: var(--red); border-color: var(--red); }
+      .sidebar-note { margin-top: auto; padding: 14px; background: var(--ivory); border: 1px solid var(--line); border-radius: 8px; }
+      main { display: grid; gap: 18px; padding: 24px 28px 36px; }
+      .topbar, .hero, .panel, .metric, .channel-card, .queue-card, .approval-card, .signal-card { background: rgba(255, 253, 248, 0.95); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 16px 42px rgba(39, 31, 24, 0.07); }
+      .topbar { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: auto minmax(280px, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; }
+      .topbar-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+      .topbar-brand img { width: 82px; }
+      .topbar-brand strong { font-size: 18px; line-height: 1.02; }
+      .command-search span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+      .command-search input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 7px; background: #fff; font: inherit; }
+      .command-search input, select { min-height: 40px; padding: 0 12px; }
+      textarea { min-height: 118px; padding: 12px; resize: vertical; }
+      .button.primary { justify-content: center; color: var(--paper); background: var(--red); border-color: var(--red); }
+      .hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(330px, 0.9fr); gap: 18px; padding: 26px; }
+      h1 { max-width: 920px; font-size: clamp(40px, 5vw, 68px); line-height: 0.98; }
+      .hero p { max-width: 760px; margin-top: 14px; font-size: 17px; }
+      .social-card { display: grid; gap: 12px; padding: 18px; background: var(--ivory); border: 1px solid var(--line); border-radius: 8px; }
+      .status-pill, .tag { display: inline-flex; width: fit-content; align-items: center; border-radius: 999px; font-weight: 900; }
+      .status-pill { padding: 8px 11px; color: var(--paper); background: var(--red); font-size: 12px; }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+      .tag { padding: 5px 8px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); font-size: 11px; }
+      .metric-grid, .two-column, .channel-grid, .queue-grid, .approval-grid, .signal-grid { display: grid; gap: 14px; }
+      .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .metric, .panel, .channel-card, .queue-card, .approval-card, .signal-card { padding: 18px; }
+      .metric span, .channel-card span, .queue-card span, .approval-card span, .signal-card span { color: var(--red); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+      .metric strong { display: block; margin-top: 8px; font-size: 31px; }
+      .two-column { grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr); }
+      .panel-header { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 14px; }
+      .panel h2 { font-size: 30px; }
+      .channel-grid, .queue-grid, .approval-grid, .signal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .channel-card { border-top: 4px solid var(--blue); }
+      .queue-card { border-left: 4px solid var(--gold); }
+      .approval-card { border-top: 4px solid var(--green); }
+      .signal-card { border-left: 4px solid var(--red); }
+      .channel-card strong, .queue-card strong, .approval-card strong, .signal-card strong { display: block; margin-top: 8px; font-size: 22px; line-height: 1.08; }
+      @media (max-width: 980px) { .module-shell, .hero, .two-column, .topbar { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } .metric-grid, .channel-grid, .queue-grid, .approval-grid, .signal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 640px) { main { padding: 18px; } .metric-grid, .channel-grid, .queue-grid, .approval-grid, .signal-grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Marketing channels</p>
+          <strong>Social Sites</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="Social sections">
+          <a href="../../index.html?v=from-social-sites#preview" target="_top">Web App Home</a>
+          <button class="is-active" type="button">Channel Board</button>
+          <button type="button">Post Queue</button>
+          <button type="button">Approvals</button>
+          <button type="button">Comments</button>
+          <button type="button">Platform Health</button>
+          <button type="button">Growth Signals</button>
+        </nav>
+        <section class="sidebar-note">
+          <strong>Agent Marcus</strong>
+          <p>Draft owner for channel planning, post queues, platform health, content approvals, comment follow-up, and growth signals.</p>
+        </section>
+      </aside>
+
+      <main>
+        <header class="topbar" aria-label="Global command">
+          <a class="topbar-brand" href="../../index.html?v=from-social-sites#preview" target="_top">
+            <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+            <strong>BLP Team Operating System</strong>
+          </a>
+          <label class="command-search">
+            <span>Ask, search, or route work</span>
+            <input type="search" placeholder="Search social post, channel, comment, approval, asset, campaign, or growth signal..." />
+          </label>
+          <a class="button primary" href="mailto:marcus@brighamlarsonpianos.com?subject=Social%20Sites%20Dashboard%20Update">Send Marcus update</a>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Priority draft 15</p>
+            <h1>Run every social channel from one calm, reviewable command board.</h1>
+            <p>
+              A social operations console for platform health, post queues, content approvals, comments, customer follow-up, campaign signals, and handoffs into sales, newsletters, VideoFlow, and customer service.
+            </p>
+            <div class="tag-row">
+              <span class="status-pill">Draft for review</span>
+              <span class="tag">Agent Marcus</span>
+              <span class="tag">Instagram</span>
+              <span class="tag">Facebook</span>
+              <span class="tag">YouTube</span>
+              <span class="tag">TikTok</span>
+              <span class="tag">Review before public post</span>
+            </div>
+          </div>
+          <article class="social-card">
+            <p class="eyebrow">Social rule</p>
+            <h2>Publish with purpose, then listen</h2>
+            <p>Every post should name the audience, campaign, approval owner, channel, asset source, reply plan, and what a human should do when the post creates a lead or client question.</p>
+            <div class="tag-row">
+              <span class="tag">Audience</span>
+              <span class="tag">Approval</span>
+              <span class="tag">Reply owner</span>
+              <span class="tag">Follow-up route</span>
+            </div>
+          </article>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric"><span>Channels</span><strong>6</strong><p>Instagram, Facebook, YouTube, TikTok, Google Business, and LinkedIn.</p></article>
+          <article class="metric"><span>Posting mode</span><strong>Review</strong><p>Human approval before customer-facing publication.</p></article>
+          <article class="metric"><span>Reply queue</span><strong>Open</strong><p>Comments and DMs should route to customer service or sales when needed.</p></article>
+          <article class="metric"><span>Growth loop</span><strong>Tracked</strong><p>Posts connect to campaigns, leads, newsletters, and VideoFlow assets.</p></article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Channel board</p>
+              <h2>Each platform gets a clear job</h2>
+            </div>
+            <span class="status-pill">Draft board</span>
+          </div>
+          <div class="channel-grid">
+            <article class="channel-card"><span>Instagram</span><strong>Showroom and craft</strong><p>Beautiful pianos, restoration moments, teacher recitals, staff warmth, and quick stories.</p></article>
+            <article class="channel-card"><span>Facebook</span><strong>Community and trust</strong><p>Events, customer stories, local relationships, service reminders, and showroom highlights.</p></article>
+            <article class="channel-card"><span>YouTube</span><strong>Authority library</strong><p>Educational videos, piano comparisons, restoration walkthroughs, and long-form expertise.</p></article>
+            <article class="channel-card"><span>TikTok</span><strong>Fast discovery</strong><p>Short demos, repair reveals, satisfying piano moments, and searchable education clips.</p></article>
+            <article class="channel-card"><span>Google Business</span><strong>Local proof</strong><p>Reviews, photos, local posts, events, and business updates that support search visibility.</p></article>
+            <article class="channel-card"><span>LinkedIn</span><strong>Professional authority</strong><p>Company milestones, hiring, leadership notes, partnerships, and professional credibility.</p></article>
+          </div>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Create post request</p>
+                <h2>Move an idea into a post queue</h2>
+              </div>
+            </div>
+            <select aria-label="Social channel">
+              <option>Instagram</option>
+              <option>Facebook</option>
+              <option>YouTube</option>
+              <option>TikTok</option>
+              <option>Google Business Profile</option>
+              <option>LinkedIn</option>
+            </select>
+            <div style="height: 10px"></div>
+            <textarea placeholder="Post idea, channel, audience, campaign, source asset, approval owner, desired publish date, CTA, and how comments should be handled."></textarea>
+            <div class="tag-row">
+              <a class="button primary" href="#">Add to post queue</a>
+              <a class="button" href="#">Attach asset</a>
+              <a class="button" href="#">Request AI caption</a>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Post queue</p>
+                <h2>Drafts should not disappear in chats</h2>
+              </div>
+            </div>
+            <div class="queue-grid">
+              <article class="queue-card"><span>Idea</span><strong>Needs asset</strong><p>Raw topic captured; needs image, video, link, or source note.</p></article>
+              <article class="queue-card"><span>Draft</span><strong>Caption ready</strong><p>Post copy, tags, channel, audience, CTA, and publish window drafted.</p></article>
+              <article class="queue-card"><span>Review</span><strong>Human approval</strong><p>Brand tone, customer safety, facts, pricing, dates, and claims checked.</p></article>
+              <article class="queue-card"><span>Scheduled</span><strong>Ready to publish</strong><p>Approved post assigned to date, platform, campaign, and owner.</p></article>
+              <article class="queue-card"><span>Published</span><strong>Watch replies</strong><p>Monitor comments, DMs, lead signals, service requests, and customer questions.</p></article>
+              <article class="queue-card"><span>Follow-up</span><strong>Route outcomes</strong><p>Send leads to Sales, questions to Customer Service, and assets to Newsletters.</p></article>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Approval and safety</p>
+              <h2>Customer-facing posts need a clear checkpoint</h2>
+            </div>
+          </div>
+          <div class="approval-grid">
+            <article class="approval-card"><span>Brand</span><strong>BLP voice</strong><p>Warm, expert, beautiful, honest, and aligned with the way the shop serves people.</p></article>
+            <article class="approval-card"><span>Facts</span><strong>No loose claims</strong><p>Verify model names, prices, dates, customer details, warranty language, and service promises.</p></article>
+            <article class="approval-card"><span>Permission</span><strong>Image consent</strong><p>Confirm customer, student, teacher, and staff photos are approved before publication.</p></article>
+            <article class="approval-card"><span>CTA</span><strong>Action route</strong><p>Every post should know whether replies go to sales, service, recitals, or customer service.</p></article>
+            <article class="approval-card"><span>Asset</span><strong>Source attached</strong><p>Connect Drive folder, VideoFlow item, product page, Piano Log record, or campaign note.</p></article>
+            <article class="approval-card"><span>Review</span><strong>Owner visible</strong><p>Approver, publish owner, channel owner, and follow-up owner should be clear.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Growth signals</p>
+              <h2>Turn social activity into operating work</h2>
+            </div>
+          </div>
+          <div class="signal-grid">
+            <article class="signal-card"><span>Lead</span><strong>Inquiry detected</strong><p>Route comments and DMs about buying, selling, moving, restoration, or tuning into the right console.</p></article>
+            <article class="signal-card"><span>Content</span><strong>Topic is working</strong><p>High engagement should create newsletter ideas, video ideas, and sales education snippets.</p></article>
+            <article class="signal-card"><span>Service</span><strong>Customer question</strong><p>Questions about tuning, climate, moving, or repair should create customer-service tickets.</p></article>
+            <article class="signal-card"><span>Review</span><strong>Reputation opportunity</strong><p>Positive comments and customer stories can become review requests or testimonials.</p></article>
+            <article class="signal-card"><span>Risk</span><strong>Needs human attention</strong><p>Negative comments, confusion, or sensitive topics route to a manager before response.</p></article>
+            <article class="signal-card"><span>Learning</span><strong>Improve the playbook</strong><p>Recurring questions become Knowledge Vault notes, training snippets, or approved reply templates.</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

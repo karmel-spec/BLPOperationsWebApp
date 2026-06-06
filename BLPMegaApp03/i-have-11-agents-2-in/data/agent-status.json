@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Walter",
+    "system": "OpenClaw",
+    "openclaw_id": "agent:main:dashboard:04150d57-624a-4076-8b4c-7665a113ac64",
+    "connectionStatus": "needs-follow-up",
+    "health": "Needs follow-up",
+    "currentWork": [],
+    "blocker": "Awaiting verified OpenClaw endpoint, CLI, webhook, auth, or safe test details.",
+    "lastSeen": null,
+    "statusSource": "not available yet; closest available alternative is `openclaw session_status --sessionKey current`",
+    "taskEndpoint": "not available yet; closest available alternative is the live OpenClaw main session / direct message to the main agent"
+  },
+  {
+    "name": "Libby",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-libby",
+    "connectionStatus": "needs-details",
+    "health": "Unknown",
+    "currentWork": [],
+    "blocker": "Awaiting verified OpenClaw endpoint, CLI, webhook, auth, or safe test details.",
+    "lastSeen": null,
+    "statusSource": null,
+    "taskEndpoint": null
+  },
+  {
+    "name": "Chris",
+    "system": "OpenClaw",
+    "openclaw_id": "chris",
+    "connectionStatus": "ready-to-test",
+    "health": "Ready for connection test",
+    "currentWork": [],
+    "blocker": null,
+    "lastSeen": null,
+    "statusSource": "openclaw status --json; openclaw sessions --agent chris --json; /Users/ivorylarson/.openclaw/workspace/agents/chris/STATUS.md",
+    "taskEndpoint": "openclaw agent --agent chris --session-key agent:chris:console-<task_id> --message \"<task text>\" --json --timeout 600"
+  },
+  {
+    "name": "Sally",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-sally",
+    "connectionStatus": "needs-details",
+    "health": "Unknown",
+    "currentWork": [],
+    "blocker": "Awaiting verified OpenClaw endpoint, CLI, webhook, auth, or safe test details.",
+    "lastSeen": null,
+    "statusSource": null,
+    "taskEndpoint": null
+  },
+  {
+    "name": "Melody",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-melody",
+    "connectionStatus": "needs-details",
+    "health": "Unknown",
+    "currentWork": [],
+    "blocker": "Awaiting verified OpenClaw endpoint, CLI, webhook, auth, or safe test details.",
+    "lastSeen": null,
+    "statusSource": null,
+    "taskEndpoint": null
+  },
+  {
+    "name": "Dawn",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-dawn",
+    "connectionStatus": "needs-details",
+    "health": "Unknown",
+    "currentWork": [],
+    "blocker": "Awaiting verified OpenClaw endpoint, CLI, webhook, auth, or safe test details.",
+    "lastSeen": null,
+    "statusSource": null,
+    "taskEndpoint": null
+  },
+  {
+    "name": "Ivory",
+    "system": "OpenClaw",
+    "openclaw_id": "ivory",
+    "connectionStatus": "ready-to-test",
+    "health": "Ready for connection test",
+    "currentWork": [],
+    "blocker": null,
+    "lastSeen": null,
+    "statusSource": "/Users/ivorylarson/.openclaw/workspace/agents/ivory/STATUS.md",
+    "taskEndpoint": "ivory@brighamlarsonpianos.com (email). Alternative: OpenClaw gateway sessions_send (internal)."
+  },
+  {
+    "name": "Marcus",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-marcus",
+    "connectionStatus": "needs-details",
+    "health": "Unknown",
+    "currentWork": [],
+    "blocker": "Awaiting verified OpenClaw endpoint, CLI, webhook, auth, or safe test details.",
+    "lastSeen": null,
+    "statusSource": null,
+    "taskEndpoint": null
+  },
+  {
+    "name": "Monte",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-monte",
+    "connectionStatus": "needs-details",
+    "health": "Unknown",
+    "currentWork": [],
+    "blocker": "Awaiting verified OpenClaw endpoint, CLI, webhook, auth, or safe test details.",
+    "lastSeen": null,
+    "statusSource": null,
+    "taskEndpoint": null
+  }
+]

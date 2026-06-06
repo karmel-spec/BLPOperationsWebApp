@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Accounting Department</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --muted: #716a61;
+        --paper: #fffdf8;
+        --ivory: #f7f3eb;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --blue: #405a6d;
+        --green: #4f695b;
+        --gold: #b68a37;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 90% 10%, rgba(182, 138, 55, 0.14), transparent 24rem),
+          linear-gradient(180deg, #fffdf8, var(--ivory));
+      }
+
+      .module-shell {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 28px 22px;
+        background: rgba(255, 253, 248, 0.96);
+        border-right: 1px solid var(--line);
+      }
+
+      .sidebar img {
+        width: 170px;
+        height: auto;
+      }
+
+      .sidebar-title {
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      strong {
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .sidebar-title strong {
+        display: block;
+        font-size: 25px;
+        line-height: 1.04;
+      }
+
+      .sidebar-menu {
+        display: grid;
+        gap: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .sidebar-menu a,
+      .sidebar-menu button,
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 42px;
+        padding: 0 14px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font: inherit;
+        font-weight: 900;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .sidebar-menu a:hover,
+      .sidebar-menu button:hover,
+      .sidebar-menu button.is-active {
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+
+      .sidebar-note {
+        margin-top: auto;
+        padding: 14px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      main {
+        display: grid;
+        gap: 18px;
+        padding: 24px 28px 36px;
+      }
+
+      .topbar,
+      .hero,
+      .panel,
+      .metric,
+      .queue-card,
+      .system-card,
+      .approval-card,
+      .close-card {
+        background: rgba(255, 253, 248, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 16px 42px rgba(39, 31, 24, 0.07);
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: auto minmax(280px, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+      }
+
+      .topbar-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      .topbar-brand img { width: 82px; }
+
+      .topbar-brand strong {
+        font-size: 18px;
+        line-height: 1.02;
+      }
+
+      .command-search span {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .command-search input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        font: inherit;
+      }
+
+      .command-search input,
+      select {
+        min-height: 40px;
+        padding: 0 12px;
+      }
+
+      textarea {
+        min-height: 118px;
+        padding: 12px;
+        resize: vertical;
+      }
+
+      .button.primary {
+        justify-content: center;
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.12fr) minmax(330px, 0.88fr);
+        gap: 18px;
+        padding: 26px;
+      }
+
+      h1 {
+        max-width: 900px;
+        font-size: clamp(40px, 5vw, 68px);
+        line-height: 0.98;
+      }
+
+      .hero p {
+        max-width: 760px;
+        margin-top: 14px;
+        font-size: 17px;
+      }
+
+      .finance-card {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .status-pill,
+      .tag {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        border-radius: 999px;
+        font-weight: 900;
+      }
+
+      .status-pill {
+        padding: 8px 11px;
+        color: var(--paper);
+        background: var(--red);
+        font-size: 12px;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 14px;
+      }
+
+      .tag {
+        padding: 5px 8px;
+        color: var(--ink);
+        background: var(--paper);
+        border: 1px solid var(--line);
+        font-size: 11px;
+      }
+
+      .metric-grid,
+      .two-column,
+      .queue-grid,
+      .system-grid,
+      .approval-grid,
+      .close-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .metric,
+      .panel,
+      .queue-card,
+      .system-card,
+      .approval-card,
+      .close-card {
+        padding: 18px;
+      }
+
+      .metric span,
+      .queue-card span,
+      .system-card span,
+      .approval-card span,
+      .close-card span {
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 31px;
+      }
+
+      .two-column {
+        grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+        margin-bottom: 14px;
+      }
+
+      .panel h2 { font-size: 30px; }
+
+      .queue-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .queue-card {
+        border-top: 4px solid var(--gold);
+      }
+
+      .system-grid,
+      .approval-grid,
+      .close-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .system-card { border-left: 4px solid var(--blue); }
+      .approval-card { border-top: 4px solid var(--green); }
+      .close-card { border-left: 4px solid var(--gold); }
+
+      .queue-card strong,
+      .system-card strong,
+      .approval-card strong,
+      .close-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 22px;
+        line-height: 1.08;
+      }
+
+      @media (max-width: 980px) {
+        .module-shell,
+        .hero,
+        .two-column,
+        .topbar {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: relative;
+          height: auto;
+        }
+
+        .metric-grid,
+        .queue-grid,
+        .system-grid,
+        .approval-grid,
+        .close-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        main { padding: 18px; }
+
+        .metric-grid,
+        .queue-grid,
+        .system-grid,
+        .approval-grid,
+        .close-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Finance operations</p>
+          <strong>Accounting Department</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="Accounting sections">
+          <a href="../../index.html?v=from-accounting#preview" target="_top">Web App Home</a>
+          <button class="is-active" type="button">Finance Desk</button>
+          <button type="button">QuickBooks</button>
+          <button type="button">Bill Pay</button>
+          <button type="button">Payroll</button>
+          <button type="button">Taxes</button>
+          <button type="button">Close Checklist</button>
+        </nav>
+        <section class="sidebar-note">
+          <strong>Agent Monte</strong>
+          <p>Draft owner for accounting queues, QuickBooks context, financial analysis, exception review, and owner-safe reporting.</p>
+        </section>
+      </aside>
+
+      <main>
+        <header class="topbar" aria-label="Global command">
+          <a class="topbar-brand" href="../../index.html?v=from-accounting#preview" target="_top">
+            <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+            <strong>BLP Team Operating System</strong>
+          </a>
+          <label class="command-search">
+            <span>Ask, search, or route work</span>
+            <input type="search" placeholder="Search bill, vendor, payroll item, tax deadline, QBO transaction, exception, or owner report..." />
+          </label>
+          <a class="button primary" href="mailto:monte@brighamlarsonpianos.com?subject=Accounting%20Dashboard%20Update">Send Monte update</a>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Priority draft 07</p>
+            <h1>The finance command center for bill pay, payroll, taxes, and owner-ready clarity.</h1>
+            <p>
+              A restricted accounting workspace for QuickBooks integration, bill pay, payroll coordination, taxes, reconciliations, financial documents, deadlines, exception queues, token spend, cost-saving ideas, and owner-safe reporting.
+            </p>
+            <div class="tag-row">
+              <span class="status-pill">Draft for review</span>
+              <span class="tag">Agent Monte</span>
+              <span class="tag">QuickBooks</span>
+              <span class="tag">Bill pay</span>
+              <span class="tag">Payroll</span>
+              <span class="tag">Taxes</span>
+            </div>
+          </div>
+          <article class="finance-card">
+            <p class="eyebrow">Permission status</p>
+            <h2>Owner-restricted by design</h2>
+            <p>Financial data should not be broadly visible. The production module needs role-based permissions, audit logs, approval rules, and clear separation between owner, accounting team, managers, and agents.</p>
+            <div class="tag-row">
+              <span class="tag">Owner view</span>
+              <span class="tag">Accounting view</span>
+              <span class="tag">Manager-limited</span>
+              <span class="tag">Agent-scoped</span>
+            </div>
+          </article>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric"><span>Primary system</span><strong>QBO</strong><p>QuickBooks Online should remain the accounting source of truth.</p></article>
+          <article class="metric"><span>Review rhythm</span><strong>Weekly</strong><p>Bill pay, exception queues, and owner questions reviewed on a weekly cadence.</p></article>
+          <article class="metric"><span>Close cadence</span><strong>Monthly</strong><p>Month-end checklist, reconciliations, reports, and owner review.</p></article>
+          <article class="metric"><span>Security</span><strong>MFA</strong><p>Restricted access, audit trail, and financial permission groups.</p></article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Accounting queues</p>
+              <h2>Work that needs attention</h2>
+            </div>
+            <span class="status-pill">Draft queue</span>
+          </div>
+          <div class="queue-grid">
+            <article class="queue-card"><span>Bill pay</span><strong>Vendor approvals</strong><p>Bills needing review, owner approval, payment date, or supporting document.</p></article>
+            <article class="queue-card"><span>Payroll</span><strong>Pay period review</strong><p>Hours, commissions, reimbursements, exceptions, and manager sign-off.</p></article>
+            <article class="queue-card"><span>Taxes</span><strong>Deadline watch</strong><p>Sales tax, payroll tax, income tax docs, filings, and accountant requests.</p></article>
+            <article class="queue-card"><span>Exceptions</span><strong>Needs review</strong><p>Uncategorized transactions, missing receipts, unusual spend, or reconciliation blockers.</p></article>
+          </div>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">QuickBooks and financial systems</p>
+                <h2>Source connections to map first</h2>
+              </div>
+            </div>
+            <div class="system-grid">
+              <article class="system-card"><span>QBO</span><strong>Transactions and reports</strong><p>Accounts, expenses, deposits, invoices, payments, vendors, customers, classes, and reports.</p></article>
+              <article class="system-card"><span>Banking</span><strong>Reconciliation inputs</strong><p>Bank feeds, card accounts, payment processors, deposits, and reconciliation status.</p></article>
+              <article class="system-card"><span>Payroll</span><strong>Hours and commissions</strong><p>Pay period data, tech hours, sales commissions, reimbursements, and approvals.</p></article>
+              <article class="system-card"><span>Docs</span><strong>Financial document vault</strong><p>Receipts, bills, W-9s, tax docs, statements, contracts, and accountant handoffs.</p></article>
+              <article class="system-card"><span>Agents</span><strong>Token spend</strong><p>Agent/tool usage, vendor software spend, ROI notes, and cost-saving opportunities.</p></article>
+              <article class="system-card"><span>Dashboards</span><strong>Owner reports</strong><p>Cash position, liabilities, AR/AP, revenue categories, margins, and exception summaries.</p></article>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">New accounting request</p>
+                <h2>Route finance work safely</h2>
+              </div>
+            </div>
+            <select aria-label="Accounting request type">
+              <option>Bill pay approval</option>
+              <option>Payroll exception</option>
+              <option>Tax document request</option>
+              <option>Missing receipt</option>
+              <option>QuickBooks cleanup</option>
+              <option>Owner report question</option>
+            </select>
+            <div style="height: 10px"></div>
+            <textarea placeholder="Describe the financial question, source document, due date, approval owner, and any sensitive access restrictions."></textarea>
+            <div class="tag-row">
+              <a class="button primary" href="#">Create finance task</a>
+              <a class="button" href="#">Attach document</a>
+              <a class="button" href="#">Send to Monte</a>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Approvals and controls</p>
+              <h2>Financial workflows need clean authority</h2>
+            </div>
+          </div>
+          <div class="approval-grid">
+            <article class="approval-card"><span>Owner</span><strong>Final authority</strong><p>Final approval for sensitive financial moves, unusual spending, permissions, and strategic reports.</p></article>
+            <article class="approval-card"><span>Accounting</span><strong>Prepare and reconcile</strong><p>Bill prep, reconciliation, categorization, payroll packet, tax packet, and report preparation.</p></article>
+            <article class="approval-card"><span>Managers</span><strong>Department review</strong><p>Approve team expenses, hours, commissions, missing receipts, and department exceptions.</p></article>
+            <article class="approval-card"><span>Agents</span><strong>Scoped analysis</strong><p>Monte can summarize, flag, draft, and analyze, but cannot expose restricted data broadly.</p></article>
+            <article class="approval-card"><span>Audit</span><strong>Every change logged</strong><p>Track who changed a task, document, status, approval, or report request.</p></article>
+            <article class="approval-card"><span>Security</span><strong>Least access</strong><p>Use role-based permissions, MFA, and explicit approval for exporting or sharing financial data.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Month-end close</p>
+              <h2>A repeatable close checklist</h2>
+            </div>
+          </div>
+          <div class="close-grid">
+            <article class="close-card"><span>1</span><strong>Collect</strong><p>Receipts, bills, statements, payroll, deposits, vendor docs, and missing source files.</p></article>
+            <article class="close-card"><span>2</span><strong>Reconcile</strong><p>Bank accounts, cards, payment processors, AR/AP, loans, and clearing accounts.</p></article>
+            <article class="close-card"><span>3</span><strong>Review</strong><p>Exceptions, uncategorized transactions, unusual spending, margin changes, and owner questions.</p></article>
+            <article class="close-card"><span>4</span><strong>Report</strong><p>Profit/loss, balance sheet, cash position, AR/AP, department summaries, and tax notes.</p></article>
+            <article class="close-card"><span>5</span><strong>Approve</strong><p>Owner review, manager follow-ups, sensitive decisions, and next-month priorities.</p></article>
+            <article class="close-card"><span>6</span><strong>Archive</strong><p>Close packet, supporting docs, final notes, approvals, and audit trail.</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

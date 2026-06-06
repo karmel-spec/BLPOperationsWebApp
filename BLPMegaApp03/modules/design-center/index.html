@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Design Center</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --muted: #716a61;
+        --paper: #fffdf8;
+        --ivory: #f7f3eb;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --blue: #405a6d;
+        --green: #4f695b;
+        --gold: #b68a37;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; color: var(--ink); background: radial-gradient(circle at 88% 8%, rgba(182, 138, 55, 0.14), transparent 24rem), linear-gradient(180deg, #fffdf8, var(--ivory)); }
+      .module-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+      .sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 18px; padding: 28px 22px; background: rgba(255, 253, 248, 0.96); border-right: 1px solid var(--line); }
+      .sidebar img { width: 170px; height: auto; }
+      .sidebar-title { padding-top: 16px; border-top: 1px solid var(--line); }
+      .eyebrow { margin: 0 0 8px; color: var(--red); font-size: 11px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+      h1, h2, h3, strong { font-family: Georgia, "Times New Roman", serif; }
+      h1, h2, h3, p { margin: 0; }
+      p { color: var(--muted); line-height: 1.5; }
+      .sidebar-title strong { display: block; font-size: 25px; line-height: 1.04; }
+      .sidebar-menu { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+      .sidebar-menu a, .sidebar-menu button, .button { display: inline-flex; align-items: center; justify-content: flex-start; min-height: 42px; padding: 0 14px; color: var(--ink); background: var(--ivory); border: 1px solid var(--line); border-radius: 7px; font: inherit; font-weight: 900; text-decoration: none; cursor: pointer; }
+      .sidebar-menu a:hover, .sidebar-menu button:hover, .sidebar-menu button.is-active { color: var(--paper); background: var(--red); border-color: var(--red); }
+      .sidebar-note { margin-top: auto; padding: 14px; background: var(--ivory); border: 1px solid var(--line); border-radius: 8px; }
+      main { display: grid; gap: 18px; padding: 24px 28px 36px; }
+      .topbar, .hero, .panel, .metric, .asset-card, .request-card, .approval-card, .production-card { background: rgba(255, 253, 248, 0.95); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 16px 42px rgba(39, 31, 24, 0.07); }
+      .topbar { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: auto minmax(280px, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; }
+      .topbar-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+      .topbar-brand img { width: 82px; }
+      .topbar-brand strong { font-size: 18px; line-height: 1.02; }
+      .command-search span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+      .command-search input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 7px; background: #fff; font: inherit; }
+      .command-search input, select { min-height: 40px; padding: 0 12px; }
+      textarea { min-height: 118px; padding: 12px; resize: vertical; }
+      .button.primary { justify-content: center; color: var(--paper); background: var(--red); border-color: var(--red); }
+      .hero { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(330px, 0.92fr); gap: 18px; padding: 26px; }
+      h1 { max-width: 920px; font-size: clamp(40px, 5vw, 68px); line-height: 0.98; }
+      .hero p { max-width: 760px; margin-top: 14px; font-size: 17px; }
+      .brand-card { display: grid; gap: 12px; padding: 18px; background: var(--ivory); border: 1px solid var(--line); border-radius: 8px; }
+      .swatch-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+      .swatch { min-height: 72px; border-radius: 7px; border: 1px solid var(--line); padding: 9px; color: #fff; font-weight: 900; display: flex; align-items: end; }
+      .swatch.red { background: var(--red); }
+      .swatch.blue { background: var(--blue); }
+      .swatch.green { background: var(--green); }
+      .swatch.gold { background: var(--gold); }
+      .status-pill, .tag { display: inline-flex; width: fit-content; align-items: center; border-radius: 999px; font-weight: 900; }
+      .status-pill { padding: 8px 11px; color: var(--paper); background: var(--red); font-size: 12px; }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+      .tag { padding: 5px 8px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); font-size: 11px; }
+      .metric-grid, .two-column, .asset-grid, .request-grid, .approval-grid, .production-grid { display: grid; gap: 14px; }
+      .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .metric, .panel, .asset-card, .request-card, .approval-card, .production-card { padding: 18px; }
+      .metric span, .asset-card span, .request-card span, .approval-card span, .production-card span { color: var(--red); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+      .metric strong { display: block; margin-top: 8px; font-size: 31px; }
+      .two-column { grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr); }
+      .panel-header { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 14px; }
+      .panel h2 { font-size: 30px; }
+      .asset-grid, .request-grid, .approval-grid, .production-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .asset-card { border-top: 4px solid var(--gold); }
+      .request-card { border-left: 4px solid var(--blue); }
+      .approval-card { border-top: 4px solid var(--green); }
+      .production-card { border-left: 4px solid var(--red); }
+      .asset-card strong, .request-card strong, .approval-card strong, .production-card strong { display: block; margin-top: 8px; font-size: 22px; line-height: 1.08; }
+      @media (max-width: 980px) { .module-shell, .hero, .two-column, .topbar { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } .metric-grid, .asset-grid, .request-grid, .approval-grid, .production-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 640px) { main { padding: 18px; } .metric-grid, .asset-grid, .request-grid, .approval-grid, .production-grid, .swatch-row { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Creative operations</p>
+          <strong>Design Center</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="Design sections">
+          <a href="../../index.html?v=from-design-center#preview" target="_top">Web App Home</a>
+          <button class="is-active" type="button">Design Desk</button>
+          <button type="button">Requests</button>
+          <button type="button">Brand Assets</button>
+          <button type="button">Approvals</button>
+          <button type="button">Production Files</button>
+          <button type="button">Vendors</button>
+        </nav>
+        <section class="sidebar-note">
+          <strong>Agent Marcus</strong>
+          <p>Draft owner for brand assets, signs, web graphics, print pieces, templates, design requests, approvals, and production files.</p>
+        </section>
+      </aside>
+
+      <main>
+        <header class="topbar" aria-label="Global command">
+          <a class="topbar-brand" href="../../index.html?v=from-design-center#preview" target="_top">
+            <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+            <strong>BLP Team Operating System</strong>
+          </a>
+          <label class="command-search">
+            <span>Ask, search, or route work</span>
+            <input type="search" placeholder="Search design request, logo asset, sign, flyer, template, production file, approval, or vendor..." />
+          </label>
+          <a class="button primary" href="mailto:marcus@brighamlarsonpianos.com?subject=Design%20Center%20Update">Send Marcus update</a>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Priority draft 16</p>
+            <h1>Keep every BLP design beautiful, branded, and production-ready.</h1>
+            <p>
+              A creative operations dashboard for design requests, brand assets, signs, web graphics, print pieces, templates, approvals, vendor handoffs, and final files that should be easy for the whole team to find.
+            </p>
+            <div class="tag-row">
+              <span class="status-pill">Draft for review</span>
+              <span class="tag">Brand assets</span>
+              <span class="tag">Print</span>
+              <span class="tag">Web graphics</span>
+              <span class="tag">Signs</span>
+              <span class="tag">Templates</span>
+              <span class="tag">Production files</span>
+            </div>
+          </div>
+          <article class="brand-card">
+            <p class="eyebrow">Brand palette</p>
+            <h2>Consistent without feeling generic</h2>
+            <p>Design work should feel premium, warm, piano-store specific, and consistent with the BLP operating system.</p>
+            <div class="swatch-row" aria-label="Brand colors">
+              <div class="swatch red">BLP Red</div>
+              <div class="swatch blue">Slate Blue</div>
+              <div class="swatch green">Shop Green</div>
+              <div class="swatch gold">Piano Gold</div>
+            </div>
+          </article>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric"><span>Request lanes</span><strong>6</strong><p>Print, web, signage, social, events, and templates.</p></article>
+          <article class="metric"><span>Brand safety</span><strong>Review</strong><p>Owner or manager approval for public-facing work.</p></article>
+          <article class="metric"><span>File status</span><strong>Tracked</strong><p>Draft, approved, vendor-ready, printed, archived.</p></article>
+          <article class="metric"><span>Source files</span><strong>Required</strong><p>Finals should include editable files, exported assets, and vendor notes.</p></article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Asset library</p>
+              <h2>Everything the team should stop hunting for</h2>
+            </div>
+            <span class="status-pill">Draft library</span>
+          </div>
+          <div class="asset-grid">
+            <article class="asset-card"><span>Logo</span><strong>Official logo files</strong><p>Print, web, light/dark, transparent, and approved lockups.</p></article>
+            <article class="asset-card"><span>Showroom</span><strong>Photo library</strong><p>Showroom, staff, pianos, restoration, tuning, events, and approved customer images.</p></article>
+            <article class="asset-card"><span>Templates</span><strong>Reusable layouts</strong><p>Flyers, postcards, social posts, email headers, signage, and presentation slides.</p></article>
+            <article class="asset-card"><span>Web</span><strong>Digital graphics</strong><p>Website banners, landing page art, product graphics, thumbnails, and ads.</p></article>
+            <article class="asset-card"><span>Print</span><strong>Finished print pieces</strong><p>Brochures, service cards, recital materials, price tags, and customer handouts.</p></article>
+            <article class="asset-card"><span>Vendor</span><strong>Production specs</strong><p>Printer notes, file sizes, paper choices, sign dimensions, costs, and reorder links.</p></article>
+          </div>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">New design request</p>
+                <h2>Capture the whole request before design starts</h2>
+              </div>
+            </div>
+            <select aria-label="Design request type">
+              <option>Print piece</option>
+              <option>Web graphic</option>
+              <option>Social graphic</option>
+              <option>Showroom sign</option>
+              <option>Event material</option>
+              <option>Template update</option>
+            </select>
+            <div style="height: 10px"></div>
+            <textarea placeholder="Purpose, audience, deadline, size, copy, source images, vendor, approval owner, budget, and where the finished file should live."></textarea>
+            <div class="tag-row">
+              <a class="button primary" href="#">Create design request</a>
+              <a class="button" href="#">Attach Drive folder</a>
+              <a class="button" href="#">Send for approval</a>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Request queue</p>
+                <h2>Design work needs visible status</h2>
+              </div>
+            </div>
+            <div class="request-grid">
+              <article class="request-card"><span>Intake</span><strong>Needs details</strong><p>Missing copy, size, audience, source image, deadline, or approval owner.</p></article>
+              <article class="request-card"><span>Drafting</span><strong>In progress</strong><p>Designer or agent is preparing draft options for review.</p></article>
+              <article class="request-card"><span>Review</span><strong>Needs approval</strong><p>Brand, facts, pricing, date, and final message need human approval.</p></article>
+              <article class="request-card"><span>Vendor</span><strong>Production handoff</strong><p>Approved file is with printer, sign vendor, web team, or campaign owner.</p></article>
+              <article class="request-card"><span>Done</span><strong>File archived</strong><p>Final and source files are stored with owner, date, use case, and reorder note.</p></article>
+              <article class="request-card"><span>Blocked</span><strong>Waiting</strong><p>Needs missing source, budget approval, vendor quote, or final decision.</p></article>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Approval checklist</p>
+              <h2>Make every public piece safe before it leaves the shop</h2>
+            </div>
+          </div>
+          <div class="approval-grid">
+            <article class="approval-card"><span>Voice</span><strong>BLP tone</strong><p>Warm, expert, grounded, beautiful, and clear.</p></article>
+            <article class="approval-card"><span>Facts</span><strong>Accurate details</strong><p>Check prices, model names, dates, phone numbers, addresses, warranties, and offers.</p></article>
+            <article class="approval-card"><span>Legal</span><strong>Permission and safety</strong><p>Confirm photo permissions, customer privacy, and required disclaimers.</p></article>
+            <article class="approval-card"><span>Brand</span><strong>Consistent style</strong><p>Use approved logos, colors, type scale, spacing, and image quality.</p></article>
+            <article class="approval-card"><span>CTA</span><strong>Clear next step</strong><p>Know whether the piece drives calls, showroom visits, service booking, or lead follow-up.</p></article>
+            <article class="approval-card"><span>Archive</span><strong>Findable later</strong><p>Store the final, source file, vendor proof, and reorder instructions.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Production files</p>
+              <h2>The final handoff should be boring in the best way</h2>
+            </div>
+          </div>
+          <div class="production-grid">
+            <article class="production-card"><span>Print</span><strong>CMYK and bleed</strong><p>Print-ready PDF, source file, dimensions, bleed, paper, quantity, and vendor contact.</p></article>
+            <article class="production-card"><span>Web</span><strong>Responsive assets</strong><p>Correct image sizes, alt text, compressed exports, page destination, and owner.</p></article>
+            <article class="production-card"><span>Social</span><strong>Channel versions</strong><p>Square, vertical, story, thumbnail, caption, tags, campaign, and approval record.</p></article>
+            <article class="production-card"><span>Signage</span><strong>Install details</strong><p>Location, dimensions, mounting, vendor, replacement date, and photo proof.</p></article>
+            <article class="production-card"><span>Events</span><strong>Packet files</strong><p>Programs, signs, name tags, schedules, invitations, and print quantities.</p></article>
+            <article class="production-card"><span>Archive</span><strong>Reusable system</strong><p>Finals and templates organized so future requests start faster.</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

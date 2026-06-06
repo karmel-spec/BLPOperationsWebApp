@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Team Meetings</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --muted: #716a61;
+        --paper: #fffdf8;
+        --ivory: #f7f3eb;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --blue: #405a6d;
+        --green: #4f695b;
+        --gold: #b68a37;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: radial-gradient(circle at 88% 8%, rgba(64, 90, 109, 0.12), transparent 24rem), linear-gradient(180deg, #fffdf8, var(--ivory));
+      }
+
+      .module-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 28px 22px;
+        background: rgba(255, 253, 248, 0.96);
+        border-right: 1px solid var(--line);
+      }
+      .sidebar img { width: 170px; height: auto; }
+      .sidebar-title { padding-top: 16px; border-top: 1px solid var(--line); }
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      h1, h2, h3, strong { font-family: Georgia, "Times New Roman", serif; }
+      h1, h2, h3, p { margin: 0; }
+      p { color: var(--muted); line-height: 1.5; }
+      .sidebar-title strong { display: block; font-size: 25px; line-height: 1.04; }
+      .sidebar-menu { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+      .sidebar-menu a, .sidebar-menu button, .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 42px;
+        padding: 0 14px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font: inherit;
+        font-weight: 900;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .sidebar-menu a:hover, .sidebar-menu button:hover, .sidebar-menu button.is-active {
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+      .sidebar-note { margin-top: auto; padding: 14px; background: var(--ivory); border: 1px solid var(--line); border-radius: 8px; }
+      main { display: grid; gap: 18px; padding: 24px 28px 36px; }
+      .topbar, .hero, .panel, .metric, .rhythm-card, .agenda-card, .decision-card, .follow-card {
+        background: rgba(255, 253, 248, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 16px 42px rgba(39, 31, 24, 0.07);
+      }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: auto minmax(280px, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+      }
+      .topbar-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+      .topbar-brand img { width: 82px; }
+      .topbar-brand strong { font-size: 18px; line-height: 1.02; }
+      .command-search span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+      .command-search input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 7px; background: #fff; font: inherit; }
+      .command-search input, select { min-height: 40px; padding: 0 12px; }
+      textarea { min-height: 118px; padding: 12px; resize: vertical; }
+      .button.primary { justify-content: center; color: var(--paper); background: var(--red); border-color: var(--red); }
+      .hero { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(330px, 0.88fr); gap: 18px; padding: 26px; }
+      h1 { max-width: 920px; font-size: clamp(40px, 5vw, 68px); line-height: 0.98; }
+      .hero p { max-width: 760px; margin-top: 14px; font-size: 17px; }
+      .meeting-card { display: grid; gap: 12px; padding: 18px; background: var(--ivory); border: 1px solid var(--line); border-radius: 8px; }
+      .status-pill, .tag { display: inline-flex; width: fit-content; align-items: center; border-radius: 999px; font-weight: 900; }
+      .status-pill { padding: 8px 11px; color: var(--paper); background: var(--red); font-size: 12px; }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+      .tag { padding: 5px 8px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); font-size: 11px; }
+      .metric-grid, .two-column, .rhythm-grid, .agenda-grid, .decision-grid, .follow-grid { display: grid; gap: 14px; }
+      .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .metric, .panel, .rhythm-card, .agenda-card, .decision-card, .follow-card { padding: 18px; }
+      .metric span, .rhythm-card span, .agenda-card span, .decision-card span, .follow-card span { color: var(--red); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+      .metric strong { display: block; margin-top: 8px; font-size: 31px; }
+      .two-column { grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr); }
+      .panel-header { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 14px; }
+      .panel h2 { font-size: 30px; }
+      .rhythm-grid, .agenda-grid, .decision-grid, .follow-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .rhythm-card { border-top: 4px solid var(--blue); }
+      .agenda-card { border-left: 4px solid var(--gold); }
+      .decision-card { border-top: 4px solid var(--green); }
+      .follow-card { border-left: 4px solid var(--red); }
+      .rhythm-card strong, .agenda-card strong, .decision-card strong, .follow-card strong { display: block; margin-top: 8px; font-size: 22px; line-height: 1.08; }
+      @media (max-width: 980px) {
+        .module-shell, .hero, .two-column, .topbar { grid-template-columns: 1fr; }
+        .sidebar { position: relative; height: auto; }
+        .metric-grid, .rhythm-grid, .agenda-grid, .decision-grid, .follow-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (max-width: 640px) {
+        main { padding: 18px; }
+        .metric-grid, .rhythm-grid, .agenda-grid, .decision-grid, .follow-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Leadership rhythm</p>
+          <strong>Team Meetings</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="Team meeting sections">
+          <a href="../../index.html?v=from-team-meetings#preview" target="_top">Web App Home</a>
+          <button class="is-active" type="button">Meeting Hub</button>
+          <button type="button">Agendas</button>
+          <button type="button">Decisions</button>
+          <button type="button">Action Items</button>
+          <button type="button">Follow-ups</button>
+          <button type="button">Standards</button>
+        </nav>
+        <section class="sidebar-note">
+          <strong>Agent Walter</strong>
+          <p>Draft owner for meeting agendas, recurring rhythms, decisions, action items, attendance, follow-ups, and Professional Standards notes.</p>
+        </section>
+      </aside>
+
+      <main>
+        <header class="topbar" aria-label="Global command">
+          <a class="topbar-brand" href="../../index.html?v=from-team-meetings#preview" target="_top">
+            <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+            <strong>BLP Team Operating System</strong>
+          </a>
+          <label class="command-search">
+            <span>Ask, search, or route work</span>
+            <input type="search" placeholder="Search meeting, agenda, decision, owner, action item, attendance, or follow-up..." />
+          </label>
+          <a class="button primary" href="mailto:walter@brighamlarsonpianos.com?subject=Team%20Meetings%20Update">Send Walter update</a>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Priority draft 11</p>
+            <h1>Turn every meeting into decisions, owners, and finished follow-up.</h1>
+            <p>
+              A leadership rhythm console for agendas, recurring meetings, decisions, action items, attendance, follow-ups, morning standup notes, and Professional Standards alignment.
+            </p>
+            <div class="tag-row">
+              <span class="status-pill">Draft for review</span>
+              <span class="tag">Agent Walter</span>
+              <span class="tag">Agendas</span>
+              <span class="tag">Decisions</span>
+              <span class="tag">Action items</span>
+              <span class="tag">Follow-up</span>
+            </div>
+          </div>
+          <article class="meeting-card">
+            <p class="eyebrow">Meeting rule</p>
+            <h2>No decision without an owner</h2>
+            <p>The system should turn notes into assigned work, preserve decisions, and surface overdue follow-ups before the next meeting.</p>
+            <div class="tag-row">
+              <span class="tag">Owner</span>
+              <span class="tag">Due date</span>
+              <span class="tag">Decision log</span>
+              <span class="tag">Review rhythm</span>
+            </div>
+          </article>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric"><span>Meeting rhythms</span><strong>5</strong><p>Standup, manager meeting, leadership, training, and project reviews.</p></article>
+          <article class="metric"><span>Action ownership</span><strong>Required</strong><p>Every follow-up needs owner, due date, and status.</p></article>
+          <article class="metric"><span>Decision memory</span><strong>Live</strong><p>Decisions become searchable context for the whole operating system.</p></article>
+          <article class="metric"><span>Agent support</span><strong>Walter</strong><p>Walter prepares agendas, summarizes meetings, and catches loose ends.</p></article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Recurring rhythm</p>
+              <h2>The meetings worth protecting</h2>
+            </div>
+            <span class="status-pill">Draft cadence</span>
+          </div>
+          <div class="rhythm-grid">
+            <article class="rhythm-card"><span>Daily</span><strong>Morning standup</strong><p>Today’s blockers, staffing notes, urgent customers, shop signals, and owner focus.</p></article>
+            <article class="rhythm-card"><span>Weekly</span><strong>Manager meeting</strong><p>Department updates, priorities, metrics, approvals, and unresolved blockers.</p></article>
+            <article class="rhythm-card"><span>Weekly</span><strong>Agent operations</strong><p>Agent work, corrections, training gaps, routing issues, and permissions needed.</p></article>
+            <article class="rhythm-card"><span>Monthly</span><strong>Leadership review</strong><p>Scorecards, finances, staffing, strategic projects, and key decisions.</p></article>
+            <article class="rhythm-card"><span>Project</span><strong>Launch reviews</strong><p>Module launches, app feedback, system changes, and handoff planning.</p></article>
+            <article class="rhythm-card"><span>Culture</span><strong>Standards check</strong><p>Professional Standards, team issues, wins, recognition, and training needs.</p></article>
+          </div>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Agenda builder</p>
+                <h2>Prepare the right meeting before it starts</h2>
+              </div>
+            </div>
+            <select aria-label="Meeting type">
+              <option>Manager meeting</option>
+              <option>Morning standup</option>
+              <option>Leadership review</option>
+              <option>Agent operations</option>
+              <option>Project review</option>
+            </select>
+            <div style="height: 10px"></div>
+            <textarea placeholder="Agenda topics, decisions needed, blockers, metrics to review, and follow-ups from last meeting."></textarea>
+            <div class="tag-row">
+              <a class="button primary" href="#">Draft agenda</a>
+              <a class="button" href="#">Pull open follow-ups</a>
+              <a class="button" href="#">Send to Walter</a>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Agenda sections</p>
+                <h2>What every useful meeting captures</h2>
+              </div>
+            </div>
+            <div class="agenda-grid">
+              <article class="agenda-card"><span>1</span><strong>Wins</strong><p>Progress, recognition, customer stories, and team momentum.</p></article>
+              <article class="agenda-card"><span>2</span><strong>Metrics</strong><p>Signals, queues, dashboards, finances, and department status.</p></article>
+              <article class="agenda-card"><span>3</span><strong>Blockers</strong><p>Issues that need decisions, resources, permissions, or owner attention.</p></article>
+              <article class="agenda-card"><span>4</span><strong>Decisions</strong><p>Explicit choices, rationale, owner, and impact.</p></article>
+              <article class="agenda-card"><span>5</span><strong>Actions</strong><p>Who owns what, by when, and how progress will be checked.</p></article>
+              <article class="agenda-card"><span>6</span><strong>Standards</strong><p>Professional Standards, culture, client care, and training reinforcement.</p></article>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Decision log</p>
+              <h2>Keep decisions from evaporating</h2>
+            </div>
+          </div>
+          <div class="decision-grid">
+            <article class="decision-card"><span>Decision</span><strong>What changed</strong><p>Plain-language decision, affected teams, effective date, and why it matters.</p></article>
+            <article class="decision-card"><span>Owner</span><strong>Who carries it</strong><p>Decision owner, backup owner, approver, and communication path.</p></article>
+            <article class="decision-card"><span>Context</span><strong>Why this choice</strong><p>Options considered, constraints, source evidence, and expected outcome.</p></article>
+            <article class="decision-card"><span>Follow-up</span><strong>What happens next</strong><p>Tasks, dates, checkpoints, training updates, and dashboard changes.</p></article>
+            <article class="decision-card"><span>Source</span><strong>Meeting record</strong><p>Meeting type, attendees, date, transcript, notes, and attachments.</p></article>
+            <article class="decision-card"><span>Review</span><strong>Did it work?</strong><p>Review date, success measure, feedback, and next adjustment.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Follow-up system</p>
+              <h2>Action items become trackable work</h2>
+            </div>
+          </div>
+          <div class="follow-grid">
+            <article class="follow-card"><span>Capture</span><strong>Task from meeting</strong><p>Turn notes into a task with owner, team, due date, and status.</p></article>
+            <article class="follow-card"><span>Route</span><strong>Send to the right board</strong><p>Push actions to admin board, agent console, sales, shop, accounting, or training.</p></article>
+            <article class="follow-card"><span>Remind</span><strong>Before next meeting</strong><p>Surface overdue or stuck items before the next recurring meeting.</p></article>
+            <article class="follow-card"><span>Close</span><strong>Completion evidence</strong><p>Require note, file, decision, dashboard update, or human confirmation.</p></article>
+            <article class="follow-card"><span>Train</span><strong>Update standards</strong><p>If a meeting creates a policy or process change, send it to Knowledge Vault/training.</p></article>
+            <article class="follow-card"><span>Report</span><strong>Leadership summary</strong><p>Weekly digest of decisions, completed actions, blockers, and missing owners.</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

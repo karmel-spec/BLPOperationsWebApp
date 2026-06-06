@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BrigGPT Console</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --muted: #746d64;
+        --paper: #fffdf8;
+        --ivory: #f8f5ee;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --blue: #405a6d;
+        --green: #4f695b;
+        --gold: #b68a37;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 82% 8%, rgba(167, 25, 32, 0.08), transparent 24rem),
+          linear-gradient(180deg, #fffdf8, var(--ivory));
+      }
+
+      .module-shell {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 28px 22px;
+        background: rgba(255, 253, 248, 0.96);
+        border-right: 1px solid var(--line);
+      }
+
+      .sidebar img {
+        width: 170px;
+        height: auto;
+      }
+
+      .sidebar-title {
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      strong {
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .sidebar-title strong {
+        display: block;
+        font-size: 25px;
+        line-height: 1.04;
+      }
+
+      .sidebar-menu {
+        display: grid;
+        gap: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .sidebar-menu a,
+      .sidebar-menu button,
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 42px;
+        padding: 0 14px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font: inherit;
+        font-weight: 900;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .sidebar-menu a:hover,
+      .sidebar-menu button:hover,
+      .sidebar-menu button.is-active {
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+
+      .sidebar-note {
+        margin-top: auto;
+        padding: 14px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .sidebar-note strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      main {
+        display: grid;
+        gap: 18px;
+        padding: 24px 28px 36px;
+      }
+
+      .topbar,
+      .hero,
+      .panel,
+      .metric,
+      .source-card,
+      .workspace-card,
+      .voice-card {
+        background: rgba(255, 253, 248, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 16px 42px rgba(39, 31, 24, 0.07);
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: auto minmax(280px, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+      }
+
+      .topbar-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      .topbar-brand img {
+        width: 82px;
+      }
+
+      .topbar-brand strong {
+        font-size: 18px;
+        line-height: 1.02;
+      }
+
+      .command-search span {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .command-search input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        font: inherit;
+      }
+
+      .command-search input,
+      select {
+        min-height: 40px;
+        padding: 0 12px;
+      }
+
+      textarea {
+        min-height: 154px;
+        padding: 12px;
+        resize: vertical;
+      }
+
+      .button.primary {
+        justify-content: center;
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(310px, 0.65fr);
+        gap: 18px;
+        padding: 26px;
+      }
+
+      h1 {
+        max-width: 900px;
+        font-size: clamp(40px, 5vw, 68px);
+        line-height: 0.98;
+      }
+
+      .hero p {
+        max-width: 760px;
+        margin-top: 14px;
+        font-size: 17px;
+      }
+
+      .brigham-card {
+        min-height: 320px;
+        display: grid;
+        align-content: end;
+        padding: 18px;
+        color: var(--paper);
+        background:
+          linear-gradient(180deg, rgba(22, 21, 20, 0.18), rgba(22, 21, 20, 0.82)),
+          url("../../assets/brand/brigham.jpg") center / cover;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .brigham-card strong {
+        display: block;
+        font-size: 31px;
+        line-height: 1.02;
+      }
+
+      .brigham-card p {
+        color: rgba(255, 253, 248, 0.84);
+      }
+
+      .status-pill {
+        display: inline-flex;
+        width: fit-content;
+        padding: 8px 11px;
+        color: var(--paper);
+        background: var(--red);
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 14px;
+      }
+
+      .tag {
+        display: inline-flex;
+        padding: 5px 8px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .metric-grid,
+      .two-column,
+      .source-grid,
+      .voice-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .metric,
+      .source-card,
+      .voice-card {
+        padding: 18px;
+      }
+
+      .metric span,
+      .source-card span,
+      .voice-card span {
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 31px;
+      }
+
+      .two-column {
+        grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+      }
+
+      .panel {
+        padding: 20px;
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+        margin-bottom: 14px;
+      }
+
+      .panel h2 {
+        font-size: 30px;
+      }
+
+      .workspace-card {
+        padding: 18px;
+        box-shadow: none;
+      }
+
+      .prompt-tools {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin: 10px 0 12px;
+      }
+
+      .prompt-tools button {
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: var(--ivory);
+        font-weight: 900;
+      }
+
+      .source-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .source-card {
+        border-top: 4px solid var(--blue);
+      }
+
+      .source-card[data-tone="green"] { border-top-color: var(--green); }
+      .source-card[data-tone="gold"] { border-top-color: var(--gold); }
+      .source-card[data-tone="red"] { border-top-color: var(--red); }
+
+      .source-card strong,
+      .voice-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 23px;
+        line-height: 1.08;
+      }
+
+      .voice-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .voice-meter {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .bar {
+        height: 10px;
+        overflow: hidden;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+      }
+
+      .bar span {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, var(--red), var(--gold));
+      }
+
+      .access-map {
+        display: grid;
+        gap: 10px;
+      }
+
+      .access-row {
+        display: grid;
+        grid-template-columns: 180px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--ivory);
+      }
+
+      @media (max-width: 980px) {
+        .module-shell,
+        .hero,
+        .two-column,
+        .topbar {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: relative;
+          height: auto;
+        }
+
+        .metric-grid,
+        .source-grid,
+        .voice-grid,
+        .prompt-tools {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding: 18px;
+        }
+
+        .metric-grid,
+        .source-grid,
+        .voice-grid,
+        .prompt-tools,
+        .access-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Founder intelligence</p>
+          <strong>BrigGPT Console</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="BrigGPT sections">
+          <a href="../../index.html?v=from-briggpt#preview" target="_top">Web App Home</a>
+          <button class="is-active" type="button">Ask BrigGPT</button>
+          <button type="button">Expert Knowledge</button>
+          <button type="button">Voice Clone</button>
+          <button type="button">Avatar Video</button>
+          <button type="button">Dashboard Access</button>
+        </nav>
+        <section class="sidebar-note">
+          <strong>Agent Clara</strong>
+          <p>Draft owner for preserving and activating Brigham Larson’s expert piano knowledge, brand voice, and founder guidance.</p>
+        </section>
+      </aside>
+
+      <main>
+        <header class="topbar" aria-label="Global command">
+          <a class="topbar-brand" href="../../index.html?v=from-briggpt#preview" target="_top">
+            <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+            <strong>BLP Team Operating System</strong>
+          </a>
+          <label class="command-search">
+            <span>Ask, search, or route work</span>
+            <input type="search" placeholder="Ask Brigham about a piano, restoration approach, customer reply, repair judgment, or brand voice..." />
+          </label>
+          <a class="button primary" href="mailto:clara@brighamlarsonpianos.com?subject=BrigGPT%20Knowledge%20Source%20Update">Send Clara source update</a>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Priority draft 03</p>
+            <h1>Preserve Brigham’s piano expertise and make it available everywhere.</h1>
+            <p>
+              BrigGPT is the founder-knowledge console for expert piano judgment, customer-facing language, training guidance, HeyGen/avatar video workflows, and cross-dashboard access to Brigham Larson’s technical and brand voice.
+            </p>
+            <div class="tag-row">
+              <span class="status-pill">Draft for review</span>
+              <span class="tag">Agent Clara</span>
+              <span class="tag">HeyGen / avatar video</span>
+              <span class="tag">Founder voice</span>
+              <span class="tag">Expert technician knowledge</span>
+            </div>
+          </div>
+          <article class="brigham-card">
+            <div>
+              <strong>Brigham Larson</strong>
+              <p>Founder voice, expert technician reasoning, and public-facing piano authority.</p>
+            </div>
+          </article>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric"><span>Knowledge domains</span><strong>8</strong><p>Restoration, tuning, regulation, sales, customer care, brand voice, appraisal, training.</p></article>
+          <article class="metric"><span>Video mode</span><strong>Planned</strong><p>HeyGen/avatar clips for explainers, training, and customer education.</p></article>
+          <article class="metric"><span>Voice safety</span><strong>Review</strong><p>Human approval for customer-facing and public founder outputs.</p></article>
+          <article class="metric"><span>Dashboard reach</span><strong>All</strong><p>BrigGPT can support sales, service, restoration, client portal, and training modules.</p></article>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Ask BrigGPT</p>
+                <h2>Founder answer workspace</h2>
+              </div>
+              <span class="status-pill">Human review default</span>
+            </div>
+            <div class="workspace-card">
+              <select aria-label="BrigGPT use case">
+                <option>Customer explanation</option>
+                <option>Technical repair judgment</option>
+                <option>Restoration recommendation</option>
+                <option>Sales consult coaching</option>
+                <option>Training module draft</option>
+                <option>Avatar video script</option>
+              </select>
+              <div class="prompt-tools">
+                <button type="button">Explain simply</button>
+                <button type="button">Technical detail</button>
+                <button type="button">Brigham voice</button>
+                <button type="button">Video script</button>
+              </div>
+              <textarea placeholder="Example: Explain why a sentimental upright may still be worth restoring even when the market value is lower than the restoration cost."></textarea>
+              <div class="tag-row">
+                <a class="button primary" href="#">Draft BrigGPT answer</a>
+                <a class="button" href="#">Send for approval</a>
+                <a class="button" href="#">Turn into video script</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Voice clone readiness</p>
+                <h2>Founder model health</h2>
+              </div>
+            </div>
+            <div class="voice-meter">
+              <strong>Technical accuracy</strong>
+              <div class="bar"><span style="width: 82%"></span></div>
+              <strong>Brand warmth</strong>
+              <div class="bar"><span style="width: 76%"></span></div>
+              <strong>Video-readiness</strong>
+              <div class="bar"><span style="width: 48%"></span></div>
+              <strong>Approval workflow</strong>
+              <div class="bar"><span style="width: 64%"></span></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Knowledge source library</p>
+              <h2>What Clara needs to preserve and activate</h2>
+            </div>
+            <span class="status-pill">Source map</span>
+          </div>
+          <div class="source-grid">
+            <article class="source-card" data-tone="red"><span>Technical corpus</span><strong>Restoration knowledge</strong><p>Soundboards, pinblocks, action work, refinishing decisions, player systems, voicing, regulation, and field diagnosis.</p></article>
+            <article class="source-card" data-tone="gold"><span>Public voice</span><strong>Website and videos</strong><p>Existing product copy, YouTube language, customer education, showroom explanations, and founder messaging.</p></article>
+            <article class="source-card" data-tone="green"><span>Private expertise</span><strong>Brigham notes</strong><p>Consult notes, quote reasoning, restoration philosophy, appraisal judgments, and customer reply examples.</p></article>
+            <article class="source-card"><span>Training</span><strong>Technician coaching</strong><p>How Brigham teaches repair choices, quality standards, shop judgment, and restoration sequencing.</p></article>
+            <article class="source-card" data-tone="gold"><span>Avatar assets</span><strong>HeyGen / media</strong><p>Approved clips, voice samples, likeness guardrails, avatar scripts, and customer-safe video templates.</p></article>
+            <article class="source-card" data-tone="green"><span>Approval memory</span><strong>Human corrections</strong><p>Track when Brigham or Karmel corrects tone, technical claims, price framing, or customer-facing judgment.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Cross-dashboard access</p>
+              <h2>Where BrigGPT should appear</h2>
+            </div>
+          </div>
+          <div class="access-map">
+            <article class="access-row"><strong>Sales Console</strong><p>Draft Brigham-style replies, explain restoration value, coach showroom conversations.</p><span class="tag">High value</span></article>
+            <article class="access-row"><strong>Technician Dashboards</strong><p>Offer repair reasoning, quality standards, and training prompts from Brigham’s expertise.</p><span class="tag">Training</span></article>
+            <article class="access-row"><strong>Client Dashboard</strong><p>Generate approved customer explanations for restoration stages, choices, and sentimental value.</p><span class="tag">Client-safe</span></article>
+            <article class="access-row"><strong>VideoFlow</strong><p>Turn founder guidance into avatar scripts, educational videos, and public-facing piano authority content.</p><span class="tag">Media</span></article>
+            <article class="access-row"><strong>Knowledge Vault</strong><p>Store approved answers and corrections as reusable BLP knowledge records.</p><span class="tag">Source of truth</span></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Output modes</p>
+              <h2>Draft once, use the right format</h2>
+            </div>
+          </div>
+          <div class="voice-grid">
+            <article class="voice-card"><span>Text</span><strong>Customer reply</strong><p>Warm, expert, concise, human-reviewed before sending.</p></article>
+            <article class="voice-card"><span>Training</span><strong>Technician coaching</strong><p>Step-by-step reasoning, examples, and standards.</p></article>
+            <article class="voice-card"><span>Video</span><strong>Avatar script</strong><p>HeyGen-ready script with visuals, tone, and approval notes.</p></article>
+            <article class="voice-card"><span>Reference</span><strong>Knowledge Vault note</strong><p>Saved approved answer for reuse across modules.</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

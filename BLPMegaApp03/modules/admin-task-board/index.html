@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Task Board</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --soft-ink: #312d29;
+        --muted: #746d64;
+        --paper: #fffdf8;
+        --ivory: #f8f5ee;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --green: #4f695b;
+        --blue: #405a6d;
+        --gold: #b68a37;
+        --shadow: 0 18px 45px rgba(39, 31, 24, 0.09);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          linear-gradient(90deg, rgba(255, 253, 248, 0.92), rgba(248, 245, 238, 0.9)),
+          repeating-linear-gradient(90deg, rgba(22, 21, 20, 0.025) 0 1px, transparent 1px 52px),
+          var(--ivory);
+      }
+
+      .module-shell {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 28px 22px;
+        background: var(--paper);
+        border-right: 1px solid var(--line);
+      }
+
+      .sidebar img {
+        width: 170px;
+        height: auto;
+      }
+
+      .sidebar-title {
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--red);
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      strong {
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .sidebar-title strong {
+        display: block;
+        font-size: 25px;
+        line-height: 1.03;
+      }
+
+      .sidebar-menu {
+        display: grid;
+        gap: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .sidebar-menu a {
+        display: flex;
+        align-items: center;
+        min-height: 46px;
+        padding: 0 14px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font-weight: 900;
+        text-decoration: none;
+      }
+
+      main {
+        display: grid;
+        gap: 18px;
+        padding: 28px;
+      }
+
+      .hero,
+      .board-column,
+      .summary-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .hero {
+        display: grid;
+        gap: 18px;
+        padding: 28px;
+      }
+
+      .team-switcher {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(110px, 1fr));
+        gap: 12px;
+      }
+
+      .team-profile {
+        display: grid;
+        gap: 8px;
+        justify-items: center;
+        padding: 12px 10px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font: inherit;
+        font-weight: 900;
+        cursor: pointer;
+      }
+
+      .team-profile:hover,
+      .team-profile.is-active {
+        border-color: var(--red);
+        background: var(--paper);
+        box-shadow: 0 0 0 3px rgba(167, 25, 32, 0.1);
+      }
+
+      .team-profile img,
+      .team-profile .initials-avatar {
+        width: 96px;
+        height: 72px;
+        border: 2px solid var(--paper);
+        border-radius: 7px;
+        box-shadow: 0 8px 20px rgba(39, 31, 24, 0.13);
+      }
+
+      .team-profile img {
+        object-fit: cover;
+        object-position: center 24%;
+      }
+
+      .team-profile .initials-avatar {
+        display: grid;
+        place-items: center;
+        color: var(--paper);
+        background: var(--ink);
+        font-size: 20px;
+        letter-spacing: 0;
+      }
+
+      .team-profile .initials-avatar[hidden] {
+        display: none;
+      }
+
+      .team-profile .profile-name {
+        line-height: 1.1;
+        text-align: center;
+      }
+
+      .active-board-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: end;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .active-board-line h1 {
+        margin-top: 4px;
+        font-size: clamp(30px, 4vw, 46px);
+        line-height: 1.02;
+      }
+
+      .active-board-line p {
+        color: var(--muted);
+        font-weight: 800;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      button {
+        min-height: 44px;
+        padding: 0 16px;
+        color: var(--paper);
+        background: var(--red);
+        border: 1px solid var(--red);
+        border-radius: 7px;
+        font: inherit;
+        font-weight: 900;
+      }
+
+      button.secondary {
+        color: var(--ink);
+        background: transparent;
+        border-color: var(--line);
+      }
+
+      button.danger {
+        color: var(--red);
+        background: transparent;
+        border-color: rgba(167, 25, 32, 0.35);
+      }
+
+      .team-admin-panel {
+        display: none;
+        gap: 16px;
+        padding: 18px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .team-admin-panel.is-open {
+        display: grid;
+      }
+
+      .team-admin-heading {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .team-admin-heading p {
+        max-width: 620px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .team-admin-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      #teamAdminForm {
+        display: grid;
+        gap: 16px;
+      }
+
+      .team-admin-field {
+        display: grid;
+        gap: 6px;
+      }
+
+      .team-admin-field.is-wide {
+        grid-column: 1 / -1;
+      }
+
+      .team-admin-field label {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .team-admin-field input,
+      .team-admin-field select {
+        min-height: 44px;
+        width: 100%;
+        padding: 0 12px;
+        color: var(--ink);
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font: inherit;
+      }
+
+      .team-admin-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .team-admin-actions div {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .summary-card {
+        padding: 18px;
+      }
+
+      .summary-card span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .summary-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 30px;
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(220px, 1fr));
+        gap: 14px;
+        align-items: start;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .board-column {
+        min-height: 520px;
+        padding: 14px;
+      }
+
+      .column-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .column-header h2 {
+        font-size: 22px;
+        line-height: 1.05;
+      }
+
+      .count {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 28px;
+        height: 28px;
+        color: var(--paper);
+        background: var(--ink);
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .task-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .task-card {
+        display: grid;
+        gap: 10px;
+        padding: 14px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-left: 5px solid var(--gold);
+        border-radius: 7px;
+      }
+
+      .task-card.priority {
+        border-left-color: var(--red);
+      }
+
+      .task-card.waiting {
+        border-left-color: var(--blue);
+      }
+
+      .task-card.done {
+        border-left-color: var(--green);
+      }
+
+      .task-card strong {
+        font-size: 18px;
+        line-height: 1.1;
+      }
+
+      .task-card p,
+      .empty {
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .meta {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        display: inline-flex;
+        padding: 5px 8px;
+        color: var(--soft-ink);
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .empty {
+        margin-top: 12px;
+        padding: 14px;
+        background: rgba(255, 253, 248, 0.58);
+        border: 1px dashed var(--line);
+        border-radius: 7px;
+      }
+
+      @media (max-width: 980px) {
+        .module-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+          height: auto;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .team-switcher {
+          grid-template-columns: repeat(3, minmax(100px, 1fr));
+        }
+
+        .active-board-line {
+          display: grid;
+        }
+
+        .team-admin-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          display: grid;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .team-switcher {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar" aria-label="Admin task board navigation">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Admin and managers</p>
+          <strong>Task Board</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="Task board menu">
+          <a href="http://127.0.0.1:4188/index.html?v=from-admin-task-board#preview" target="_top">Web App Home</a>
+        </nav>
+      </aside>
+
+      <main>
+        <section class="hero">
+          <div class="team-switcher" id="teamSwitcher" aria-label="Select a BLP team member task board"></div>
+          <div class="active-board-line">
+            <div>
+              <p class="eyebrow">Active task board</p>
+              <h1 id="activeBoardName">Brigham</h1>
+              <p id="activeBoardRole">Owner priorities</p>
+            </div>
+            <div class="actions">
+              <button type="button">New task</button>
+              <button class="secondary" type="button" id="toggleTeamAdmin" onclick="toggleTeamAdminPanel()">Edit team</button>
+            </div>
+          </div>
+          <section class="team-admin-panel" id="teamAdminPanel" aria-label="Admin team profile editor">
+            <div class="team-admin-heading">
+              <div>
+                <p class="eyebrow">Admin edit</p>
+                <h2>Manage human task boards</h2>
+                <p>Update a profile image URL, edit a person’s board label, add a new human teammate, or remove someone from the active board row.</p>
+              </div>
+              <button class="secondary" type="button" id="closeTeamAdmin" onclick="closeTeamAdminPanel()">Close</button>
+            </div>
+            <form id="teamAdminForm">
+              <div class="team-admin-grid">
+                <div class="team-admin-field">
+                  <label for="teamAdminPerson">Team member</label>
+                  <select id="teamAdminPerson" name="person"></select>
+                </div>
+                <div class="team-admin-field">
+                  <label for="teamAdminName">Name</label>
+                  <input id="teamAdminName" name="name" autocomplete="off" />
+                </div>
+                <div class="team-admin-field">
+                  <label for="teamAdminInitials">Initials</label>
+                  <input id="teamAdminInitials" name="initials" maxlength="4" autocomplete="off" />
+                </div>
+                <div class="team-admin-field">
+                  <label for="teamAdminRole">Board subtitle</label>
+                  <input id="teamAdminRole" name="role" autocomplete="off" />
+                </div>
+                <div class="team-admin-field">
+                  <label for="teamAdminFocus">Priority focus</label>
+                  <input id="teamAdminFocus" name="focus" autocomplete="off" />
+                </div>
+                <div class="team-admin-field is-wide">
+                  <label for="teamAdminImage">Profile image URL</label>
+                  <input id="teamAdminImage" name="image" placeholder="https://..." autocomplete="off" />
+                </div>
+              </div>
+              <div class="team-admin-actions">
+                <div>
+                  <button type="submit">Save profile</button>
+                  <button class="secondary" type="button" id="addTeamMember">Add new member</button>
+                </div>
+                <div>
+                  <button class="danger" type="button" id="deleteTeamMember">Delete member</button>
+                  <button class="secondary" type="button" id="resetTeamMembers">Reset defaults</button>
+                </div>
+              </div>
+            </form>
+          </section>
+        </section>
+
+        <section class="board" aria-label="Admin and manager task board">
+          <article class="board-column">
+            <div class="column-header">
+              <h2>Intake</h2>
+              <span class="count" data-count="intake">0</span>
+            </div>
+            <div class="task-list" data-column="intake"></div>
+          </article>
+
+          <article class="board-column">
+            <div class="column-header">
+              <h2>Priority</h2>
+              <span class="count" data-count="priority">0</span>
+            </div>
+            <div class="task-list" data-column="priority"></div>
+          </article>
+
+          <article class="board-column">
+            <div class="column-header">
+              <h2>In Progress</h2>
+              <span class="count" data-count="progress">0</span>
+            </div>
+            <div class="task-list" data-column="progress"></div>
+          </article>
+
+          <article class="board-column">
+            <div class="column-header">
+              <h2>Waiting</h2>
+              <span class="count" data-count="waiting">0</span>
+            </div>
+            <div class="task-list" data-column="waiting"></div>
+          </article>
+
+          <article class="board-column">
+            <div class="column-header">
+              <h2>Done</h2>
+              <span class="count" data-count="done">0</span>
+            </div>
+            <div class="task-list" data-column="done"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <script>
+      const teamStorageKey = "blpAdminTaskBoardTeam.v1";
+      const defaultTeamBoards = {
+        brigham: {
+          name: "Brigham",
+          role: "Owner priorities",
+          focus: "Owner",
+          initials: "B",
+          image: "https://www.brighamlarsonpianos.com/cdn/shop/files/Brigham.Larson.BW.jpg?v=1709675863&width=300",
+          tasks: {
+            intake: [
+              ["Review new operating module ideas", "Decide which future modules should become live prototypes first.", ["Owner", "Strategy"]],
+            ],
+            priority: [
+              ["Set weekly company focus", "Choose the one priority that should guide admin, agents, and managers this week.", ["High", "Leadership"]],
+            ],
+            progress: [
+              ["Approve operating system direction", "Review the unified BLP app shell and confirm the next design pass.", ["Review", "Product"]],
+            ],
+            waiting: [
+              ["Feedback from leadership", "Waiting for notes on which dashboards should become production systems first.", ["Waiting", "Feedback"]],
+            ],
+            done: [],
+          },
+        },
+        karmel: {
+          name: "Karmel",
+          role: "Owner/admin priorities",
+          focus: "Admin",
+          initials: "K",
+          image: "https://www.brighamlarsonpianos.com/cdn/shop/files/Copy_of_999A8339-Edit_e9215d62-9f45-4050-9554-f4e2f78cdfcb.jpg?v=1735944534&width=300",
+          tasks: {
+            intake: [
+              ["Collect module requests", "Capture new console ideas, missing data, and app feedback as they come in.", ["Intake", "Admin"]],
+            ],
+            priority: [
+              ["Confirm task board workflow", "Decide whether this board should connect first to Notion, Google Sheets, or a database.", ["High", "Ops"]],
+            ],
+            progress: [
+              ["Review live module links", "Check each mini-app link and note broken permissions or missing source data.", ["QA", "Modules"]],
+            ],
+            waiting: [
+              ["Agent data responses", "Waiting on full OpenClaw and Hermes response data for active agent dashboards.", ["Agents", "Waiting"]],
+            ],
+            done: [
+              ["Add Web App Home links", "Return links added across major imported modules.", ["Complete", "Navigation"]],
+            ],
+          },
+        },
+        melissa: {
+          name: "Melissa",
+          role: "Client service priorities",
+          focus: "Service",
+          initials: "M",
+          image: "https://www.brighamlarsonpianos.com/cdn/shop/files/5U4A1257.jpg?v=1775246484&width=300",
+          tasks: {
+            intake: [["New customer follow-up", "Review incoming customer requests that need a same-day response.", ["Client", "Follow-up"]]],
+            priority: [["Service handoff rhythm", "Define how customer-service tickets should route to tuning, sales, and shop.", ["High", "Tickets"]]],
+            progress: [["Customer Service module plan", "Outline the SalesCaptain replacement workflow for calls, texts, emails, and tickets.", ["Planning", "CRM"]]],
+            waiting: [],
+            done: [],
+          },
+        },
+        susie: {
+          name: "Susie",
+          role: "Office priorities",
+          focus: "Office",
+          initials: "S",
+          image: "",
+          tasks: {
+            intake: [["Front desk requests", "Collect scheduling, customer, and admin requests that need triage.", ["Office", "Intake"]]],
+            priority: [["Daily communication queue", "Keep urgent client-facing messages from getting buried.", ["High", "Calls"]]],
+            progress: [["Tuning CRM review", "Validate which fields the front desk needs on the tuning console.", ["Tuning", "Review"]]],
+            waiting: [["Calendar permissions", "Waiting on full calendar/source access for live appointment data.", ["Calendar", "Waiting"]]],
+            done: [],
+          },
+        },
+        alisa: {
+          name: "Alisa",
+          role: "Admin priorities",
+          focus: "Admin",
+          initials: "A",
+          image: "https://www.brighamlarsonpianos.com/cdn/shop/files/Alisa.Merrill.BW_1.jpg?v=1735949942&width=300",
+          tasks: {
+            intake: [["Document request", "Collect forms, checklists, and repeatable admin procedures for the Knowledge Vault.", ["Docs", "Process"]]],
+            priority: [["Checklist cleanup", "Identify admin checklists that should move into the operating system.", ["High", "Systems"]]],
+            progress: [],
+            waiting: [["Source folder access", "Waiting on final Drive folder links for shared admin documents.", ["Drive", "Waiting"]]],
+            done: [],
+          },
+        },
+        ezzy: {
+          name: "Ezzy",
+          role: "Creative and media priorities",
+          focus: "Creative",
+          initials: "E",
+          image: "https://www.brighamlarsonpianos.com/cdn/shop/files/Ezaray.Lopp.BW_cc6b4562-389e-4c78-b1fe-3dcd2590bd86.jpg?v=1777569159&width=300",
+          tasks: {
+            intake: [["Design request queue", "Capture graphics, social, newsletter, and signage requests.", ["Creative", "Intake"]]],
+            priority: [["Design Center module outline", "Define what assets, approvals, and templates belong in the Design Center.", ["High", "Design"]]],
+            progress: [["VideoFlow handoff", "Review video workflow source handoff and media queue needs.", ["Video", "Workflow"]]],
+            waiting: [],
+            done: [],
+          },
+        },
+        doris: {
+          name: "Doris",
+          role: "Accounting priorities",
+          focus: "Finance",
+          initials: "D",
+          image: "https://www.brighamlarsonpianos.com/cdn/shop/files/DORIS-BW_2.jpg?v=1735946727&width=300",
+          tasks: {
+            intake: [["Accounting requests", "Collect bill pay, payroll, taxes, and QuickBooks-related tasks.", ["Finance", "Intake"]]],
+            priority: [["Accounting module requirements", "List the first QuickBooks, bill pay, payroll, and tax workflows to wire.", ["High", "QuickBooks"]]],
+            progress: [["Profit First planning", "Shape the Profit First module into a practical review dashboard.", ["Finance", "Planning"]]],
+            waiting: [["QuickBooks permissions", "Waiting on production access details before live integration work.", ["Waiting", "Access"]]],
+            done: [],
+          },
+        },
+      };
+
+      let teamBoards = loadTeamBoards();
+      let activeBoardKey = Object.keys(teamBoards)[0] || "brigham";
+      const columns = ["intake", "priority", "progress", "waiting", "done"];
+
+      function cloneDefaultBoard(name = "New teammate") {
+        const normalized = name.trim() || "New teammate";
+        return {
+          name: normalized,
+          role: "Team priorities",
+          focus: "Team",
+          initials: getInitials(normalized),
+          image: "",
+          tasks: {
+            intake: [["Capture first task", "Add this teammate's first priority or follow-up item.", ["New", "Team"]]],
+            priority: [],
+            progress: [],
+            waiting: [],
+            done: [],
+          },
+        };
+      }
+
+      function getInitials(name) {
+        return name
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part) => part[0])
+          .join("")
+          .toUpperCase() || "T";
+      }
+
+      function slugifyName(name) {
+        const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "team-member";
+        let key = base;
+        let index = 2;
+        while (teamBoards[key]) {
+          key = `${base}-${index}`;
+          index += 1;
+        }
+        return key;
+      }
+
+      function loadTeamBoards() {
+        try {
+          const stored = JSON.parse(localStorage.getItem(teamStorageKey) || "null");
+          if (stored && typeof stored === "object" && Object.keys(stored).length) {
+            return stored;
+          }
+        } catch (error) {
+          console.warn("Could not load saved team boards", error);
+        }
+        return structuredClone(defaultTeamBoards);
+      }
+
+      function saveTeamBoards() {
+        localStorage.setItem(teamStorageKey, JSON.stringify(teamBoards));
+      }
+
+      function escapeAttribute(value = "") {
+        return String(value).replaceAll("&", "&amp;").replaceAll("\"", "&quot;").replaceAll("<", "&lt;");
+      }
+
+      function escapeHtml(value = "") {
+        return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+      }
+
+      function renderTeamSwitcher(activeKey) {
+        const target = document.querySelector("#teamSwitcher");
+        target.innerHTML = Object.entries(teamBoards)
+          .map(([key, person]) => `
+            <button class="team-profile${key === activeKey ? " is-active" : ""}" type="button" data-person="${key}">
+              ${person.image
+                ? `<img src="${escapeAttribute(person.image)}" alt="${escapeAttribute(person.name)}" loading="lazy" onerror="this.hidden = true; this.nextElementSibling.hidden = false;" />`
+                : ""}
+              <span class="initials-avatar"${person.image ? " hidden" : ""}>${escapeHtml(person.initials || getInitials(person.name))}</span>
+              <span class="profile-name">${escapeHtml(person.name)}</span>
+            </button>
+          `)
+          .join("");
+
+        target.querySelectorAll("button").forEach((button) => {
+          button.addEventListener("click", () => renderBoard(button.dataset.person));
+        });
+      }
+
+      function renderTeamAdminSelect(activeKey) {
+        const select = document.querySelector("#teamAdminPerson");
+        select.innerHTML = Object.entries(teamBoards)
+          .map(([key, person]) => `<option value="${escapeAttribute(key)}"${key === activeKey ? " selected" : ""}>${escapeHtml(person.name)}</option>`)
+          .join("");
+      }
+
+      function fillTeamAdminForm(key) {
+        const person = teamBoards[key];
+        if (!person) return;
+        renderTeamAdminSelect(key);
+        document.querySelector("#teamAdminName").value = person.name || "";
+        document.querySelector("#teamAdminInitials").value = person.initials || getInitials(person.name);
+        document.querySelector("#teamAdminRole").value = person.role || "";
+        document.querySelector("#teamAdminFocus").value = person.focus || "";
+        document.querySelector("#teamAdminImage").value = person.image || "";
+      }
+
+      function renderTask(task, status) {
+        const [title, detail, tags] = task;
+        const statusClass = status === "priority" ? " priority" : status === "waiting" ? " waiting" : status === "done" ? " done" : "";
+        return `
+          <article class="task-card${statusClass}">
+            <strong>${escapeHtml(title)}</strong>
+            <p>${escapeHtml(detail)}</p>
+            <div class="meta">${tags.map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("")}</div>
+          </article>
+        `;
+      }
+
+      function renderBoard(key) {
+        const fallbackKey = Object.keys(teamBoards)[0];
+        const boardKey = teamBoards[key] ? key : fallbackKey;
+        const person = teamBoards[boardKey];
+        activeBoardKey = boardKey;
+        renderTeamSwitcher(key);
+        document.querySelector("#activeBoardName").textContent = `${person.name}'s task board`;
+        document.querySelector("#activeBoardRole").textContent = person.role;
+        fillTeamAdminForm(boardKey);
+
+        columns.forEach((column) => {
+          const tasks = person.tasks[column] || [];
+          document.querySelector(`[data-count="${column}"]`).textContent = tasks.length;
+          document.querySelector(`[data-column="${column}"]`).innerHTML = tasks.length
+            ? tasks.map((task) => renderTask(task, column)).join("")
+            : `<p class="empty">No ${column === "done" ? "completed" : column} tasks on this board yet.</p>`;
+        });
+      }
+
+      window.toggleTeamAdminPanel = function toggleTeamAdminPanel() {
+        document.querySelector("#teamAdminPanel").classList.toggle("is-open");
+        fillTeamAdminForm(activeBoardKey);
+      };
+
+      window.closeTeamAdminPanel = function closeTeamAdminPanel() {
+        document.querySelector("#teamAdminPanel").classList.remove("is-open");
+      };
+
+      document.querySelector("#teamAdminPerson").addEventListener("change", (event) => {
+        renderBoard(event.target.value);
+      });
+
+      document.querySelector("#teamAdminForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const person = teamBoards[activeBoardKey];
+        if (!person) return;
+        const name = document.querySelector("#teamAdminName").value.trim() || person.name;
+        person.name = name;
+        person.initials = document.querySelector("#teamAdminInitials").value.trim().toUpperCase() || getInitials(name);
+        person.role = document.querySelector("#teamAdminRole").value.trim() || "Team priorities";
+        person.focus = document.querySelector("#teamAdminFocus").value.trim() || "Team";
+        person.image = document.querySelector("#teamAdminImage").value.trim();
+        saveTeamBoards();
+        renderBoard(activeBoardKey);
+      });
+
+      document.querySelector("#addTeamMember").addEventListener("click", () => {
+        const name = prompt("New team member name");
+        if (!name) return;
+        const key = slugifyName(name);
+        teamBoards[key] = cloneDefaultBoard(name);
+        saveTeamBoards();
+        document.querySelector("#teamAdminPanel").classList.add("is-open");
+        renderBoard(key);
+      });
+
+      document.querySelector("#deleteTeamMember").addEventListener("click", () => {
+        const keys = Object.keys(teamBoards);
+        if (keys.length <= 1) {
+          alert("Keep at least one task board active.");
+          return;
+        }
+        const person = teamBoards[activeBoardKey];
+        if (!person || !confirm(`Delete ${person.name}'s task board from this row?`)) return;
+        delete teamBoards[activeBoardKey];
+        saveTeamBoards();
+        renderBoard(Object.keys(teamBoards)[0]);
+      });
+
+      document.querySelector("#resetTeamMembers").addEventListener("click", () => {
+        if (!confirm("Reset the human task board row back to the default BLP team members?")) return;
+        localStorage.removeItem(teamStorageKey);
+        teamBoards = structuredClone(defaultTeamBoards);
+        renderBoard(Object.keys(teamBoards)[0]);
+      });
+
+      renderBoard(activeBoardKey);
+    </script>
+  </body>
+</html>

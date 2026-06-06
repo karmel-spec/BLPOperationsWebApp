@@ -1,0 +1,83 @@
+[
+  {
+    "agent": "Walter",
+    "system": "OpenClaw",
+    "openclaw_id": "agent:main:dashboard:04150d57-624a-4076-8b4c-7665a113ac64",
+    "connectionStatus": "needs-follow-up",
+    "jobs": [],
+    "source": "openclaw cron list",
+    "nextAction": "Implement parser for this cron source."
+  },
+  {
+    "agent": "Libby",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-libby",
+    "connectionStatus": "needs-details",
+    "jobs": [],
+    "source": null,
+    "nextAction": "Ask agent for cron source, schedule list, last-run log, and failure behavior."
+  },
+  {
+    "agent": "Chris",
+    "system": "OpenClaw",
+    "openclaw_id": "chris",
+    "connectionStatus": "ready-to-test",
+    "jobs": [],
+    "source": "openclaw cron list --json (filter agentId == chris)",
+    "nextAction": "Run a safe read-only cron/status parser test."
+  },
+  {
+    "agent": "Sally",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-sally",
+    "connectionStatus": "needs-details",
+    "jobs": [],
+    "source": null,
+    "nextAction": "Ask agent for cron source, schedule list, last-run log, and failure behavior."
+  },
+  {
+    "agent": "Melody",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-melody",
+    "connectionStatus": "needs-details",
+    "jobs": [],
+    "source": null,
+    "nextAction": "Ask agent for cron source, schedule list, last-run log, and failure behavior."
+  },
+  {
+    "agent": "Dawn",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-dawn",
+    "connectionStatus": "needs-details",
+    "jobs": [],
+    "source": null,
+    "nextAction": "Ask agent for cron source, schedule list, last-run log, and failure behavior."
+  },
+  {
+    "agent": "Ivory",
+    "system": "OpenClaw",
+    "openclaw_id": "ivory",
+    "connectionStatus": "ready-to-test",
+    "jobs": [],
+    "source": "OpenClaw cron system (gateway internal; filter agentId=ivory)",
+    "nextAction": "Run a safe read-only cron/status parser test."
+  },
+  {
+    "agent": "Marcus",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-marcus",
+    "connectionStatus": "needs-details",
+    "jobs": [],
+    "source": null,
+    "nextAction": "Ask agent for cron source, schedule list, last-run log, and failure behavior."
+  },
+  {
+    "agent": "Monte",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-monte",
+    "connectionStatus": "needs-details",
+    "jobs": [],
+    "source": null,
+    "nextAction": "Ask agent for cron source, schedule list, last-run log, and failure behavior."
+  }
+]

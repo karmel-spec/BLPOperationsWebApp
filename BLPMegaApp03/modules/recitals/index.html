@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recitals</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --muted: #716a61;
+        --paper: #fffdf8;
+        --ivory: #f7f3eb;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --blue: #405a6d;
+        --green: #4f695b;
+        --gold: #b68a37;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: radial-gradient(circle at 88% 8%, rgba(182, 138, 55, 0.14), transparent 24rem), linear-gradient(180deg, #fffdf8, var(--ivory));
+      }
+      .module-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 28px 22px;
+        background: rgba(255, 253, 248, 0.96);
+        border-right: 1px solid var(--line);
+      }
+      .sidebar img { width: 170px; height: auto; }
+      .sidebar-title { padding-top: 16px; border-top: 1px solid var(--line); }
+      .eyebrow { margin: 0 0 8px; color: var(--red); font-size: 11px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+      h1, h2, h3, strong { font-family: Georgia, "Times New Roman", serif; }
+      h1, h2, h3, p { margin: 0; }
+      p { color: var(--muted); line-height: 1.5; }
+      .sidebar-title strong { display: block; font-size: 25px; line-height: 1.04; }
+      .sidebar-menu { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+      .sidebar-menu a, .sidebar-menu button, .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 42px;
+        padding: 0 14px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font: inherit;
+        font-weight: 900;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .sidebar-menu a:hover, .sidebar-menu button:hover, .sidebar-menu button.is-active { color: var(--paper); background: var(--red); border-color: var(--red); }
+      .sidebar-note { margin-top: auto; padding: 14px; background: var(--ivory); border: 1px solid var(--line); border-radius: 8px; }
+      main { display: grid; gap: 18px; padding: 24px 28px 36px; }
+      .topbar, .hero, .panel, .metric, .schedule-card, .teacher-card, .task-card, .family-card {
+        background: rgba(255, 253, 248, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 16px 42px rgba(39, 31, 24, 0.07);
+      }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: auto minmax(280px, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+      }
+      .topbar-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+      .topbar-brand img { width: 82px; }
+      .topbar-brand strong { font-size: 18px; line-height: 1.02; }
+      .command-search span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+      .command-search input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 7px; background: #fff; font: inherit; }
+      .command-search input, select { min-height: 40px; padding: 0 12px; }
+      textarea { min-height: 118px; padding: 12px; resize: vertical; }
+      .button.primary { justify-content: center; color: var(--paper); background: var(--red); border-color: var(--red); }
+      .hero { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(330px, 0.88fr); gap: 18px; padding: 26px; }
+      h1 { max-width: 920px; font-size: clamp(40px, 5vw, 68px); line-height: 0.98; }
+      .hero p { max-width: 760px; margin-top: 14px; font-size: 17px; }
+      .recital-card { display: grid; gap: 12px; padding: 18px; background: var(--ivory); border: 1px solid var(--line); border-radius: 8px; }
+      .status-pill, .tag { display: inline-flex; width: fit-content; align-items: center; border-radius: 999px; font-weight: 900; }
+      .status-pill { padding: 8px 11px; color: var(--paper); background: var(--red); font-size: 12px; }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+      .tag { padding: 5px 8px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); font-size: 11px; }
+      .metric-grid, .two-column, .schedule-grid, .teacher-grid, .task-grid, .family-grid { display: grid; gap: 14px; }
+      .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .metric, .panel, .schedule-card, .teacher-card, .task-card, .family-card { padding: 18px; }
+      .metric span, .schedule-card span, .teacher-card span, .task-card span, .family-card span { color: var(--red); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+      .metric strong { display: block; margin-top: 8px; font-size: 31px; }
+      .two-column { grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr); }
+      .panel-header { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 14px; }
+      .panel h2 { font-size: 30px; }
+      .schedule-grid, .teacher-grid, .task-grid, .family-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .schedule-card { border-top: 4px solid var(--gold); }
+      .teacher-card { border-left: 4px solid var(--blue); }
+      .task-card { border-top: 4px solid var(--green); }
+      .family-card { border-left: 4px solid var(--red); }
+      .schedule-card strong, .teacher-card strong, .task-card strong, .family-card strong { display: block; margin-top: 8px; font-size: 22px; line-height: 1.08; }
+      @media (max-width: 980px) {
+        .module-shell, .hero, .two-column, .topbar { grid-template-columns: 1fr; }
+        .sidebar { position: relative; height: auto; }
+        .metric-grid, .schedule-grid, .teacher-grid, .task-grid, .family-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (max-width: 640px) {
+        main { padding: 18px; }
+        .metric-grid, .schedule-grid, .teacher-grid, .task-grid, .family-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Events and teachers</p>
+          <strong>Recitals</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="Recital sections">
+          <a href="../../index.html?v=from-recitals#preview" target="_top">Web App Home</a>
+          <button class="is-active" type="button">Recital Board</button>
+          <button type="button">Teachers</button>
+          <button type="button">Schedule</button>
+          <button type="button">Programs</button>
+          <button type="button">Reminders</button>
+          <button type="button">Media</button>
+        </nav>
+        <section class="sidebar-note">
+          <strong>Agent Reese</strong>
+          <p>Draft owner for recital scheduling, teacher CRM, reminders, approvals, print marketing, programs, and host checklists.</p>
+        </section>
+      </aside>
+
+      <main>
+        <header class="topbar" aria-label="Global command">
+          <a class="topbar-brand" href="../../index.html?v=from-recitals#preview" target="_top">
+            <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+            <strong>BLP Team Operating System</strong>
+          </a>
+          <label class="command-search">
+            <span>Ask, search, or route work</span>
+            <input type="search" placeholder="Search recital, teacher, family, student, venue, program, reminder, payment, or media..." />
+          </label>
+          <a class="button primary" href="mailto:reese@brighamlarsonpianos.com?subject=Recitals%20Dashboard%20Update">Send Reese update</a>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Priority draft 12</p>
+            <h1>A recital command center for teachers, families, programs, and polished events.</h1>
+            <p>
+              A recital system to replace disconnected scheduling tools with teacher CRM, student and family communication, venue planning, approvals, print marketing, program building, reminders, payments, media, and host checklists.
+            </p>
+            <div class="tag-row">
+              <span class="status-pill">Draft for review</span>
+              <span class="tag">Agent Reese</span>
+              <span class="tag">Teacher CRM</span>
+              <span class="tag">Scheduling</span>
+              <span class="tag">Programs</span>
+              <span class="tag">Family reminders</span>
+            </div>
+          </div>
+          <article class="recital-card">
+            <p class="eyebrow">Scheduling direction</p>
+            <h2>Replace Calendly-style fragments</h2>
+            <p>The goal is one recital workflow that handles availability, capacity, teacher needs, family confirmations, program details, reminders, and day-of execution.</p>
+            <div class="tag-row">
+              <span class="tag">Availability</span>
+              <span class="tag">Capacity</span>
+              <span class="tag">Confirmation</span>
+              <span class="tag">Host checklist</span>
+            </div>
+          </article>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric"><span>Core users</span><strong>4</strong><p>Teachers, families, admins, and event hosts.</p></article>
+          <article class="metric"><span>Event stages</span><strong>6</strong><p>Plan, invite, schedule, confirm, host, archive.</p></article>
+          <article class="metric"><span>Reminders</span><strong>Multi</strong><p>Email, text, teacher notices, family confirmations, and internal tasks.</p></article>
+          <article class="metric"><span>Agent support</span><strong>Reese</strong><p>Reese helps coordinate schedules, reminders, programs, and follow-up.</p></article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Recital schedule</p>
+              <h2>Track every event from planning to archive</h2>
+            </div>
+            <span class="status-pill">Draft board</span>
+          </div>
+          <div class="schedule-grid">
+            <article class="schedule-card"><span>Plan</span><strong>Venue and dates</strong><p>Room, piano, capacity, staff, calendar holds, and approval owner.</p></article>
+            <article class="schedule-card"><span>Invite</span><strong>Teacher outreach</strong><p>Teacher list, invite status, requested slots, student counts, and special needs.</p></article>
+            <article class="schedule-card"><span>Schedule</span><strong>Family signups</strong><p>Time slots, student names, repertoire, family contacts, and capacity controls.</p></article>
+            <article class="schedule-card"><span>Confirm</span><strong>Reminders sent</strong><p>Teacher confirmations, family reminders, payment status, and day-of details.</p></article>
+            <article class="schedule-card"><span>Host</span><strong>Day-of execution</strong><p>Host checklist, program, signage, room setup, photos, and issue log.</p></article>
+            <article class="schedule-card"><span>Archive</span><strong>Media and follow-up</strong><p>Photos, videos, thank-you notes, teacher feedback, and next recital notes.</p></article>
+          </div>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Teacher CRM</p>
+                <h2>Keep recital relationships warm and organized</h2>
+              </div>
+            </div>
+            <div class="teacher-grid">
+              <article class="teacher-card"><span>Teacher</span><strong>Profile</strong><p>Name, studio, contact info, preferred recital rhythm, and relationship notes.</p></article>
+              <article class="teacher-card"><span>Students</span><strong>Roster</strong><p>Student count, names, ages, levels, repertoire, and family contacts.</p></article>
+              <article class="teacher-card"><span>History</span><strong>Past events</strong><p>Previous recital dates, attendance, program notes, media, and feedback.</p></article>
+              <article class="teacher-card"><span>Preferences</span><strong>Event needs</strong><p>Preferred times, setup, piano needs, photography, program style, and payment handling.</p></article>
+              <article class="teacher-card"><span>Marketing</span><strong>Print and digital</strong><p>Flyers, invites, teacher packets, signage, and brand-approved assets.</p></article>
+              <article class="teacher-card"><span>Follow-up</span><strong>Relationship care</strong><p>Thank-you notes, next date interest, referrals, and teacher pipeline status.</p></article>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">New recital request</p>
+                <h2>Start an event plan</h2>
+              </div>
+            </div>
+            <select aria-label="Recital request type">
+              <option>New teacher recital</option>
+              <option>Recurring teacher recital</option>
+              <option>Family schedule question</option>
+              <option>Program update</option>
+              <option>Media request</option>
+              <option>Payment or approval issue</option>
+            </select>
+            <div style="height: 10px"></div>
+            <textarea placeholder="Teacher, preferred date, student count, timing, venue needs, reminder requirements, and owner for next step."></textarea>
+            <div class="tag-row">
+              <a class="button primary" href="#">Create recital plan</a>
+              <a class="button" href="#">Invite teacher</a>
+              <a class="button" href="#">Send to Reese</a>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Event tasks</p>
+              <h2>Everything that needs an owner</h2>
+            </div>
+          </div>
+          <div class="task-grid">
+            <article class="task-card"><span>Calendar</span><strong>Hold dates</strong><p>Confirm room, host, piano, staff, setup time, and public/private calendar events.</p></article>
+            <article class="task-card"><span>Program</span><strong>Build program</strong><p>Student names, pieces, composers, teacher order, print layout, and approval.</p></article>
+            <article class="task-card"><span>Reminders</span><strong>Communication sequence</strong><p>Teacher notices, family confirmation, day-before reminder, and post-event thank-you.</p></article>
+            <article class="task-card"><span>Payments</span><strong>Fees and deposits</strong><p>Teacher payment status, family fees if applicable, receipts, and exceptions.</p></article>
+            <article class="task-card"><span>Media</span><strong>Photos and video</strong><p>Capture plan, consent notes, gallery links, social permissions, and archive.</p></article>
+            <article class="task-card"><span>Host</span><strong>Day-of checklist</strong><p>Room setup, signage, seating, piano readiness, refreshments, and closing tasks.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Family communication</p>
+              <h2>Make the experience easy for parents and students</h2>
+            </div>
+          </div>
+          <div class="family-grid">
+            <article class="family-card"><span>Signup</span><strong>Clear slot selection</strong><p>Families see available times, recital details, expectations, and confirmation.</p></article>
+            <article class="family-card"><span>Details</span><strong>What to know</strong><p>Address, parking, arrival time, dress guidance, program order, and contact info.</p></article>
+            <article class="family-card"><span>Changes</span><strong>Update handling</strong><p>Cancelations, name corrections, piece changes, and time changes route to the right owner.</p></article>
+            <article class="family-card"><span>Reminder</span><strong>Text and email</strong><p>Friendly reminders at the right cadence without overwhelming families.</p></article>
+            <article class="family-card"><span>Media</span><strong>Post-event sharing</strong><p>Approved gallery/video links, thank-you message, and teacher feedback prompt.</p></article>
+            <article class="family-card"><span>Relationship</span><strong>Next invitation</strong><p>Keep teachers and families connected to BLP for future recitals and piano needs.</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

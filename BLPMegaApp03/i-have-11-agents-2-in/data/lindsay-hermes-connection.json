@@ -1,0 +1,39 @@
+{
+  "agent": "Lindsay",
+  "system": "Hermes",
+  "status": "mvp-hermes-send-ready",
+  "purpose": "Allow the human team to message Lindsay and assign projects from the Agent Operations Console.",
+  "recommendedPhase1": {
+    "mode": "local-draft-queue-plus-hermes-send",
+    "description": "Console actions create auditable local queue records first. When explicitly enabled, Lindsay receives a fire-and-forget Hermes Telegram message via hermes send.",
+    "writesTo": [
+      "data/work-queue.json",
+      "data/audit-log.jsonl"
+    ],
+    "hermesBinaryPath": "/Users/blpadmin/.hermes/hermes-agent/venv/bin/hermes",
+    "profile": "default",
+    "dispatchCommand": "hermes send --to telegram \"<message>\"",
+    "enableFlag": "BLP_HERMES_SEND_ENABLED=true"
+  },
+  "recommendedPhase2": {
+    "mode": "hermes-webhook-subscription",
+    "taskIntake": "POST work-queue payloads to the Lindsay Hermes webhook endpoint with HMAC signature.",
+    "statusReturn": "Telegram response and/or callback URL to the console API.",
+    "approvalBoundary": "Lindsay may draft and summarize. Customer-facing, public, finance, legal, and policy actions require human approval."
+  },
+  "fieldsToConfirm": {
+    "hermesBinaryPath": "/Users/blpadmin/.hermes/hermes-agent/venv/bin/hermes",
+    "defaultProfile": "default",
+    "taskCommand": "MVP: hermes send --to telegram. Phase 2: webhook subscription route.",
+    "statusSource": "MVP: Telegram/Hermes session history. Phase 2: callback URL.",
+    "auth": "MVP: local filesystem permissions. Phase 2: webhook HMAC secret."
+  },
+  "messageAction": {
+    "initialBehavior": "Record message draft in Agent Log.",
+    "liveBehavior": "Send internal note to Lindsay task inbox/queue with no external side effects."
+  },
+  "assignProjectAction": {
+    "initialBehavior": "Create Work Queue Intake card and Agent Log receipt.",
+    "liveBehavior": "Create Hermes task for Lindsay and track status back into Agent Health and Agent Log."
+  }
+}

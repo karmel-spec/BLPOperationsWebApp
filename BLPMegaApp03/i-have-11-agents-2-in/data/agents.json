@@ -1,0 +1,371 @@
+[
+  {
+    "name": "Lindsay",
+    "role": "Chief Strategy Officer",
+    "department": "Leadership",
+    "system": "Hermes",
+    "status": "Active",
+    "email": "lindsay@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/lindsay (1).png"
+  },
+  {
+    "name": "Walter",
+    "role": "Chief of Staff",
+    "department": "Leadership",
+    "system": "OpenClaw",
+    "status": "Active",
+    "email": "walter@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/walter (1).png"
+  },
+  {
+    "name": "Ila",
+    "role": "Chief Technical Agent",
+    "department": "Technical",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "ila@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/ila (2).png"
+  },
+  {
+    "name": "Cody",
+    "role": "Coder / Developer",
+    "department": "Technical",
+    "system": "Hermes",
+    "status": "Active",
+    "email": "cody@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/cody (1).png"
+  },
+  {
+    "name": "Libby",
+    "role": "Librarian / Knowledge Vault",
+    "department": "Technical",
+    "system": "OpenClaw",
+    "status": "Active",
+    "email": "libby@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/libby (1).png"
+  },
+  {
+    "name": "Chris",
+    "role": "Shop Manager / Operations Lead",
+    "department": "Shop",
+    "system": "OpenClaw",
+    "status": "Active",
+    "email": "chris@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/chris (1).png"
+  },
+  {
+    "name": "Howie",
+    "role": "Shop Technical",
+    "department": "Shop",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "howie@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/howie (1).png"
+  },
+  {
+    "name": "Tray",
+    "role": "Shop Technical",
+    "department": "Shop",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "tray@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/tray (2).png"
+  },
+  {
+    "name": "Arnold",
+    "role": "Chief Sales Agent",
+    "department": "Sales",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "arnold@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/arnold (2).png"
+  },
+  {
+    "name": "Sally",
+    "role": "Sales Assistant",
+    "department": "Sales",
+    "system": "OpenClaw",
+    "status": "Active",
+    "email": "sally@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/sally.png"
+  },
+  {
+    "name": "Reese",
+    "role": "Recitals & Teacher Relations",
+    "department": "Sales",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "reese@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/reese (1).png"
+  },
+  {
+    "name": "Tori",
+    "role": "Acquisitions & Valuation",
+    "department": "Sales",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "tori@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/avatar.png"
+  },
+  {
+    "name": "Melody",
+    "role": "Head of Admin & Customer Service",
+    "department": "Admin & Customer Service",
+    "system": "OpenClaw",
+    "status": "Active",
+    "email": "melody@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/melody (1).png"
+  },
+  {
+    "name": "Clara",
+    "role": "Asst. to Brigham",
+    "department": "Admin & Customer Service",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "clara@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/clara (2).png"
+  },
+  {
+    "name": "Dawn",
+    "role": "Press Secretary / Lindsay's Asst.",
+    "department": "Admin & Customer Service",
+    "system": "OpenClaw",
+    "status": "Active",
+    "email": "dawn@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/dawn (1).png"
+  },
+  {
+    "name": "Eunice",
+    "role": "Uniforms",
+    "department": "Admin & Customer Service",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "eunice@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/eunice.png"
+  },
+  {
+    "name": "Warren",
+    "role": "Fieldwork Lead / Warranties",
+    "department": "Fieldwork",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "warren@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/warren (1).png"
+  },
+  {
+    "name": "Moe",
+    "role": "Piano Moving",
+    "department": "Fieldwork",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "moe@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/moe (1).png"
+  },
+  {
+    "name": "Ivory",
+    "role": "Piano Tuning",
+    "department": "Fieldwork",
+    "system": "OpenClaw",
+    "status": "Active",
+    "email": "ivory@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/ivory (1).png"
+  },
+  {
+    "name": "Carla",
+    "role": "Chief Operations Agent / Fleet",
+    "department": "Operations",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "carla@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/carla.png"
+  },
+  {
+    "name": "Shirley",
+    "role": "Insurance",
+    "department": "Operations",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "shirley@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/shirley (1).png"
+  },
+  {
+    "name": "Ricardo",
+    "role": "Facilities",
+    "department": "Operations",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "ricardo@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/ricardo.png"
+  },
+  {
+    "name": "Hugh",
+    "role": "Human Resources",
+    "department": "Operations",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "hugh@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/hugh (1).png"
+  },
+  {
+    "name": "Marcus",
+    "role": "Head of Marketing",
+    "department": "Marketing",
+    "system": "OpenClaw",
+    "status": "Active",
+    "email": "marcus@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/marcus (1).png"
+  },
+  {
+    "name": "Desie",
+    "role": "Design",
+    "department": "Marketing",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "desie@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/desie (3).png"
+  },
+  {
+    "name": "Brandy",
+    "role": "Branding",
+    "department": "Marketing",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "brandy@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/brandy.png"
+  },
+  {
+    "name": "Addie",
+    "role": "Advertising",
+    "department": "Marketing",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "addie@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/addie.png"
+  },
+  {
+    "name": "Lee",
+    "role": "Lead Gen",
+    "department": "Marketing",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "lee@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/lee (2).png"
+  },
+  {
+    "name": "Sharie",
+    "role": "Social Media",
+    "department": "Marketing",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "sharie@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/sharie (2).png"
+  },
+  {
+    "name": "Rajeesh",
+    "role": "Website",
+    "department": "Marketing",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "rajeesh@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/rajeesh (1).png"
+  },
+  {
+    "name": "Yolanda",
+    "role": "YouTube",
+    "department": "Marketing",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "yolanda@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/yolanda (2).png"
+  },
+  {
+    "name": "Ed",
+    "role": "Video Editor",
+    "department": "Marketing",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "ed@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/ed (1).png"
+  },
+  {
+    "name": "Collin",
+    "role": "Competitor Research",
+    "department": "Marketing",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "collin@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/collin (1).png"
+  },
+  {
+    "name": "Monte",
+    "role": "CFO",
+    "department": "Accounting & Finance",
+    "system": "OpenClaw",
+    "status": "Active",
+    "email": "monte@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/monte (1).png"
+  },
+  {
+    "name": "Connie",
+    "role": "Controller",
+    "department": "Accounting & Finance",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "connie@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/connie (1).png"
+  },
+  {
+    "name": "Regis",
+    "role": "Bookkeeper",
+    "department": "Accounting & Finance",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "regis@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/regis.png"
+  },
+  {
+    "name": "Penny",
+    "role": "Payroll",
+    "department": "Accounting & Finance",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "penny@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/penny (1).png"
+  },
+  {
+    "name": "Anne",
+    "role": "Financial Analyst",
+    "department": "Accounting & Finance",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "anne@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/anne (1).png"
+  },
+  {
+    "name": "Sam",
+    "role": "Tax",
+    "department": "Accounting & Finance",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "sam@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/sam (1).png"
+  },
+  {
+    "name": "Collette",
+    "role": "Collections",
+    "department": "Accounting & Finance",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "collette@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/collette (1).png"
+  },
+  {
+    "name": "Morgan",
+    "role": "Legal Counsel",
+    "department": "Accounting & Finance",
+    "system": "On Deck",
+    "status": "On Deck",
+    "email": "morgan@brighamlarsonpianos.com",
+    "avatar": "assets/avatars/avatar.png"
+  }
+]

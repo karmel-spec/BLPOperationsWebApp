@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Client Dashboard</title>
+    <style>
+      :root {
+        --ink: #161514;
+        --muted: #716a61;
+        --paper: #fffdf8;
+        --ivory: #f7f3eb;
+        --line: #d9d2c5;
+        --red: #a71920;
+        --blue: #405a6d;
+        --green: #4f695b;
+        --gold: #b68a37;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 82% 8%, rgba(64, 90, 109, 0.12), transparent 24rem),
+          linear-gradient(180deg, #fffdf8, var(--ivory));
+      }
+
+      .module-shell {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 28px 22px;
+        background: rgba(255, 253, 248, 0.96);
+        border-right: 1px solid var(--line);
+      }
+
+      .sidebar img {
+        width: 170px;
+        height: auto;
+      }
+
+      .sidebar-title {
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      strong {
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .sidebar-title strong {
+        display: block;
+        font-size: 25px;
+        line-height: 1.04;
+      }
+
+      .sidebar-menu {
+        display: grid;
+        gap: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .sidebar-menu a,
+      .sidebar-menu button,
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 42px;
+        padding: 0 14px;
+        color: var(--ink);
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font: inherit;
+        font-weight: 900;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .sidebar-menu a:hover,
+      .sidebar-menu button:hover,
+      .sidebar-menu button.is-active {
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+
+      .sidebar-note {
+        margin-top: auto;
+        padding: 14px;
+        background: var(--ivory);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      main {
+        display: grid;
+        gap: 18px;
+        padding: 24px 28px 36px;
+      }
+
+      .topbar,
+      .hero,
+      .panel,
+      .metric,
+      .timeline-step,
+      .info-card,
+      .doc-card,
+      .message-card {
+        background: rgba(255, 253, 248, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 16px 42px rgba(39, 31, 24, 0.07);
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: auto minmax(280px, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+      }
+
+      .topbar-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      .topbar-brand img {
+        width: 82px;
+      }
+
+      .topbar-brand strong {
+        font-size: 18px;
+        line-height: 1.02;
+      }
+
+      .command-search span {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .command-search input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        font: inherit;
+      }
+
+      .command-search input,
+      select {
+        min-height: 40px;
+        padding: 0 12px;
+      }
+
+      textarea {
+        min-height: 124px;
+        padding: 12px;
+        resize: vertical;
+      }
+
+      .button.primary {
+        justify-content: center;
+        color: var(--paper);
+        background: var(--red);
+        border-color: var(--red);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+        gap: 18px;
+        padding: 26px;
+      }
+
+      h1 {
+        max-width: 900px;
+        font-size: clamp(40px, 5vw, 68px);
+        line-height: 0.98;
+      }
+
+      .hero p {
+        max-width: 760px;
+        margin-top: 14px;
+        font-size: 17px;
+      }
+
+      .piano-card {
+        display: grid;
+        align-content: end;
+        min-height: 330px;
+        padding: 18px;
+        color: var(--paper);
+        background:
+          linear-gradient(180deg, rgba(22, 21, 20, 0.1), rgba(22, 21, 20, 0.82)),
+          url("../../assets/brand/showroom.jpg") center / cover;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .piano-card strong {
+        display: block;
+        font-size: 31px;
+        line-height: 1.02;
+      }
+
+      .piano-card p {
+        color: rgba(255, 253, 248, 0.86);
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 14px;
+      }
+
+      .status-pill,
+      .tag {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        border-radius: 999px;
+        font-weight: 900;
+      }
+
+      .status-pill {
+        padding: 8px 11px;
+        color: var(--paper);
+        background: var(--red);
+        font-size: 12px;
+      }
+
+      .tag {
+        padding: 5px 8px;
+        color: var(--ink);
+        background: var(--paper);
+        border: 1px solid var(--line);
+        font-size: 11px;
+      }
+
+      .metric-grid,
+      .two-column,
+      .info-grid,
+      .timeline,
+      .document-grid,
+      .message-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .metric,
+      .panel,
+      .timeline-step,
+      .info-card,
+      .doc-card,
+      .message-card {
+        padding: 18px;
+      }
+
+      .metric span,
+      .timeline-step span,
+      .info-card span,
+      .doc-card span,
+      .message-card span {
+        color: var(--red);
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 31px;
+      }
+
+      .two-column {
+        grid-template-columns: minmax(0, 1.12fr) minmax(340px, 0.88fr);
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+        margin-bottom: 14px;
+      }
+
+      .panel h2 {
+        font-size: 30px;
+      }
+
+      .info-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .info-card {
+        box-shadow: none;
+        border-left: 4px solid var(--blue);
+      }
+
+      .info-card strong,
+      .timeline-step strong,
+      .doc-card strong,
+      .message-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 22px;
+        line-height: 1.08;
+      }
+
+      .timeline {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+
+      .timeline-step {
+        border-top: 4px solid var(--line);
+      }
+
+      .timeline-step[data-state="active"] {
+        border-top-color: var(--red);
+      }
+
+      .timeline-step[data-state="done"] {
+        border-top-color: var(--green);
+      }
+
+      .document-grid,
+      .message-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .doc-card {
+        border-top: 4px solid var(--gold);
+      }
+
+      .message-card {
+        border-top: 4px solid var(--green);
+      }
+
+      @media (max-width: 980px) {
+        .module-shell,
+        .hero,
+        .two-column,
+        .topbar {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: relative;
+          height: auto;
+        }
+
+        .metric-grid,
+        .timeline,
+        .document-grid,
+        .message-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding: 18px;
+        }
+
+        .metric-grid,
+        .timeline,
+        .document-grid,
+        .message-grid,
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="module-shell">
+      <aside class="sidebar">
+        <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+        <div class="sidebar-title">
+          <p class="eyebrow">Client portal</p>
+          <strong>Client Dashboard</strong>
+        </div>
+        <nav class="sidebar-menu" aria-label="Client dashboard sections">
+          <a href="../../index.html?v=from-client-dashboard#preview" target="_top">Web App Home</a>
+          <button class="is-active" type="button">Overview</button>
+          <button type="button">Piano Record</button>
+          <button type="button">Restoration Updates</button>
+          <button type="button">Documents</button>
+          <button type="button">Messages</button>
+        </nav>
+        <section class="sidebar-note">
+          <strong>Agent Melody</strong>
+          <p>Draft owner for customer-safe piano updates, client communication, restoration visibility, and portal experience.</p>
+        </section>
+      </aside>
+
+      <main>
+        <header class="topbar" aria-label="Global command">
+          <a class="topbar-brand" href="../../index.html?v=from-client-dashboard#preview" target="_top">
+            <img src="../../assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+            <strong>BLP Team Operating System</strong>
+          </a>
+          <label class="command-search">
+            <span>Ask, search, or route work</span>
+            <input type="search" placeholder="Search client, piano, restoration stage, contract, estimate, selection, or message..." />
+          </label>
+          <a class="button primary" href="mailto:melody@brighamlarsonpianos.com?subject=Client%20Dashboard%20Update">Send Melody update</a>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Priority draft 05</p>
+            <h1>A polished piano portal for every BLP client.</h1>
+            <p>
+              A client-safe dashboard for customer profiles, piano details, purchase and service history, restoration progress, contracts, QBO estimates, selections, photos, and simple communication with the BLP team.
+            </p>
+            <div class="tag-row">
+              <span class="status-pill">Draft for review</span>
+              <span class="tag">Agent Melody</span>
+              <span class="tag">Customer-facing</span>
+              <span class="tag">Piano history</span>
+              <span class="tag">Restoration updates</span>
+            </div>
+          </div>
+          <article class="piano-card">
+            <div>
+              <strong>1927 Mason & Hamlin Model A</strong>
+              <p>Client-facing example record with stage, documents, selections, photos, and approved team messages.</p>
+            </div>
+          </article>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric"><span>Portal mode</span><strong>Safe</strong><p>Only approved client-facing information appears here.</p></article>
+          <article class="metric"><span>Data sources</span><strong>6</strong><p>BLP CRM, Piano Log, QBO, contracts, media, and service history.</p></article>
+          <article class="metric"><span>Update rhythm</span><strong>Weekly</strong><p>Draft rhythm for restoration clients and active service customers.</p></article>
+          <article class="metric"><span>Client action</span><strong>Queue</strong><p>Questions and approvals route to the right admin or agent.</p></article>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Client profile</p>
+                <h2>One client, one piano story</h2>
+              </div>
+              <span class="status-pill">Customer view draft</span>
+            </div>
+            <div class="info-grid">
+              <article class="info-card"><span>Client</span><strong>Family piano owner</strong><p>Name, household contacts, preferred communication, piano story, and family notes.</p></article>
+              <article class="info-card"><span>Piano</span><strong>Identity record</strong><p>Make, model, serial, year, finish, size, photos, appraisal notes, and sentimental history.</p></article>
+              <article class="info-card"><span>History</span><strong>Purchases and service</strong><p>Purchase details, tuning records, moving history, restoration estimates, and service notes.</p></article>
+              <article class="info-card"><span>Preferences</span><strong>Client choices</strong><p>Finish selections, bench, hardware, delivery preferences, communication style, and approvals.</p></article>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Client message</p>
+                <h2>Ask the BLP team</h2>
+              </div>
+            </div>
+            <select aria-label="Message type">
+              <option>Question about my piano</option>
+              <option>Approve a selection</option>
+              <option>Request a call</option>
+              <option>Upload photos</option>
+              <option>Ask about delivery</option>
+            </select>
+            <div style="height: 10px"></div>
+            <textarea placeholder="Client-safe message space. In production, this routes to Melody, the correct human owner, and the relevant module."></textarea>
+            <div class="tag-row">
+              <a class="button primary" href="#">Queue message</a>
+              <a class="button" href="#">Attach file</a>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Restoration visibility</p>
+              <h2>Simple progress without shop noise</h2>
+            </div>
+            <span class="status-pill">Approved updates only</span>
+          </div>
+          <div class="timeline">
+            <article class="timeline-step" data-state="done"><span>1</span><strong>Received</strong><p>Piano checked in, photos logged, and intake notes reviewed.</p></article>
+            <article class="timeline-step" data-state="done"><span>2</span><strong>Estimate</strong><p>Scope, estimate, and contract details prepared for approval.</p></article>
+            <article class="timeline-step" data-state="active"><span>3</span><strong>In shop</strong><p>Restoration work underway with next update pending.</p></article>
+            <article class="timeline-step"><span>4</span><strong>Final prep</strong><p>Quality check, tuning, voicing, finishing, and delivery planning.</p></article>
+            <article class="timeline-step"><span>5</span><strong>Delivered</strong><p>Delivery complete, service follow-up and warranty record created.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Documents and selections</p>
+              <h2>Everything the client should be able to find</h2>
+            </div>
+          </div>
+          <div class="document-grid">
+            <article class="doc-card"><span>Contract</span><strong>Restoration agreement</strong><p>Approved contract, scope, payment terms, and key dates.</p></article>
+            <article class="doc-card"><span>Estimate</span><strong>QBO estimate</strong><p>Customer-safe estimate status, deposits, balances, and approved changes.</p></article>
+            <article class="doc-card"><span>Selections</span><strong>Finish and hardware</strong><p>Color, sheen, hardware, bench, player system, and special instructions.</p></article>
+            <article class="doc-card"><span>Photos</span><strong>Progress album</strong><p>Approved photos and videos from the shop, organized by stage.</p></article>
+            <article class="doc-card"><span>Warranty</span><strong>Coverage record</strong><p>Warranty type, coverage dates, exclusions, and service contact path.</p></article>
+            <article class="doc-card"><span>Delivery</span><strong>Move plan</strong><p>Address, access notes, timing, contacts, and final preparation notes.</p></article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Internal handoff</p>
+              <h2>What this portal must connect to</h2>
+            </div>
+          </div>
+          <div class="message-grid">
+            <article class="message-card"><span>BLP CRM</span><strong>Customer backbone</strong><p>Pull profile, household, service history, piano relationships, and communication preferences.</p></article>
+            <article class="message-card"><span>Piano Log</span><strong>Piano source record</strong><p>Pull make, model, serial, stage, shop status, photos, and restoration metadata.</p></article>
+            <article class="message-card"><span>Shop Manager</span><strong>Approved progress</strong><p>Surface only customer-safe milestones, photos, blockers, and next dates.</p></article>
+            <article class="message-card"><span>QuickBooks</span><strong>Financial documents</strong><p>Show approved estimates, invoices, balances, payment links, and receipts.</p></article>
+            <article class="message-card"><span>Customer Service</span><strong>Support queue</strong><p>Route client questions, call requests, delivery notes, and follow-up tickets.</p></article>
+            <article class="message-card"><span>Agent Melody</span><strong>Client-safe review</strong><p>Draft messages and updates, then hold for human approval when needed.</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
