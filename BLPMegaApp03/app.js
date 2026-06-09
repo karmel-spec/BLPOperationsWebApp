@@ -420,6 +420,13 @@ const snapshotStats = [
   ["Primary action", "Route work", "Human requests flow into agents, teams, and review queues."],
 ];
 
+const recentModuleUpdates = [
+  ["Agent Operations Console", "Updated", "Human-to-agent routing is ready for daily work intake."],
+  ["Sales Console", "Imported", "Lead queues, heat scoring, and showroom follow-up are in the shell."],
+  ["Tuning CRM / Online Scheduling", "Needs data", "Live scheduling bridge is the next connection point."],
+  ["Shop Manager / Restoration Console", "Needs permissions", "Restoration workflows are imported and waiting on live access."],
+];
+
 const operatingSignals = [
   ["Accounting", "Priority draft for QuickBooks, bill pay, payroll coordination, taxes, reconciliations, reports, and financial controls.", "Accounting Department"],
   ["Admin task board", "Trello-style board for admin and manager tasks, priorities, blockers, and follow-ups.", "Admin Task Board"],
@@ -592,14 +599,67 @@ function loadHomeTeamBoards() {
   return defaultHomeTeamBoards;
 }
 
+function getStatusLabel(status = "") {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("live")) return "Live";
+  if (normalized.includes("needs live data") || normalized.includes("data bridge")) return "Needs data";
+  if (normalized.includes("permission")) return "Needs permissions";
+  if (normalized.includes("imported") || normalized.includes("handoff")) return "Ready to polish";
+  return "Draft";
+}
+
+function getStatusSlug(status = "") {
+  return getStatusLabel(status).toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function getActiveHomeBoard() {
+  const boards = loadHomeTeamBoards();
+  return boards[activeHomeBoardKey] || boards[Object.keys(boards)[0]];
+}
+
+function renderAttentionGrid() {
+  const target = document.querySelector("#attentionGrid");
+  if (!target) return;
+
+  const board = getActiveHomeBoard();
+  const tasks = board?.tasks || {};
+  const customerSignals = operatingSignals.filter(([title, detail]) => /customer|client|service|warranty|tuning/i.test(`${title} ${detail}`));
+  const urgentItems = Object.values(tasks).flat().filter((task) => (task[2] || []).some((tag) => /high|owner|waiting|access/i.test(tag)));
+  const allowedCount = getAllowedModuleIndexes().length;
+  const attentionItems = [
+    ["Open priorities", (tasks.priority || []).length + (tasks.progress || []).length, `${board?.name || "Team"} active focus items`],
+    ["Waiting approvals", (tasks.waiting || []).length, "Access, feedback, and owner review"],
+    ["Agent requests", getAllowedModuleIndexes(roleProfiles.find((role) => role.key === "agent-team")).length, "Agent-ready modules available"],
+    ["Customer follow-ups", customerSignals.length, "Client, tuning, warranty, and service signals"],
+    ["Urgent blockers", urgentItems.length, `${allowedCount} modules visible in this role`],
+  ];
+
+  target.innerHTML = attentionItems
+    .map(([label, value, note]) => `
+      <article class="attention-card" data-attention="${escapeAttribute(label.toLowerCase().replace(/[^a-z]+/g, "-"))}">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(value)}</strong>
+        <p>${escapeHtml(note)}</p>
+      </article>
+    `)
+    .join("");
+}
+
 function renderHomeTaskCard(task, column) {
   const [title, detail, tags = []] = task;
-  const stateClass = column === "priority" ? " is-priority" : column === "waiting" ? " is-waiting" : column === "done" ? " is-done" : "";
+  const tagText = tags.join(" ").toLowerCase();
+  const stateClass = [
+    column === "priority" ? "is-priority" : "",
+    column === "waiting" ? "is-waiting" : "",
+    column === "done" ? "is-done" : "",
+    tagText.includes("high") ? "is-urgent" : "",
+    tagText.includes("owner") || tagText.includes("review") ? "is-approval" : "",
+  ].filter(Boolean).map((className) => ` ${className}`).join("");
   return `
     <div class="home-task-card${stateClass}">
       <strong>${escapeHtml(title)}</strong>
       <p>${escapeHtml(detail)}</p>
-      ${tags[0] ? `<span>${escapeHtml(tags[0])}</span>` : ""}
+      ${tags.length ? `<div class="task-tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
     </div>
   `;
 }
@@ -632,7 +692,7 @@ function renderHomeTeamBoard(key = activeHomeBoardKey) {
     .map(([column, label]) => {
       const tasks = person.tasks?.[column] || [];
       return `
-        <article class="home-kanban-column">
+        <article class="home-kanban-column" data-column="${column}">
           <div class="home-column-title">
             <strong>${label}</strong>
             <span>${tasks.length}</span>
@@ -644,6 +704,7 @@ function renderHomeTeamBoard(key = activeHomeBoardKey) {
       `;
     })
     .join("");
+  renderAttentionGrid();
 }
 
 function getActiveRoleProfile() {
@@ -678,17 +739,19 @@ function renderRoleLogin() {
 
   const profile = getActiveRoleProfile();
   const allowedCount = getAllowedModuleIndexes(profile).length;
+  const heading = document.querySelector("#currentUserHeading");
 
   select.innerHTML = roleProfiles
     .map((role) => `<option value="${role.key}" ${role.key === profile.key ? "selected" : ""}>${role.label}</option>`)
     .join("");
 
+  if (heading) heading.textContent = `Viewing as ${profile.label}`;
   if (description) description.textContent = profile.description;
 
   card.innerHTML = `
     <span>${profile.login}</span>
-    <strong>${profile.label}</strong>
-    <p>${allowedCount} module${allowedCount === 1 ? "" : "s"} visible in this role.</p>
+    <strong>${allowedCount}</strong>
+    <p>Visible module${allowedCount === 1 ? "" : "s"} for ${escapeHtml(profile.label)}.</p>
   `;
 }
 
@@ -706,7 +769,7 @@ function renderLiveModules() {
               <small>${module.owner}</small>
               <h4>${module.title}</h4>
             </div>
-            <span class="status">${module.status}</span>
+            <span class="status" data-status="${getStatusSlug(module.status)}">${getStatusLabel(module.status)}</span>
           </header>
           <p>${module.summary}</p>
           <span class="access-pill">${module.access}</span>
@@ -721,21 +784,41 @@ function renderLiveModules() {
 
 function renderPlannedModules() {
   const target = document.querySelector("#plannedModules");
-  target.innerHTML = plannedModules
-    .map(
-      ([title, summary, owner]) => `
-        <article class="module-card" data-tone="gold">
+  if (!target) return;
+  const allowed = getAllowedModuleIndexes();
+  target.innerHTML = allowed
+    .map((index) => {
+      const module = liveModules[index];
+      return `
+        <article class="module-card status-module-card" data-tone="${module.tone}" data-module-index="${index}">
           <header>
             <div>
-              <small>${owner}</small>
-              <h4>${title}</h4>
+              <small>${module.owner}</small>
+              <h4>${module.title}</h4>
             </div>
-            <span class="status">Planned</span>
+            <span class="status" data-status="${getStatusSlug(module.status)}">${getStatusLabel(module.status)}</span>
           </header>
-          <p>${summary}</p>
+          <p>${module.summary}</p>
         </article>
-      `,
-    )
+      `;
+    })
+    .join("");
+}
+
+function renderRecentUpdates() {
+  const target = document.querySelector("#recentUpdatesGrid");
+  if (!target) return;
+  target.innerHTML = recentModuleUpdates
+    .map(([title, label, note]) => {
+      const moduleIndex = liveModules.findIndex((module) => module.title === title);
+      return `
+        <article class="recent-update-card" ${moduleIndex >= 0 ? `data-module-index="${moduleIndex}"` : ""}>
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(title)}</strong>
+          <p>${escapeHtml(note)}</p>
+        </article>
+      `;
+    })
     .join("");
 }
 
@@ -890,8 +973,10 @@ document.addEventListener("change", (event) => {
   activeRoleKey = roleSelect.value;
   localStorage.setItem(roleStorageKey, activeRoleKey);
   ensureActiveModuleAllowed();
+  renderAttentionGrid();
   renderRoleLogin();
   renderLiveModules();
+  renderPlannedModules();
   renderAccessModel();
   renderLoginRoles();
   renderSignals();
@@ -899,10 +984,12 @@ document.addEventListener("change", (event) => {
 });
 
 renderSnapshotStats();
+renderAttentionGrid();
 renderRoleLogin();
 renderHomeTeamBoard();
 renderLiveModules();
 renderPlannedModules();
+renderRecentUpdates();
 renderAccessModel();
 renderLoginRoles();
 renderSignals();

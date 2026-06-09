@@ -16,7 +16,7 @@
       </div>
 
       <nav aria-label="Sections">
-        <a href="#preview">Command Home</a>
+        <a href="#command-home">Command Home</a>
         <a href="#preview">Preview Studio</a>
         <a href="#planned">Expansion Map</a>
         <a href="#access">Access Model</a>
@@ -40,14 +40,25 @@
         <a class="primary small" href="./i-have-11-agents-2-in/index.html">New Request</a>
       </header>
 
-      <section class="role-login-panel" aria-label="Login and permission preview">
+      <section id="command-home" class="daily-command-center" aria-label="Daily command center">
+        <header>
+          <div>
+            <p class="eyebrow">Daily command center</p>
+            <h2>What needs attention today?</h2>
+          </div>
+          <span id="commandCenterTimestamp">Today</span>
+        </header>
+        <div class="attention-grid" id="attentionGrid"></div>
+      </section>
+
+      <section class="role-login-panel current-user-panel" aria-label="Current user and permissions">
         <div>
-          <p class="eyebrow">Login preview</p>
-          <h3>Role-based operating view</h3>
+          <p class="eyebrow">Current user</p>
+          <h3 id="currentUserHeading">Viewing as Owner</h3>
           <p id="roleLoginDescription">Choose a permission group to preview which modules that team should see.</p>
         </div>
         <label class="role-select-label">
-          <span>Continue as</span>
+          <span>Quick role switch</span>
           <select id="roleProfileSelect" aria-label="Choose permission group"></select>
         </label>
         <div class="role-session-card" id="roleSessionCard"></div>
@@ -66,7 +77,18 @@
         <div class="home-kanban" id="homeKanban"></div>
       </section>
 
-      <section id="preview" class="section-heading">
+      <section class="recent-updates-panel" aria-label="Recently updated modules">
+        <header class="section-heading compact">
+          <div>
+            <p class="eyebrow">Recently updated modules</p>
+            <h3>Latest module movement</h3>
+          </div>
+          <span>Operational pulse</span>
+        </header>
+        <div class="recent-updates-grid" id="recentUpdatesGrid"></div>
+      </section>
+
+      <section id="preview" class="section-heading preview-heading">
         <div>
           <p class="eyebrow">Preview Studio</p>
           <h3>Open modules inside the BLP frame</h3>
@@ -102,9 +124,9 @@
       <section id="planned" class="section-heading">
         <div>
           <p class="eyebrow">Expansion map</p>
-          <h3>Future operating modules</h3>
+          <h3>Module status map</h3>
         </div>
-        <span>Designed to grow</span>
+        <span>Live, draft, and waiting states</span>
       </section>
       <section class="module-grid compact" id="plannedModules"></section>
 
