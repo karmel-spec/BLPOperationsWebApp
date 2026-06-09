@@ -1049,20 +1049,21 @@
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="text-[11px] uppercase text-zinc-500">Source of business (SOB)</label>
-          <input list="sobList" id="nlSource" class="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800" placeholder="Type or pick..." />
-          <datalist id="sobList">
-            <option value="Repeat"></option>
-            <option value="Referral"></option>
-            <option value="Google"></option>
-            <option value="YouTube"></option>
-            <option value="Facebook"></option>
-            <option value="TikTok"></option>
-            <option value="Sign"></option>
-            <option value="KSL"></option>
-            <option value="Recital"></option>
-            <option value="SOI"></option>
-            <option value="Unknown"></option>
-          </datalist>
+          <select id="nlSource" onchange="handleNewLeadSourceChange()" class="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
+            <option value="">Pick source...</option>
+            <option>Repeat</option>
+            <option>Referral</option>
+            <option>Google</option>
+            <option>YouTube</option>
+            <option>Facebook</option>
+            <option>TikTok</option>
+            <option>Sign</option>
+            <option>KSL</option>
+            <option>Recital</option>
+            <option>SOI</option>
+            <option>Unknown</option>
+            <option value="Other">Other / type source</option>
+          </select>
         </div>
         <div>
           <label class="text-[11px] uppercase text-zinc-500">Inquiry method</label>
@@ -1080,6 +1081,15 @@
             <option>Other</option>
           </select>
         </div>
+      </div>
+      <div id="nlReferralWrap" class="hidden">
+        <label class="text-[11px] uppercase text-zinc-500">Who referred?</label>
+        <input id="nlReferralName" type="text" placeholder="Referrer's name" class="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800" />
+        <div class="text-[10px] text-zinc-500 mt-1">This will save as Source of Business: Referral (name), so we can thank the referrer.</div>
+      </div>
+      <div id="nlSourceOtherWrap" class="hidden">
+        <label class="text-[11px] uppercase text-zinc-500">Other source</label>
+        <input id="nlSourceOther" type="text" placeholder="Type source of business" class="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800" />
       </div>
       <!-- Type of Lead / Piano -->
       <div class="grid grid-cols-2 gap-3">
@@ -1136,22 +1146,35 @@
         </div>
         <div>
           <label class="text-[11px] uppercase text-zinc-500">$ Value</label>
-          <input id="nlBand" list="nlBandList" value="$5–15k" placeholder="Pick or type ($23k, $7,500, 38000...)" class="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800" />
+          <select id="nlBand" onchange="handleNewLeadBandChange()" class="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
+            <option value="&lt;$1k">&lt;$1k</option>
+            <option>$1-3k</option>
+            <option>$3-5k</option>
+            <option selected>$5-15k</option>
+            <option>$15-25k</option>
+            <option>$25-40k</option>
+            <option>$40-60k</option>
+            <option>$60-100k</option>
+            <option>$100k+</option>
+            <option>TBD</option>
+            <option>Unknown</option>
+            <option value="Other">Other / exact amount</option>
+          </select>
+          <input id="nlBandOther" type="text" placeholder="Type exact amount, e.g. $23k or 7500" class="hidden w-full mt-2 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800" />
           <datalist id="nlBandList">
             <option value="&lt;$1k"></option>
-            <option value="$1–3k"></option>
-            <option value="$3–5k"></option>
-            <option value="$5–10k"></option>
-            <option value="$10–15k"></option>
-            <option value="$15–25k"></option>
-            <option value="$25–40k"></option>
-            <option value="$40–60k"></option>
-            <option value="$60–100k"></option>
+            <option value="$1-3k"></option>
+            <option value="$3-5k"></option>
+            <option value="$5-15k"></option>
+            <option value="$15-25k"></option>
+            <option value="$25-40k"></option>
+            <option value="$40-60k"></option>
+            <option value="$60-100k"></option>
             <option value="$100k+"></option>
             <option value="TBD"></option>
             <option value="Unknown"></option>
           </datalist>
-          <div class="text-[10px] text-zinc-500 mt-1">Pick a band or type any amount (e.g. <code>$23k</code>, <code>7500</code>).</div>
+          <div class="text-[10px] text-zinc-500 mt-1">Pick a value band or choose Other for an exact amount.</div>
         </div>
         <div>
           <label class="text-[11px] uppercase text-zinc-500">Temp 1–10</label>
@@ -9459,19 +9482,57 @@ function deleteTimelineEntry() {
 /* ============================================================
    NEW LEAD
    ============================================================ */
+function handleNewLeadSourceChange() {
+  const source = document.getElementById('nlSource').value;
+  const referralWrap = document.getElementById('nlReferralWrap');
+  const sourceOtherWrap = document.getElementById('nlSourceOtherWrap');
+  referralWrap.classList.toggle('hidden', source !== 'Referral');
+  sourceOtherWrap.classList.toggle('hidden', source !== 'Other');
+  if (source !== 'Referral') document.getElementById('nlReferralName').value = '';
+  if (source !== 'Other') document.getElementById('nlSourceOther').value = '';
+}
+
+function handleNewLeadBandChange() {
+  const band = document.getElementById('nlBand').value;
+  const bandOther = document.getElementById('nlBandOther');
+  bandOther.classList.toggle('hidden', band !== 'Other');
+  if (band !== 'Other') bandOther.value = '';
+}
+
+function getNewLeadSourceValue() {
+  const source = document.getElementById('nlSource').value.trim();
+  if (source === 'Referral') {
+    const referralName = document.getElementById('nlReferralName').value.trim();
+    return referralName ? `Referral (${referralName})` : 'Referral';
+  }
+  if (source === 'Other') {
+    return document.getElementById('nlSourceOther').value.trim();
+  }
+  return source;
+}
+
+function getNewLeadBandValue() {
+  const band = document.getElementById('nlBand').value;
+  if (band === 'Other') return document.getElementById('nlBandOther').value.trim();
+  return band;
+}
+
 function openNewLeadModal() {
   // Reset all fields
-  ['nlFirst','nlLast','nlPhone','nlEmail','nlHeadline','nlCity','nlSource','nlSocial','nlNotes'].forEach(id => {
+  ['nlFirst','nlLast','nlPhone','nlEmail','nlHeadline','nlCity','nlSocial','nlNotes','nlReferralName','nlSourceOther','nlBandOther'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('nlState').value = 'UT';
+  document.getElementById('nlSource').value = '';
   document.getElementById('nlInquiry').value = '';
   document.getElementById('nlLeadType').value = '';
   document.getElementById('nlPianoType').value = '';
   document.getElementById('nlRepOpened').value = 'sally';
   document.getElementById('nlRep').value = 'sally';
-  document.getElementById('nlBand').value = '$5–15k';
+  document.getElementById('nlBand').value = '$5-15k';
   document.getElementById('nlTemp').value = '7';
+  handleNewLeadSourceChange();
+  handleNewLeadBandChange();
   document.getElementById('newLeadModal').classList.remove('hidden');
   setTimeout(() => document.getElementById('nlFirst').focus(), 50);
 }
@@ -9486,13 +9547,13 @@ function saveNewLead() {
   const headline = document.getElementById('nlHeadline').value.trim();
   const city  = document.getElementById('nlCity').value.trim();
   const state = document.getElementById('nlState').value.trim();
-  const source = document.getElementById('nlSource').value.trim();
+  const source = getNewLeadSourceValue();
   const inquiry = document.getElementById('nlInquiry').value.trim();
   const leadType = document.getElementById('nlLeadType').value.trim();
   const pianoType = document.getElementById('nlPianoType').value.trim();
   const repOpened = document.getElementById('nlRepOpened').value;
   const rep = document.getElementById('nlRep').value;
-  const band = document.getElementById('nlBand').value;
+  const band = getNewLeadBandValue();
   const tempVal = Math.max(1, Math.min(10, parseInt(document.getElementById('nlTemp').value || '7', 10)));
   const notesTxt = document.getElementById('nlNotes').value.trim();
   const social = document.getElementById('nlSocial').value.trim();
@@ -9500,6 +9561,8 @@ function saveNewLead() {
   if (!first)    return toast('First name is required');
   if (!headline) return toast('Headline is required');
   if (!phone && !email) return toast('Phone or email is required');
+  if (document.getElementById('nlSource').value === 'Other' && !source) return toast('Other source is required');
+  if (document.getElementById('nlBand').value === 'Other' && !band) return toast('Exact value is required');
 
   const name = (first + ' ' + last).trim();
   const numericIds = workingLeads.map(x => Number(x.id)).filter(Number.isFinite);
