@@ -7642,8 +7642,18 @@ function pickVideo(l) {
   for (const cat of candidates) {
     const list = VIDEO_LIB[cat] || [];
     if (list.length) {
-      // Pick a stable but varied entry based on lead id
-      const pick = list[(l.id || 0) % list.length];
+      // Pick a stable but varied entry based on lead id.
+      // Ids can be non-numeric (e.g. "BLP-XXXX" for console-created leads),
+      // so hash strings to a number instead of relying on % coercion,
+      // which yields NaN and crashed rendering.
+      let idNum = Number(l.id);
+      if (!Number.isFinite(idNum)) {
+        const s = String(l.id || '');
+        idNum = 0;
+        for (let i = 0; i < s.length; i++) idNum = (idNum + s.charCodeAt(i)) % 100000;
+      }
+      const pick = list[Math.abs(Math.floor(idNum)) % list.length] || list[0];
+      if (!pick) continue;
       return { title: pick.label, url: pick.url, category: cat };
     }
   }
@@ -8376,6 +8386,7 @@ async function loadLiveLeads({ silent = false } = {}) {
   // and never overwrite local state while unsaved changes are still queued.
   if (silent && (userIsEditing() || pendingSalesMutations.length > 0)) return false;
   if (!silent) setSyncStatus('Checking live sheet', 'snapshot');
+  let data;
   try {
     const response = await fetch(SALES_SYNC_ENDPOINT, { cache: 'no-store', headers: authHeaders() });
     if (response.status === 401) {
@@ -8384,13 +8395,23 @@ async function loadLiveLeads({ silent = false } = {}) {
       setSyncStatus('Wrong team passcode — reload to retry', 'error');
       return false;
     }
-    const data = await response.json().catch(() => ({}));
+    data = await response.json().catch(() => ({}));
     if (!response.ok || !data.ok || !Array.isArray(data.leads)) {
       salesSyncLive = false;
       const localOrUnconfigured = response.status === 404 || data.configured === false;
       setSyncStatus(localOrUnconfigured ? 'Snapshot mode' : 'Sync unavailable', localOrUnconfigured ? 'snapshot' : 'error');
       return false;
     }
+  } catch (error) {
+    console.error('BLP sync: network error talking to ' + SALES_SYNC_ENDPOINT, error);
+    salesSyncLive = false;
+    setSyncStatus('Connection hiccup — retrying', 'error');
+    return false;
+  }
+  // Data arrived fine. Anything that fails past this point is a display bug,
+  // NOT a connection problem — log it loudly and say so, instead of blaming
+  // the network (which previously hid a render crash behind "hiccup").
+  try {
     workingLeads = data.leads.map(normalizeLeadRecord);
     rebuildTimelines(workingLeads);
     salesSyncLive = true;
@@ -8400,8 +8421,9 @@ async function loadLiveLeads({ silent = false } = {}) {
     flushPendingMutations();
     return true;
   } catch (error) {
-    salesSyncLive = false;
-    setSyncStatus('Connection hiccup — retrying', 'error');
+    console.error('BLP sync: leads loaded OK but processing/rendering failed', error);
+    salesSyncLive = true; // the connection itself is healthy; saves still work
+    setSyncStatus('Synced — display error (see console)', 'error');
     return false;
   }
 }
