@@ -230,8 +230,8 @@
 
   .tab-btn.bg-zinc-100,
   .tab-btn:hover {
-    color: var(--blp-paper) !important;
-    background: var(--blp-ink) !important;
+    color: var(--blp-ink) !important;
+    background: var(--blp-paper) !important;
     border-color: var(--blp-ink) !important;
   }
 
@@ -563,6 +563,15 @@
         <option value="5">5+ Warm</option>
         <option value="3">3+ Cool</option>
         <option value="1">1+ Cold</option>
+      </select>
+      <select id="filterOutcome" class="px-2 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+        <option value="">Status: Open</option>
+        <option value="Active">Active only</option>
+        <option value="Snoozed">Snoozed</option>
+        <option value="Won">Won</option>
+        <option value="Lost">Lost</option>
+        <option value="Inactive">Inactive</option>
+        <option value="all">All statuses</option>
       </select>
       <select id="filterStatus" class="px-2 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
         <option value="">All Timeline</option>
@@ -1138,8 +1147,8 @@
         <div>
           <label class="text-[11px] uppercase text-zinc-500">Currently working</label>
           <select id="nlRep" class="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
-            <option value="sally" selected>Sally</option>
-            <option value="brigham">Brigham</option>
+            <option value="sally">Sally</option>
+            <option value="brigham" selected>Brigham</option>
             <option value="karmel">Karmel</option>
             <option value="admin">Admin</option>
           </select>
@@ -7943,16 +7952,16 @@ function renderDraftMiniCard(l, d, isRecommended) {
       <div class="flex items-center gap-1.5 mb-1 flex-wrap">
         ${channelChip}
         ${recBadge}
-        <button onclick="event.stopPropagation();openAiDraftEditor(${l.id}, '${d.channel}')" class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Edit / expand">✎</button>
-        <button onclick="event.stopPropagation();regenerateDraft(${l.id}, '${d.channel}')" class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Regenerate">↻</button>
+        <button onclick="event.stopPropagation();openAiDraftEditor('${l.id}', '${d.channel}')" class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Edit / expand">✎</button>
+        <button onclick="event.stopPropagation();regenerateDraft('${l.id}', '${d.channel}')" class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Regenerate">↻</button>
       </div>
       ${isEmail ? `<div class="text-[10px] text-zinc-500 truncate" title="${escapeHtml(d.subject)}"><span class="text-zinc-400">Subj:</span> ${escapeHtml(d.subject || '—')}</div>` : ''}
-      <div class="text-zinc-700 dark:text-zinc-300 cursor-text" onclick="event.stopPropagation();openAiDraftEditor(${l.id}, '${d.channel}')" title="Click to expand / edit full draft">
+      <div class="text-zinc-700 dark:text-zinc-300 cursor-text" onclick="event.stopPropagation();openAiDraftEditor('${l.id}', '${d.channel}')" title="Click to expand / edit full draft">
         ${preview}
       </div>
       <div class="mt-1 flex items-center gap-1.5">
         <label class="flex items-center gap-1 text-[10px] text-zinc-600 dark:text-zinc-400 cursor-pointer" onclick="event.stopPropagation()">
-          <input type="checkbox" class="w-3 h-3" onchange="event.stopPropagation();this.checked && approveAndSend(${l.id}, this, '${d.channel}')" />
+          <input type="checkbox" class="w-3 h-3" onchange="event.stopPropagation();this.checked && approveAndSend('${l.id}', this, '${d.channel}')" />
           <span class="font-semibold">Approve & ${isEmail ? 'send from info@' : 'send text'}</span>
         </label>
       </div>
@@ -8099,16 +8108,57 @@ function approveAndSend(id, checkboxEl, channel) {
   renderAll();
 }
 
+/* Map free-text rep values from the sheet ("Sally", "BRIGHAM R.", blank)
+   onto the app's rep keys. Empty or unrecognized = Brigham by default. */
+function normalizeRepKey(value) {
+  const s = String(value || '').toLowerCase();
+  if (s.includes('sally'))  return 'sally';
+  if (s.includes('brig'))   return 'brigham';
+  if (s.includes('karmel')) return 'karmel';
+  if (s.includes('admin'))  return 'admin';
+  return 'brigham';
+}
+
+/* Outcome = business status from the sheet's Outcome/Status column.
+   status_bucket = timeline age bucket, recomputed locally from Date Added. */
+const OUTCOME_TERMINAL = ['Won', 'Lost', 'Inactive'];
+
+function leadAgeDays(l) {
+  const d = new Date(l.date_added || '');
+  if (!isNaN(d)) return Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+  const n = Number(l.days);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function timelineBucketFor(l, outcome) {
+  if (outcome === 'Snoozed') return 'Snoozed';
+  const age = leadAgeDays(l);
+  if (age <= 2)  return 'Brand New';
+  if (age <= 7)  return 'First Week';
+  if (age <= 14) return 'Two Weeks';
+  if (age <= 30) return 'First Month';
+  return '30 Days +';
+}
+
 function normalizeLeadRecord(l, index = 0) {
-  return {
+  const incoming = l.outcome || l.status_bucket || 'Active';
+  const outcome = incoming === 'Brand New' ? 'Active'
+    : (['Active','Snoozed','Won','Lost','Inactive'].includes(incoming) ? incoming : 'Active');
+  const lead = {
     ...l,
-    id: l.id || l.blp_id || l.rowNumber || index + 1,
-    rep_opened: l.rep_opened || l.rep || 'admin',
-    rep_working: l.rep_working || l.rep || 'admin',
-    rep_closed: l.rep_closed || '',
+    id: String(l.id || l.blp_id || l.rowNumber || index + 1),
+    rep: normalizeRepKey(l.rep),
+    rep_opened: normalizeRepKey(l.rep_opened || l.rep),
+    rep_working: normalizeRepKey(l.rep_working || l.rep),
+    rep_closed: l.rep_closed ? normalizeRepKey(l.rep_closed) : '',
     brighamFlag: l.brighamFlag || false,
     reason: l.reason || '',
+    outcome,
   };
+  lead.status_bucket = timelineBucketFor(lead, outcome);
+  const days = Number(lead.days_since_contact != null ? lead.days_since_contact : lead.days) || 0;
+  lead.is_lonely = outcome === 'Active' && days > 7;
+  return lead;
 }
 
 /* Build initial state from LIVE_LEADS, add timeline + working flags */
@@ -8233,13 +8283,29 @@ function authHeaders(extra = {}) {
 
 /* ---- Pending mutation queue, persisted so failed saves survive refresh ---- */
 const PENDING_KEY = 'blpPendingSalesMutations';
+const PENDING_MAX_ATTEMPTS = 6;
+const PENDING_MAX_AGE_MS = 48 * 3600 * 1000;
 let pendingSalesMutations = [];
 try { pendingSalesMutations = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); } catch (e) {}
+// Drop stale items from earlier sessions (e.g. edits made before sync existed).
+pendingSalesMutations = pendingSalesMutations.filter(p =>
+  p && (!p.queuedAt || (Date.now() - p.queuedAt) < PENDING_MAX_AGE_MS) &&
+  (p.attempts || 0) < PENDING_MAX_ATTEMPTS);
 function persistPending() {
   try { localStorage.setItem(PENDING_KEY, JSON.stringify(pendingSalesMutations.slice(-200))); } catch (e) {}
 }
-function queueMutation(payload) {
-  pendingSalesMutations.push({ ...payload, queuedAt: Date.now() });
+function queueMutation(payload, { permanent = false } = {}) {
+  const busy = /sheet is busy/i.test(String(payload.lastError || ''));
+  const attempts = busy ? (payload.attempts || 0) : (payload.attempts || 0) + 1;
+  if (permanent || attempts >= PENDING_MAX_ATTEMPTS) {
+    console.warn('BLP sync: dropping unsavable change after ' + attempts + ' attempts', payload);
+    const who = payload.lead && payload.lead.name ? ' for ' + payload.lead.name : '';
+    try { toast('⚠ A change' + who + ' could NOT be saved to the sheet and was discarded'); } catch (e) {}
+    persistPending();
+    updatePendingBadge();
+    return;
+  }
+  pendingSalesMutations.push({ ...payload, queuedAt: payload.queuedAt || Date.now(), attempts });
   persistPending();
   updatePendingBadge();
 }
@@ -8286,6 +8352,7 @@ function setSyncStatus(text, mode = 'snapshot') {
 function serializeLeadForSync(lead) {
   return {
     ...lead,
+    status_bucket: lead.outcome || 'Active',
     timeline: TIMELINES[lead.id] || [],
     timeline_json: JSON.stringify(TIMELINES[lead.id] || []),
   };
@@ -8295,7 +8362,7 @@ function applyServerLeadResult(localLead, result) {
   if (!result || !localLead) return;
   if (result.rowNumber && !localLead.rowNumber) localLead.rowNumber = result.rowNumber;
   if (result.blp_id && !localLead.blp_id) localLead.blp_id = result.blp_id;
-  if (result.id && localLead.id !== result.id) {
+  if (result.id && String(localLead.id) !== String(result.id)) {
     const oldId = localLead.id;
     localLead.id = result.id;
     TIMELINES[localLead.id] = TIMELINES[oldId] || [];
@@ -8334,7 +8401,7 @@ async function loadLiveLeads({ silent = false } = {}) {
     return true;
   } catch (error) {
     salesSyncLive = false;
-    setSyncStatus('Snapshot mode', 'snapshot');
+    setSyncStatus('Connection hiccup — retrying', 'error');
     return false;
   }
 }
@@ -8360,7 +8427,12 @@ async function sendMutationPayload(payload, lead = null) {
     }
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.ok) {
-      queueMutation(payload);
+      const permanent = /not found|unknown action/i.test(String(data.error || ''));
+      payload.lastError = String(data.error || ('HTTP ' + response.status));
+      if (payload.action === 'create') {
+        try { toast('⚠ New lead did not reach the sheet yet (' + (data.error || 'HTTP ' + response.status) + ') — retrying'); } catch (e) {}
+      }
+      queueMutation(payload, { permanent });
       const localOrUnconfigured = response.status === 404 || data.configured === false;
       setSyncStatus(localOrUnconfigured ? 'Snapshot mode' : 'Sync queued — will retry', localOrUnconfigured ? 'snapshot' : 'error');
       return false;
@@ -8393,8 +8465,33 @@ async function flushPendingMutations() {
   }
 }
 
+const syncOutbox = [];
+let outboxPumping = false;
+
 function scheduleLeadSync(action, lead, meta = {}) {
-  syncLeadMutation(action, lead, meta);
+  if (!lead) return;
+  if (action === 'update') {
+    // Coalesce: a newer edit to the same lead replaces the queued one.
+    const i = syncOutbox.findIndex(j => j.action === 'update' && String(j.lead.id) === String(lead.id));
+    if (i >= 0) syncOutbox.splice(i, 1);
+  }
+  syncOutbox.push({ action, lead, meta });
+  pumpOutbox();
+}
+
+async function pumpOutbox() {
+  if (outboxPumping) return;
+  outboxPumping = true;
+  try {
+    while (syncOutbox.length > 0) {
+      const job = syncOutbox.shift();
+      // Serialize at send time so the freshest field values go out.
+      const payload = { action: job.action, lead: serializeLeadForSync(job.lead), meta: job.meta };
+      await sendMutationPayload(payload, job.lead);
+    }
+  } finally {
+    outboxPumping = false;
+  }
 }
 
 function startSalesSync() {
@@ -8409,27 +8506,30 @@ function startSalesSync() {
    RENDER
    ============================================================ */
 function renderKPIs() {
-  const total = workingLeads.length;
-  const hot   = workingLeads.filter(l => l.temp >= 8).length;
-  const aging = workingLeads.filter(l => l.days > 60).length;
-  const snoozed = workingLeads.filter(l => l.status_bucket === 'Snoozed').length;
-  const brandNew = workingLeads.filter(l => l.status_bucket === 'Brand New').length;
+  // Open = still in play (Active or Snoozed). Won/Lost/Inactive are excluded
+  // from every KPI. Pipeline counts Active only — not Snoozed.
+  const openLeads   = workingLeads.filter(l => !OUTCOME_TERMINAL.includes(l.outcome || 'Active'));
+  const activeLeads = openLeads.filter(l => (l.outcome || 'Active') === 'Active');
+  const total = activeLeads.length;
+  const hot   = activeLeads.filter(l => l.temp >= 8).length;
+  const aging = activeLeads.filter(l => l.days > 60).length;
+  const snoozed = openLeads.filter(l => l.outcome === 'Snoozed').length;
+  const brandNew = activeLeads.filter(l => l.status_bucket === 'Brand New').length;
   const pipeline = Math.round(
-    workingLeads.filter(l => l.status_bucket !== 'Snoozed')
-      .reduce((s,l) => s + (parseBand(l.band).mid / 1000), 0)
+    activeLeads.reduce((s,l) => s + (parseBand(l.band).mid / 1000), 0)
   );
 
   const kpis = [
-    { label:'Active leads', value:total, hint:'in funnel', color:'text-zinc-900 dark:text-zinc-100' },
-    { label:'Hot (8+)', value:hot, hint:'today', color:'text-red-600' },
-    { label:'Brand new', value:brandNew, hint:'first 2 days', color:'text-emerald-600' },
+    { label:'Active leads', value:total, hint:'in funnel', color:'text-zinc-900 dark:text-zinc-100', filter:'all' },
+    { label:'Hot (8+)', value:hot, hint:'today', color:'text-red-600', filter:'hot' },
+    { label:'Brand new', value:brandNew, hint:'first 2 days', color:'text-emerald-600', filter:'brandnew' },
     { label:'Pipeline', value:'$'+pipeline+'k', hint:'est. total', color:'text-emerald-600' },
-    { label:'30 Days +', value:workingLeads.filter(l => l.status_bucket==='30 Days +').length, hint:'frozen', color:'text-blue-600' },
-    { label:'⚠️ Lonely', value:workingLeads.filter(l => l.is_lonely).length, hint:'flag — >7d quiet', color:'text-red-600' },
+    { label:'30 Days +', value:activeLeads.filter(l => l.status_bucket==='30 Days +').length, hint:'frozen', color:'text-blue-600', filter:'frozen' },
+    { label:'⚠️ Lonely', value:activeLeads.filter(l => l.is_lonely).length, hint:'flag — >7d quiet', color:'text-red-600', filter:'lonely' },
   ];
 
   document.getElementById('kpiBar').innerHTML = kpis.map(k => `
-    <div class="border border-zinc-200 dark:border-zinc-800 rounded-lg p-3 bg-white dark:bg-zinc-900">
+    <div ${k.filter ? `onclick="applyKpiFilter('${k.filter}')" role="button" tabindex="0" title="Click to show these leads"` : ''} class="border border-zinc-200 dark:border-zinc-800 rounded-lg p-3 bg-white dark:bg-zinc-900 ${k.filter ? 'cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-500 hover:shadow-sm transition' : ''}">
       <div class="text-[10px] uppercase tracking-wider text-zinc-500">${k.label}</div>
       <div class="flex items-baseline gap-2 mt-1">
         <div class="text-2xl font-bold ${k.color}">${k.value}</div>
@@ -8448,14 +8548,21 @@ function renderLeads() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   const ftMin = parseInt(document.getElementById('filterTemp').value || '0', 10);
   const fSt = document.getElementById('filterStatus').value;
+  const fOut = document.getElementById('filterOutcome').value;
   const fr = document.getElementById('filterRep').value;
   const fy = document.getElementById('filterType').value;
   const flt = document.getElementById('filterLeadType').value;
   const sb = document.getElementById('sortBy').value;
 
+  // While searching, look across ALL statuses (unless one is explicitly chosen)
+  // so a lead marked Won/Lost/Inactive can still be found by name.
+  const effOut = (q && !fOut) ? 'all' : fOut;
   let rows = workingLeads.filter(l =>
-    (!q || l.name.toLowerCase().includes(q) || (l.instrument||'').toLowerCase().includes(q) || (l.notes||'').toLowerCase().includes(q) || (l.lead_type||'').toLowerCase().includes(q)) &&
+    (!q || (l.name||'').toLowerCase().includes(q) || (l.instrument||'').toLowerCase().includes(q) || (l.notes||'').toLowerCase().includes(q) || (l.lead_type||'').toLowerCase().includes(q) || (l.email||'').toLowerCase().includes(q) || String(l.phone||'').replace(/[^0-9]/g,'').includes(q.replace(/[^0-9]/g,'') || '\u0000')) &&
     (!ftMin || l.temp >= ftMin) &&
+    (effOut === 'all' ? true
+      : effOut ? (l.outcome || 'Active') === effOut
+      : !OUTCOME_TERMINAL.includes(l.outcome || 'Active')) &&
     (!fSt || (fSt === '__lonely' ? l.is_lonely : l.status_bucket === fSt)) &&
     (!fr || l.rep === fr) &&
     (!fy || l.type === fy) &&
@@ -8490,7 +8597,7 @@ function renderLeads() {
                    :            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
     const tLbl = tempLabel(l.temp);
     return `
-    <div class="blp-sales-row grid gap-2 px-4 py-3 text-sm items-start hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer" style="grid-template-columns: 0.28fr 1.55fr 1.25fr 1.15fr 2.0fr 3.4fr;" onclick="if(!event.target.closest('.ai-draft-cell')) openDrawer(${l.id})">
+    <div class="blp-sales-row grid gap-2 px-4 py-3 text-sm items-start hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer" style="grid-template-columns: 0.28fr 1.55fr 1.25fr 1.15fr 2.0fr 3.4fr;" onclick="if(!event.target.closest('.ai-draft-cell')) openDrawer('${l.id}')">
       <div class="text-[10px] leading-tight space-y-1" title="Opened: ${repName(l.rep_opened)} · Working: ${repName(l.rep_working || l.rep)} · Closed: ${l.rep_closed ? repName(l.rep_closed) : 'Not closed yet'}">
         <div class="flex items-center justify-center gap-1"><span class="text-zinc-400">O</span><span class="${repBadgeClass(l.rep_opened)} flex items-center justify-center font-bold">${repInitial(l.rep_opened)}</span></div>
         <div class="flex items-center justify-center gap-1"><span class="text-zinc-400">W</span><span class="${repBadgeClass(l.rep_working || l.rep)} flex items-center justify-center font-bold">${repInitial(l.rep_working || l.rep)}</span></div>
@@ -8502,10 +8609,10 @@ function renderLeads() {
           ${escapeHtml(l.name)}
         </div>
         <div class="blp-lead-meta text-[11px] text-zinc-500 truncate" title="${escapeHtml(l.email || '')}">
-          <button onclick="event.stopPropagation(); openTemplatePicker(${l.id}, 'email')" ${!l.email ? 'disabled title="No email on file"' : 'title="Pick an email template"'} class="text-zinc-400 dark:text-zinc-500 font-semibold disabled:opacity-40 hover:text-indigo-600 dark:hover:text-indigo-300">E:</button> ${l.email ? escapeHtml(l.email) : '<span class="text-zinc-300 dark:text-zinc-600">—</span>'}
+          <button onclick="event.stopPropagation(); openTemplatePicker('${l.id}', 'email')" ${!l.email ? 'disabled title="No email on file"' : 'title="Pick an email template"'} class="text-zinc-400 dark:text-zinc-500 font-semibold disabled:opacity-40 hover:text-indigo-600 dark:hover:text-indigo-300">E:</button> ${l.email ? escapeHtml(l.email) : '<span class="text-zinc-300 dark:text-zinc-600">—</span>'}
         </div>
         <div class="blp-lead-meta text-[11px] text-zinc-500 truncate" title="${escapeHtml(l.phone || '')}">
-          <button onclick="event.stopPropagation(); openTemplatePicker(${l.id}, 'sms')" ${!l.phone ? 'disabled title="No phone on file"' : 'title="Pick a text template"'} class="text-zinc-400 dark:text-zinc-500 font-semibold disabled:opacity-40 hover:text-emerald-600 dark:hover:text-emerald-300">#:</button> ${l.phone ? escapeHtml(l.phone) : '<span class="text-zinc-300 dark:text-zinc-600">—</span>'}
+          <button onclick="event.stopPropagation(); openTemplatePicker('${l.id}', 'sms')" ${!l.phone ? 'disabled title="No phone on file"' : 'title="Pick a text template"'} class="text-zinc-400 dark:text-zinc-500 font-semibold disabled:opacity-40 hover:text-emerald-600 dark:hover:text-emerald-300">#:</button> ${l.phone ? escapeHtml(l.phone) : '<span class="text-zinc-300 dark:text-zinc-600">—</span>'}
         </div>
         <div class="blp-lead-meta text-[11px] text-zinc-500 truncate" title="${escapeHtml(l.source || '')}">
           <span class="text-zinc-400 dark:text-zinc-500">SOB:</span> ${l.source ? escapeHtml(l.source) : '<span class="text-zinc-300 dark:text-zinc-600">—</span>'}
@@ -8591,8 +8698,8 @@ function renderBrigham() {
       </div>
       <div class="mt-2 text-[11px] text-zinc-500">Waiting ${l.days} day${l.days===1?'':'s'} • ${l.band} • ${l.status_bucket}</div>
       <div class="mt-3 flex items-center gap-2">
-        <button onclick="openDrawer(${l.id})" class="text-[11px] px-2 py-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Open</button>
-        <select onchange="this.value && assignLead(${l.id}, this.value); this.value='';" class="text-[11px] px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+        <button onclick="openDrawer('${l.id}')" class="text-[11px] px-2 py-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Open</button>
+        <select onchange="this.value && assignLead('${l.id}', this.value); this.value='';" class="text-[11px] px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
           <option value="">Assign…</option>
           <option value="sally">Sally</option>
           <option value="admin">Admin</option>
@@ -8682,6 +8789,25 @@ function applyWorkFilter(kind, value) {
   switchTab('inbox');
   renderLeads();
   toast(`Loaded ${activeWorkFilter.label} leads`);
+}
+
+function applyKpiFilter(kind) {
+  const isActive = l => (l.outcome || 'Active') === 'Active';
+  const filters = {
+    hot:      { label: 'Hot leads (temp 8+)',        test: l => isActive(l) && l.temp >= 8 },
+    brandnew: { label: 'Brand new leads (first 2 days)', test: l => isActive(l) && l.status_bucket === 'Brand New' },
+    frozen:   { label: '30 Days + (frozen)',          test: l => isActive(l) && l.status_bucket === '30 Days +' },
+    lonely:   { label: 'Lonely leads (>7d quiet)',    test: l => isActive(l) && l.is_lonely },
+  };
+  if (kind === 'all' || !filters[kind]) {
+    clearWorkFilter();
+  } else {
+    activeWorkFilter = filters[kind];
+    if (activeTab !== 'inbox') switchTab('inbox');
+    renderLeads();
+  }
+  const list = document.getElementById('leadRows');
+  if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function clearWorkFilter() {
@@ -8851,17 +8977,17 @@ function openDrawer(id) {
             <div class="text-[11px] uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-2">Commission rep trail</div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
               <label>Rep opened lead
-                <select onchange="updateLeadField(${l.id}, 'rep_opened', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${l.id}', 'rep_opened', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${repOptions(l.rep_opened)}
                 </select>
               </label>
               <label>Rep currently working
-                <select onchange="updateLeadField(${l.id}, 'rep_working', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${l.id}', 'rep_working', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${repOptions(l.rep_working || l.rep)}
                 </select>
               </label>
               <label>Rep closed lead
-                <select onchange="updateLeadField(${l.id}, 'rep_closed', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${l.id}', 'rep_closed', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${repOptions(l.rep_closed, true)}
                 </select>
               </label>
@@ -8871,63 +8997,63 @@ function openDrawer(id) {
             <div class="text-[11px] uppercase tracking-wider text-zinc-500 mb-2">Lead capture data</div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
               <label>Lead added date
-                <input value="${escapeHtml(l.date_added || '')}" onchange="updateLeadField(${l.id}, 'date_added', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.date_added || '')}" onchange="updateLeadField('${l.id}', 'date_added', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>$ Value
-                <input value="${escapeHtml(l.band || '')}" onchange="updateLeadField(${l.id}, 'band', this.value)" list="nlBandList" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.band || '')}" onchange="updateLeadField('${l.id}', 'band', this.value)" list="nlBandList" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>Source of business
-                <input value="${escapeHtml(l.source || '')}" onchange="updateLeadField(${l.id}, 'source', this.value)" list="sobList" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.source || '')}" onchange="updateLeadField('${l.id}', 'source', this.value)" list="sobList" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>Inquiry method
-                <select onchange="updateLeadField(${l.id}, 'inquiry_method', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${l.id}', 'inquiry_method', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${['', 'Phone call', 'Text', 'SC - Text', 'Web Form', 'Web (email)', 'Walk-in', 'Voicemail', 'Facebook Messenger', 'Webchat', 'Other'].map(v => `<option value="${v}" ${String(l.inquiry_method || '') === v ? 'selected' : ''}>${v || '—'}</option>`).join('')}
                 </select>
               </label>
               <label>Type of lead
-                <select onchange="updateLeadField(${l.id}, 'lead_type', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${l.id}', 'lead_type', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${['', 'Sales', 'Restoration', 'Refinishing', 'Refurbishing', 'Player Restoration', 'QRS', 'Trade-in Sales Lead', 'Hailun New', 'Event Rental', 'Possible Restoration', 'Consignment?'].map(v => `<option value="${v}" ${String(l.lead_type || '') === v ? 'selected' : ''}>${v || '—'}</option>`).join('')}
                 </select>
               </label>
               <label>Type of piano
-                <select onchange="updateLeadField(${l.id}, 'piano_type', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${l.id}', 'piano_type', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${['', 'Upright', 'Grand', 'Baby Grand', 'Spinet', 'Heirloom Upright', 'Heirloom Grand', 'Digital', 'Hailun New', 'Square Grand', 'Player Piano'].map(v => `<option value="${v}" ${String(l.piano_type || '') === v ? 'selected' : ''}>${v || '—'}</option>`).join('')}
                 </select>
               </label>
               <label>Location
-                <input value="${escapeHtml(l.location || '')}" onchange="updateLeadField(${l.id}, 'location', this.value)" placeholder="City, State" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.location || '')}" onchange="updateLeadField('${l.id}', 'location', this.value)" placeholder="City, State" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>Social handle / URL
-                <input value="${escapeHtml(l.social || '')}" onchange="updateLeadField(${l.id}, 'social', this.value)" placeholder="@username or URL" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.social || '')}" onchange="updateLeadField('${l.id}', 'social', this.value)" placeholder="@username or URL" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>Email
-                <input value="${escapeHtml(l.email || '')}" onchange="updateLeadField(${l.id}, 'email', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.email || '')}" onchange="updateLeadField('${l.id}', 'email', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>Cell / Phone
-                <input value="${escapeHtml(l.phone || '')}" onchange="updateLeadField(${l.id}, 'phone', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.phone || '')}" onchange="updateLeadField('${l.id}', 'phone', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label class="md:col-span-2">Pricing / quote details
-                <textarea rows="2" onchange="updateLeadField(${l.id}, 'pricing_extracted', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.pricing_extracted || '')}</textarea>
+                <textarea rows="2" onchange="updateLeadField('${l.id}', 'pricing_extracted', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.pricing_extracted || '')}</textarea>
               </label>
               <label class="md:col-span-2">Lead notes
-                <textarea rows="3" onchange="updateLeadField(${l.id}, 'notes', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.notes || '')}</textarea>
+                <textarea rows="3" onchange="updateLeadField('${l.id}', 'notes', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.notes || '')}</textarea>
               </label>
             </div>
           </div>
           <label>Lead name
-            <input value="${escapeHtml(l.name)}" onchange="updateLeadField(${l.id}, 'name', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+            <input value="${escapeHtml(l.name)}" onchange="updateLeadField('${l.id}', 'name', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
           </label>
           <label>Headline
-            <textarea rows="2" onchange="updateLeadField(${l.id}, 'instrument', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.instrument || '')}</textarea>
+            <textarea rows="2" onchange="updateLeadField('${l.id}', 'instrument', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.instrument || '')}</textarea>
           </label>
           <div class="grid grid-cols-2 gap-2">
             <label>Timeline
-              <select onchange="updateLeadField(${l.id}, 'status_bucket', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+              <select onchange="updateLeadField('${l.id}', 'status_bucket', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                 ${Object.keys(STATUS_COLORS).map(s => `<option ${l.status_bucket === s ? 'selected' : ''}>${s}</option>`).join('')}
               </select>
             </label>
             <label>Next action
-              <input value="${escapeHtml(l.next || '')}" onchange="updateLeadField(${l.id}, 'next', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+              <input value="${escapeHtml(l.next || '')}" onchange="updateLeadField('${l.id}', 'next', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
             </label>
           </div>
         </div>
@@ -8945,7 +9071,7 @@ function openDrawer(id) {
           <div class="text-[11px] uppercase tracking-wider text-zinc-500">Temperature (1–10)</div>
           <div class="text-xs"><span class="font-semibold">${l.temp}</span> ${tLbl.emoji} ${tLbl.name}</div>
         </div>
-        <input type="range" min="1" max="10" value="${l.temp}" oninput="setTemp(${l.id}, this.value)" class="w-full" />
+        <input type="range" min="1" max="10" value="${l.temp}" oninput="setTemp('${l.id}', this.value)" class="w-full" />
         <div class="flex justify-between text-[9px] text-zinc-500 -mt-1">
           <span>1 Cold</span><span>5 Warm</span><span>10 Blazing</span>
         </div>
@@ -8959,17 +9085,17 @@ function openDrawer(id) {
 
         <!-- ACTION BUTTONS ROW 1: outreach -->
         <div class="mt-3 flex flex-wrap gap-2">
-          <button onclick="openDraft(${l.id})" ${!l.email ? 'disabled title="No email on file"' : ''} class="text-xs px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">✉️ Draft email</button>
-          <button onclick="sendSms(${l.id})" ${!l.phone ? 'disabled title="No cell number on file"' : ''} class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed">💬 Send SMS</button>
-          <button onclick="callLead(${l.id})"         class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700">📞 Call</button>
-          <button onclick="openInboundLog(${l.id})"  class="text-xs px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" title="Mark that the lead replied / reached out — updates engagement state">📥 Log reply</button>
-          ${!l.brighamFlag ? `<button onclick="escalate(${l.id})" class="text-xs px-3 py-1.5 rounded-md border border-orange-300 text-orange-700 dark:border-orange-700 dark:text-orange-300">⚠️ ${l.rep === 'brigham' ? 'Flag urgent' : 'Escalate to Brigham'}</button>` : ''}
+          <button onclick="openDraft('${l.id}')" ${!l.email ? 'disabled title="No email on file"' : ''} class="text-xs px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">✉️ Draft email</button>
+          <button onclick="sendSms('${l.id}')" ${!l.phone ? 'disabled title="No cell number on file"' : ''} class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed">💬 Send SMS</button>
+          <button onclick="callLead('${l.id}')"         class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700">📞 Call</button>
+          <button onclick="openInboundLog('${l.id}')"  class="text-xs px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" title="Mark that the lead replied / reached out — updates engagement state">📥 Log reply</button>
+          ${!l.brighamFlag ? `<button onclick="escalate('${l.id}')" class="text-xs px-3 py-1.5 rounded-md border border-orange-300 text-orange-700 dark:border-orange-700 dark:text-orange-300">⚠️ ${l.rep === 'brigham' ? 'Flag urgent' : 'Escalate to Brigham'}</button>` : ''}
         </div>
 
         <!-- ACTION BUTTONS ROW 2: lifecycle / close-out -->
         <div class="mt-2 flex flex-wrap gap-2 items-stretch">
-          <button onclick="markWon(${l.id})"   class="text-xs px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">✓ Won</button>
-          <button onclick="markLost(${l.id})"  class="text-xs px-3 py-1.5 rounded-md border border-red-200 text-red-700 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">✕ Mark Lost</button>
+          <button onclick="markWon('${l.id}')"   class="text-xs px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">✓ Won</button>
+          <button onclick="markLost('${l.id}')"  class="text-xs px-3 py-1.5 rounded-md border border-red-200 text-red-700 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">✕ Mark Lost</button>
 
           <!-- Inactive dropdown -->
           <div class="relative inline-block">
@@ -8988,13 +9114,13 @@ function openDrawer(id) {
       <div class="blp-timeline-panel">
         <div class="flex items-center justify-between mb-2">
           <div class="text-[11px] uppercase tracking-wider text-zinc-500">Timeline</div>
-          <button onclick="openNoteModal(${l.id})" class="text-[11px] px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700">📝 Add note</button>
+          <button onclick="openNoteModal('${l.id}')" class="text-[11px] px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700">📝 Add note</button>
         </div>
         <div id="timelineList" class="space-y-3">
           ${timeline.map((t, index) => {
             const ti = TIMELINE_TYPES[(t.type||'').toLowerCase()] || TIMELINE_TYPES.unknown;
             return `
-            <button type="button" onclick="openTimelineEdit(${l.id}, ${index})" class="w-full flex gap-3 text-xs text-left rounded-md p-2 -m-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition" title="Click to edit this timeline entry">
+            <button type="button" onclick="openTimelineEdit('${l.id}', ${index})" class="w-full flex gap-3 text-xs text-left rounded-md p-2 -m-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition" title="Click to edit this timeline entry">
               <div class="w-24 shrink-0 leading-tight">
                 <div class="text-zinc-700 dark:text-zinc-200 font-medium">${escapeHtml(t.date || '—')}</div>
                 <div class="text-zinc-500">${escapeHtml(t.when || '')}</div>
@@ -9109,6 +9235,7 @@ function applySnooze(id, days, label) {
   const l = workingLeads.find(x => x.id === id);
   if (!l) return;
   l.status_bucket = 'Snoozed';
+  l.outcome = 'Snoozed';
   l.is_lonely = false; // snoozed leads are not lonely by definition
   l.raw_status = 'Snoozed ' + label;
   l.next = 'Snoozed ' + label + ' — wake will trigger automatically';
@@ -9441,6 +9568,7 @@ function markLost(id) {
   ACTIONS.unshift({ who:'Karmel', when:'just now', what:'marked '+l.name+' LOST', icon:'✕' });
   if (l) {
     l.status_bucket = 'Lost';
+    l.outcome = 'Lost';
     l.raw_status = 'Lost';
     (TIMELINES[id] = TIMELINES[id] || []).unshift({ date: todayStr(), when:'just now', type:'status', text:'Lost — archived from active queue' });
     scheduleLeadSync('update', l, { source: 'markLost' });
@@ -9457,6 +9585,7 @@ function markWon(id) {
   l.rep_closed = l.rep_closed || l.rep_working || l.rep;
   const commissionTrail = `opened by ${repName(l.rep_opened)}, worked by ${repName(l.rep_working || l.rep)}, closed by ${repName(l.rep_closed)}`;
   l.status_bucket = 'Won';
+  l.outcome = 'Won';
   l.raw_status = 'Won';
   (TIMELINES[id] = TIMELINES[id] || []).unshift({ date: todayStr(), when:'just now', type:'status', text:'Won — commission trail: ' + commissionTrail });
   ACTIONS.unshift({ who:'Karmel', when:'just now', what:'marked '+l.name+' WON — '+commissionTrail, icon:'🏆' });
@@ -9790,7 +9919,7 @@ document.getElementById('darkToggle').addEventListener('click', () => {
   document.documentElement.classList.toggle('dark');
 });
 document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
-['searchInput','filterTemp','filterStatus','filterRep','filterType','filterLeadType','sortBy'].forEach(id => {
+['searchInput','filterTemp','filterOutcome','filterStatus','filterRep','filterType','filterLeadType','sortBy'].forEach(id => {
   const el = document.getElementById(id);
   el.addEventListener('input', renderLeads);
   el.addEventListener('change', renderLeads);
