@@ -43,6 +43,16 @@ exports.handler = async (event) => {
     return json(405, { ok: false, error: "POST required" });
   }
 
+  const accessKey = process.env.BLP_APP_ACCESS_KEY;
+  if (!accessKey) {
+    return json(501, { ok: false, configured: false, error: "BLP_APP_ACCESS_KEY is not set in Netlify env vars." });
+  }
+  const providedKey = event.headers["x-blp-key"] || event.headers["X-Blp-Key"] || "";
+  if (providedKey !== accessKey) {
+    return json(401, { ok: false, error: "Team passcode required or incorrect." });
+  }
+
+
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const fromNumber = process.env.TWILIO_FROM_NUMBER;
@@ -97,7 +107,7 @@ exports.handler = async (event) => {
 function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, x-blp-key",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
 }

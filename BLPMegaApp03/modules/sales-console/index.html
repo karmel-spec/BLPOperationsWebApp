@@ -8209,17 +8209,78 @@ let workingLeads = LEADS.map(l => ({ ...l }));
 const SALES_SYNC_ENDPOINT = '/.netlify/functions/sales-leads';
 const SALES_MUTATION_ENDPOINT = '/.netlify/functions/sales-lead-mutation';
 const SALES_SYNC_INTERVAL_MS = 30000;
+const SALES_FLUSH_INTERVAL_MS = 20000;
 let salesSyncLive = false;
 let salesSyncTimer = null;
+let salesFlushTimer = null;
+let salesFlushInFlight = false;
+
+/* ---- Team passcode (sent as x-blp-key; validated by Netlify functions) ---- */
+function getTeamKey({ forcePrompt = false } = {}) {
+  let key = localStorage.getItem('blpTeamKey') || '';
+  const alreadyAsked = sessionStorage.getItem('blpKeyPromptShown') === '1';
+  if ((!key && !alreadyAsked) || forcePrompt) {
+    sessionStorage.setItem('blpKeyPromptShown', '1');
+    key = (window.prompt('Enter the BLP team passcode to connect to the live Leads Log:') || '').trim();
+    if (key) localStorage.setItem('blpTeamKey', key);
+  }
+  return key;
+}
+function clearTeamKey() { localStorage.removeItem('blpTeamKey'); }
+function authHeaders(extra = {}) {
+  return { 'x-blp-key': getTeamKey(), ...extra };
+}
+
+/* ---- Pending mutation queue, persisted so failed saves survive refresh ---- */
+const PENDING_KEY = 'blpPendingSalesMutations';
 let pendingSalesMutations = [];
+try { pendingSalesMutations = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); } catch (e) {}
+function persistPending() {
+  try { localStorage.setItem(PENDING_KEY, JSON.stringify(pendingSalesMutations.slice(-200))); } catch (e) {}
+}
+function queueMutation(payload) {
+  pendingSalesMutations.push({ ...payload, queuedAt: Date.now() });
+  persistPending();
+  updatePendingBadge();
+}
+function updatePendingBadge() {
+  const n = pendingSalesMutations.length;
+  const el = document.getElementById('salesSyncText');
+  if (el && n > 0 && salesSyncLive) el.textContent = `Live — ${n} unsaved change${n>1?'s':''} retrying`;
+}
+
+/* ---- Don't let the background poll clobber someone mid-edit ---- */
+function userIsEditing() {
+  if (drawerLeadId) return true;
+  const el = document.activeElement;
+  if (!el) return false;
+  const tag = (el.tagName || '').toLowerCase();
+  return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable;
+}
 
 function setSyncStatus(text, mode = 'snapshot') {
   const textEl = document.getElementById('salesSyncText');
   const dotEl = document.getElementById('salesSyncDot');
-  if (!textEl || !dotEl) return;
-  textEl.textContent = text;
-  dotEl.classList.remove('bg-emerald-500', 'bg-amber-500', 'bg-red-500');
-  dotEl.classList.add(mode === 'live' ? 'bg-emerald-500' : mode === 'error' ? 'bg-red-500' : 'bg-amber-500');
+  if (textEl && dotEl) {
+    textEl.textContent = text;
+    dotEl.classList.remove('bg-emerald-500', 'bg-amber-500', 'bg-red-500');
+    dotEl.classList.add(mode === 'live' ? 'bg-emerald-500' : mode === 'error' ? 'bg-red-500' : 'bg-amber-500');
+  }
+  let banner = document.getElementById('snapshotModeBanner');
+  if (mode !== 'live') {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'snapshotModeBanner';
+      banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:90;background:#b45309;color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:600;box-shadow:0 -2px 8px rgba(0,0,0,.25);';
+      document.body.appendChild(banner);
+    }
+    banner.textContent = mode === 'error'
+      ? '⚠ Live sheet sync problem — your changes are being queued and retried. ' + text
+      : '⚠ NOT CONNECTED to the live Leads Log — changes made now will NOT be saved to the sheet. (' + text + ')';
+    banner.style.display = 'block';
+  } else if (banner) {
+    banner.style.display = 'none';
+  }
 }
 
 function serializeLeadForSync(lead) {
@@ -8244,9 +8305,18 @@ function applyServerLeadResult(localLead, result) {
 }
 
 async function loadLiveLeads({ silent = false } = {}) {
+  // Never let a background refresh stomp on someone who is mid-edit,
+  // and never overwrite local state while unsaved changes are still queued.
+  if (silent && (userIsEditing() || pendingSalesMutations.length > 0)) return false;
   if (!silent) setSyncStatus('Checking live sheet', 'snapshot');
   try {
-    const response = await fetch(SALES_SYNC_ENDPOINT, { cache: 'no-store' });
+    const response = await fetch(SALES_SYNC_ENDPOINT, { cache: 'no-store', headers: authHeaders() });
+    if (response.status === 401) {
+      salesSyncLive = false;
+      clearTeamKey();
+      setSyncStatus('Wrong team passcode — reload to retry', 'error');
+      return false;
+    }
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.ok || !Array.isArray(data.leads)) {
       salesSyncLive = false;
@@ -8260,6 +8330,7 @@ async function loadLiveLeads({ silent = false } = {}) {
     setSyncStatus('Live sheet synced', 'live');
     renderAll();
     if (drawerLeadId) openDrawer(drawerLeadId);
+    flushPendingMutations();
     return true;
   } catch (error) {
     salesSyncLive = false;
@@ -8271,27 +8342,54 @@ async function loadLiveLeads({ silent = false } = {}) {
 async function syncLeadMutation(action, lead, meta = {}) {
   if (!lead) return false;
   const payload = { action, lead: serializeLeadForSync(lead), meta };
+  return sendMutationPayload(payload, lead);
+}
+
+async function sendMutationPayload(payload, lead = null) {
   try {
     const response = await fetch(SALES_MUTATION_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(payload),
     });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.ok) {
-      pendingSalesMutations.push(payload);
-      const localOrUnconfigured = response.status === 404 || data.configured === false;
-      setSyncStatus(localOrUnconfigured ? 'Snapshot mode' : 'Sync queued', localOrUnconfigured ? 'snapshot' : 'error');
+    if (response.status === 401) {
+      queueMutation(payload);
+      clearTeamKey();
+      setSyncStatus('Wrong team passcode — reload to retry', 'error');
       return false;
     }
-    applyServerLeadResult(lead, data);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      queueMutation(payload);
+      const localOrUnconfigured = response.status === 404 || data.configured === false;
+      setSyncStatus(localOrUnconfigured ? 'Snapshot mode' : 'Sync queued — will retry', localOrUnconfigured ? 'snapshot' : 'error');
+      return false;
+    }
+    if (lead) applyServerLeadResult(lead, data);
     setSyncStatus('Saved to sheet', 'live');
     salesSyncLive = true;
     return true;
   } catch (error) {
-    pendingSalesMutations.push(payload);
-    setSyncStatus('Sync queued', 'error');
+    queueMutation(payload);
+    setSyncStatus('Sync queued — will retry', 'error');
     return false;
+  }
+}
+
+async function flushPendingMutations() {
+  if (salesFlushInFlight || pendingSalesMutations.length === 0) return;
+  salesFlushInFlight = true;
+  try {
+    while (pendingSalesMutations.length > 0) {
+      const next = pendingSalesMutations[0];
+      pendingSalesMutations.shift();
+      persistPending();
+      const ok = await sendMutationPayload(next);
+      if (!ok) break; // sendMutationPayload re-queued it; stop and retry later
+    }
+  } finally {
+    salesFlushInFlight = false;
+    updatePendingBadge();
   }
 }
 
@@ -8303,6 +8401,8 @@ function startSalesSync() {
   loadLiveLeads();
   if (salesSyncTimer) clearInterval(salesSyncTimer);
   salesSyncTimer = setInterval(() => loadLiveLeads({ silent: true }), SALES_SYNC_INTERVAL_MS);
+  if (salesFlushTimer) clearInterval(salesFlushTimer);
+  salesFlushTimer = setInterval(() => flushPendingMutations(), SALES_FLUSH_INTERVAL_MS);
 }
 
 /* ============================================================
@@ -9565,13 +9665,14 @@ function saveNewLead() {
   if (document.getElementById('nlBand').value === 'Other' && !band) return toast('Exact value is required');
 
   const name = (first + ' ' + last).trim();
-  const numericIds = workingLeads.map(x => Number(x.id)).filter(Number.isFinite);
-  const newId = Math.max(0, ...numericIds) + 1;
+  // Stable ID from birth — survives sheet sorts/deletes, matches Apps Script v2.
+  const newId = 'BLP-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
   const location = (city && state) ? `${city}, ${state}` : (city || state || '');
   const today = todayStr();
 
   const newLead = {
     id: newId,
+    blp_id: newId,
     name,
     first, last,
     email, phone,
@@ -9631,7 +9732,7 @@ async function notifyBrighamOfNewLead(lead) {
   try {
     const response = await fetch('/.netlify/functions/notify-brigham-new-lead', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ lead }),
     });
 
