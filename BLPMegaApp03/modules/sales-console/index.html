@@ -7456,9 +7456,16 @@ function parseSheetDate(s) {
   if (!s) return null;
   const m = String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
   if (!m) return null;
+  const mo = parseInt(m[1], 10);
+  const day = parseInt(m[2], 10);
   let y = parseInt(m[3], 10);
   if (y < 100) y += 2000;
-  return new Date(y, parseInt(m[1], 10) - 1, parseInt(m[2], 10));
+  // Reject out-of-range parts so a typo like "99/99/9999" doesn't silently roll over
+  // into a wrong (but valid) Date and corrupt aging / lonely math.
+  if (mo < 1 || mo > 12 || day < 1 || day > 31) return null;
+  const d = new Date(y, mo - 1, day);
+  if (isNaN(d) || d.getMonth() !== mo - 1 || d.getDate() !== day) return null;
+  return d;
 }
 
 /* UI label + color + emoji for each engagement state. Static Tailwind classes — JIT-safe. */
@@ -8125,16 +8132,16 @@ function renderDraftMiniCard(l, d, isRecommended) {
         ${channelChip}
         ${arnoldBadge}
         ${recBadge}
-        <button onclick="event.stopPropagation();openAiDraftEditor('${l.id}', '${d.channel}')" class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Edit / expand">✎</button>
-        <button onclick="event.stopPropagation();regenerateDraft('${l.id}', '${d.channel}')" class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Regenerate">↻</button>
+        <button onclick="event.stopPropagation();openAiDraftEditor('${jsArg(l.id)}', '${jsArg(d.channel)}')" class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Edit / expand">✎</button>
+        <button onclick="event.stopPropagation();regenerateDraft('${jsArg(l.id)}', '${jsArg(d.channel)}')" class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Regenerate">↻</button>
       </div>
       ${isEmail ? `<div class="text-[10px] text-zinc-500 truncate" title="${escapeHtml(d.subject)}"><span class="text-zinc-400">Subj:</span> ${escapeHtml(d.subject || '—')}</div>` : ''}
-      <div class="text-zinc-700 dark:text-zinc-300 cursor-text" onclick="event.stopPropagation();openAiDraftEditor('${l.id}', '${d.channel}')" title="Click to expand / edit full draft">
+      <div class="text-zinc-700 dark:text-zinc-300 cursor-text" onclick="event.stopPropagation();openAiDraftEditor('${jsArg(l.id)}', '${jsArg(d.channel)}')" title="Click to expand / edit full draft">
         ${preview}
       </div>
       <div class="mt-1 flex items-center gap-1.5">
         <label class="flex items-center gap-1 text-[10px] text-zinc-600 dark:text-zinc-400 cursor-pointer" onclick="event.stopPropagation()">
-          <input type="checkbox" class="w-3 h-3" onchange="event.stopPropagation();this.checked && approveAndSend('${l.id}', this, '${d.channel}')" />
+          <input type="checkbox" class="w-3 h-3" onchange="event.stopPropagation();this.checked && approveAndSend('${jsArg(l.id)}', this, '${jsArg(d.channel)}')" />
           <span class="font-semibold">Approve & ${isEmail ? 'send from brigham@' : 'send text'}</span>
         </label>
       </div>
@@ -8296,11 +8303,11 @@ function saveAiDraftEdits() {
   closeAiDraftEditor();
   renderLeads();
 }
-function approveAndSendFromEditor() {
+async function approveAndSendFromEditor() {
   if (editingDraftId == null || !editingDraftChannel) return;
   const ch = editingDraftChannel;
   saveAiDraftEdits();
-  approveAndSend(editingDraftId, null, ch);
+  await approveAndSend(editingDraftId, null, ch);
 }
 
 /* Build the "context Arnold pulled from" snippet for the editor */
@@ -9239,7 +9246,7 @@ function renderLeads() {
                    :            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
     const tLbl = tempLabel(l.temp);
     return `
-    <div class="blp-sales-row grid gap-2 px-4 py-3 text-sm items-start hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer" style="grid-template-columns: 0.28fr 1.55fr 1.25fr 1.15fr 2.0fr 3.4fr;" onclick="if(!event.target.closest('.ai-draft-cell')) openDrawer('${l.id}')">
+    <div class="blp-sales-row grid gap-2 px-4 py-3 text-sm items-start hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer" style="grid-template-columns: 0.28fr 1.55fr 1.25fr 1.15fr 2.0fr 3.4fr;" onclick="if(!event.target.closest('.ai-draft-cell')) openDrawer('${jsArg(l.id)}')">
       <div class="text-[10px] leading-tight space-y-1" title="Opened: ${repName(l.rep_opened)} · Working: ${repName(l.rep_working || l.rep)} · Closed: ${l.rep_closed ? repName(l.rep_closed) : 'Not closed yet'}">
         <div class="flex items-center justify-center gap-1"><span class="text-zinc-400">O</span>${repBadgeSelectHtml(l.id, 'rep_opened', l.rep_opened, 'Opened')}</div>
         <div class="flex items-center justify-center gap-1"><span class="text-zinc-400">W</span>${repBadgeSelectHtml(l.id, 'rep_working', l.rep_working || l.rep, 'Working')}</div>
@@ -9769,11 +9776,11 @@ function openDrawer(id) {
 
           <!-- Inactive dropdown -->
           <div class="relative inline-block">
-            <button onclick="toggleSnoozeMenu(event, ${l.id})" class="text-xs px-3 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-1">
+            <button onclick="toggleSnoozeMenu(event, '${jsArg(l.id)}')" class="text-xs px-3 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-1">
               💤 Inactive (snooze)
               <span class="text-[10px]">▾</span>
             </button>
-            <div id="snoozeMenu-${l.id}" class="hidden absolute right-0 mt-1 w-52 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-lg z-50 text-sm">
+            <div id="snoozeMenu-${escapeHtml(l.id)}" class="hidden absolute right-0 mt-1 w-52 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-lg z-50 text-sm">
               ${snoozeOptionsHtml(l.id)}
             </div>
           </div>
@@ -9790,7 +9797,7 @@ function openDrawer(id) {
           ${timeline.map((t, index) => {
             const ti = TIMELINE_TYPES[(t.type||'').toLowerCase()] || TIMELINE_TYPES.unknown;
             return `
-            <button type="button" onclick="openTimelineEdit('${l.id}', ${index})" class="w-full flex gap-3 text-xs text-left rounded-md p-2 -m-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition" title="Click to edit this timeline entry">
+            <button type="button" onclick="openTimelineEdit('${jsArg(l.id)}', ${index})" class="w-full flex gap-3 text-xs text-left rounded-md p-2 -m-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition" title="Click to edit this timeline entry">
               <div class="w-24 shrink-0 leading-tight">
                 <div class="text-zinc-700 dark:text-zinc-200 font-medium">${escapeHtml(t.date || '—')}</div>
                 <div class="text-zinc-500">${escapeHtml(t.when || '')}</div>
@@ -9870,7 +9877,7 @@ function snoozeOptionsHtml(id) {
     ['Snooze custom length...', 'custom'],
   ];
   return opts.map(([label, val]) => `
-    <button onclick="chooseSnooze(${id}, '${val}')" class="block w-full text-left px-3 py-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800">${label}</button>
+    <button onclick="chooseSnooze('${jsArg(id)}', '${val}')" class="block w-full text-left px-3 py-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800">${label}</button>
   `).join('');
 }
 
@@ -10604,6 +10611,21 @@ function todayStr() {
 function escapeHtml(s) {
   if (s == null) return '';
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+}
+
+/* Escape a value for use as a single-quoted JS string argument inside a double-quoted
+   inline event handler, e.g. onclick="fn('${jsArg(id)}')". Must survive BOTH the JS
+   string parser (backslash-escape \ and ') AND the HTML attribute parser (encode " and <,
+   which would otherwise close the attribute or open a tag). HTML-escaping alone is NOT
+   enough here: the parser decodes &#39; back to ' before the JS sees it, so the quote
+   must be backslash-escaped, not entity-encoded. For normal ids (no special chars) this
+   is a no-op. */
+function jsArg(s) {
+  return String(s == null ? '' : s)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
 }
 
 function switchTab(tab) {
