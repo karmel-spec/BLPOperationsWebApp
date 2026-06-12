@@ -38,9 +38,53 @@ The lead data is currently embedded in `mockup.html`.
 
 Internet is needed for Tailwind styling to load.
 
-Email/SMS sending is not live yet. Those are prototype hooks only and need a backend/API connection before real messages are sent.
+SMS sending is not live yet (Twilio hook only).
 
-Continue from `mockup.html`. Do not assume Gmail, SalesCaptain, Twilio, or Google Sheets writes are already connected.
+**Email sending from info@brighamlarsonpianos.com IS now wired** through the Gmail
+API — see "Connecting Live Email Sending" below. It stays dormant and degrades
+gracefully until the Gmail env vars are set in Netlify.
+
+Continue from `index.html`. Do not assume SalesCaptain, Twilio, or Google Sheets
+writes are already connected.
+
+## Connecting Live Email Sending
+
+When a rep clicks **Approve & Send** on an email draft, the app POSTs the approved
+draft to the Netlify function `netlify/functions/send-sales-email.js`, which sends it
+from `info@brighamlarsonpianos.com` via the Gmail API. The email goes out for real
+*before* anything is logged — if the send fails, the lead is never marked as
+contacted and the rep sees an error toast.
+
+Until the Gmail keys are set, the function returns HTTP 501 and the app shows
+"Email backend not connected yet — ask admin to set the Gmail keys." Nothing breaks.
+
+### Required Netlify environment variables
+
+| Variable | Purpose |
+|---|---|
+| `BLP_APP_ACCESS_KEY` | Team passcode (already required by the other functions). |
+| `GMAIL_CLIENT_ID` | OAuth 2.0 client ID from Google Cloud → APIs & Services → Credentials. |
+| `GMAIL_CLIENT_SECRET` | OAuth 2.0 client secret for that client. |
+| `GMAIL_REFRESH_TOKEN` | Refresh token for the **info@** mailbox, scope `https://www.googleapis.com/auth/gmail.send`. |
+| `GMAIL_SENDER` *(optional)* | From address. Defaults to `info@brighamlarsonpianos.com`. |
+| `GMAIL_SENDER_NAME` *(optional)* | Display name. Defaults to `Brigham Larson Pianos`. |
+
+### One-time Gmail OAuth setup
+
+1. In **Google Cloud Console**, create (or reuse) a project and enable the **Gmail API**.
+2. Configure the OAuth consent screen and create an **OAuth client ID** of type
+   *Web application* (or *Desktop app*). Note the client ID and secret.
+3. While signed in as **info@brighamlarsonpianos.com**, grant consent for the
+   `gmail.send` scope and capture a **refresh token** (e.g. via the
+   [OAuth Playground](https://developers.google.com/oauthplayground/) — set your own
+   client ID/secret in its settings, authorize `https://www.googleapis.com/auth/gmail.send`,
+   then exchange the auth code for tokens).
+4. Put the client ID, client secret, and refresh token into the three Netlify env
+   vars above, then redeploy.
+
+The function builds a `multipart/alternative` message: a plain-text part plus an HTML
+part where the draft's `[label](url)` links (videos, "schedule me here") become real
+clickable links. Header fields are stripped of CR/LF to prevent header injection.
 
 ## Recent Edit Batch
 
