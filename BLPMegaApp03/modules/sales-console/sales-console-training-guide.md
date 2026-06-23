@@ -61,7 +61,7 @@ Use this drawer when the row is missing key details or the AI draft is using sta
 
 ## Draft Rules
 
-Email drafts should send from `info@brighamlarsonpianos.com` once the Gmail backend is connected.
+Email drafts should send from `brigham@brighamlarsonpianos.com` and BCC `info@brighamlarsonpianos.com` once the email backend is connected.
 
 Video links should be shown as clean clickable titles instead of long URLs.
 

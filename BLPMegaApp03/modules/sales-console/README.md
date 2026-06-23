@@ -38,7 +38,20 @@ The lead data is currently embedded in `mockup.html`.
 
 Internet is needed for Tailwind styling to load.
 
-Email/SMS sending is not live yet. Those are prototype hooks only and need a backend/API connection before real messages are sent.
+Email/SMS/call actions have Netlify function hooks, but real sending requires production environment variables before messages or calls are placed.
+
+Communication environment variables:
+
+- `BLP_APP_ACCESS_KEY` — shared app passcode required by the Netlify functions.
+- `TWILIO_ACCOUNT_SID` — Twilio account SID.
+- `TWILIO_AUTH_TOKEN` — Twilio auth token.
+- `TWILIO_FROM_NUMBER` — BLP Twilio number, expected to be `+18017010113`.
+- `SALES_CALL_BRIDGE_NUMBER` — staff phone Twilio should call first before dialing the customer.
+- `SENDGRID_API_KEY` — SendGrid key for sales email sending.
+- `SALES_EMAIL_FROM` — required; must be `brigham@brighamlarsonpianos.com`.
+- `SALES_EMAIL_BCC` — required; must be `info@brighamlarsonpianos.com`.
+
+Full production setup and live verification steps are in `../../docs/sales-communications-production-setup.md`.
 
 Continue from `mockup.html`. Do not assume Gmail, SalesCaptain, Twilio, or Google Sheets writes are already connected.
 

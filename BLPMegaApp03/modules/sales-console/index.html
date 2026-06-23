@@ -537,6 +537,10 @@
         <span id="salesSyncDot" class="w-1.5 h-1.5 rounded-full bg-amber-500 pulse-dot"></span>
         <span id="salesSyncText">Snapshot mode</span>
       </div>
+      <div id="salesCommsStatus" class="sales-sync-pill text-xs hidden lg:inline-flex items-center gap-1" title="Sales SMS, call, and email configuration">
+        <span id="salesCommsDot" class="w-1.5 h-1.5 rounded-full bg-amber-500 pulse-dot"></span>
+        <span id="salesCommsText">Comms checking</span>
+      </div>
       <button id="newLeadBtn" onclick="openNewLeadModal()" class="text-sm px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 flex items-center gap-1.5 font-medium shadow-sm">
         <span class="text-base leading-none">+</span> New Lead
       </button>
@@ -698,7 +702,7 @@
           <li>Work OUR TURN, FIRST CONTACT, Hot, and Lonely leads before browsing the full list.</li>
           <li>Click Funnel boxes to load a focused work queue by timeline or aging.</li>
           <li>Open a lead drawer to edit Rep, Lead, Headline, Timeline, Action, email, or cell number.</li>
-          <li>Review each AI draft before approving. Email approvals are designed to send from info@ once the backend is connected.</li>
+          <li>Review each AI draft before approving. Email approvals send from brigham@brighamlarsonpianos.com with info@brighamlarsonpianos.com BCC'd once the backend is connected.</li>
         </ol>
       </div>
     </div>
@@ -744,7 +748,7 @@
     </div>
     <div class="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-end gap-2">
       <button onclick="closeDraft()" class="px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700">Cancel</button>
-      <button onclick="saveDraft()" class="px-3 py-1.5 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Save to Gmail Drafts</button>
+      <button onclick="saveDraft()" class="px-3 py-1.5 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Open Email</button>
     </div>
   </div>
 </div>
@@ -756,7 +760,7 @@
   <div class="fixed inset-x-4 top-16 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-[520px] bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-2xl">
     <div class="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
       <div>
-        <div class="text-sm font-semibold">📞 Call</div>
+        <div class="text-sm font-semibold">Call</div>
         <div id="callTo" class="text-xs text-zinc-500 mt-0.5">…</div>
       </div>
       <button onclick="closeCallLog()" class="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">✕</button>
@@ -770,7 +774,7 @@
         <div class="grid grid-cols-2 gap-2">
           <button onclick="logCallOutcome('connected')"        class="px-3 py-2 text-sm rounded-md border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 font-medium">✅ Connected (talked)</button>
           <button onclick="logCallOutcome('voicemail')"        class="px-3 py-2 text-sm rounded-md border border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-medium">📬 Left voicemail</button>
-          <button onclick="logCallOutcome('no_answer')"        class="px-3 py-2 text-sm rounded-md border border-zinc-300 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium">📵 No answer / no VM</button>
+          <button onclick="logCallOutcome('no_answer')"        class="px-3 py-2 text-sm rounded-md border border-zinc-300 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium">No answer / no VM</button>
           <button onclick="logCallOutcome('they_called_back')" class="px-3 py-2 text-sm rounded-md border border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium">🔄 They called us back</button>
         </div>
       </div>
@@ -803,11 +807,11 @@
       <div>
         <label class="text-[11px] uppercase text-zinc-500">Channel</label>
         <select id="inboundChannel" class="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
-          <option value="text">💬 Text / SMS</option>
-          <option value="email" selected>✉️ Email</option>
-          <option value="call">📞 Phone call (they called us)</option>
+          <option value="text">Text / SMS</option>
+          <option value="email" selected>Email</option>
+          <option value="call">Phone call (they called us)</option>
           <option value="walk_in">🏪 Walk-in / showroom visit</option>
-          <option value="webchat">💬 Webchat</option>
+          <option value="webchat">Webchat</option>
         </select>
       </div>
       <div>
@@ -832,7 +836,7 @@
     <div class="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
       <div>
         <div class="flex items-center gap-2">
-          <div class="text-sm font-semibold">💬 Send SMS</div>
+          <div class="text-sm font-semibold">Send SMS</div>
           <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 font-semibold uppercase">TEXT</span>
         </div>
         <div id="smsTo" class="text-xs text-zinc-500 mt-0.5">To: …</div>
@@ -843,9 +847,7 @@
       <div class="flex items-center gap-3">
         <label class="text-[11px] uppercase text-zinc-500">From</label>
         <select id="smsFrom" class="flex-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
-          <option value="imessage">iMessage — from this Mac (Messages.app)</option>
           <option value="twilio" selected>Twilio — BLP business number (801-701-0113)</option>
-          <option value="salescaptain">SalesCaptain SMS</option>
         </select>
       </div>
       <div>
@@ -858,7 +860,7 @@
       <div class="flex items-center gap-2 text-[11px] text-zinc-500">
         <button onclick="loadAiDraftIntoSms()" class="text-[11px] px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800">↻ Use AI draft</button>
         <button onclick="openTemplatePicker(smsLeadId, 'sms')" class="text-[11px] px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800">Use Template</button>
-        <span class="italic">Sends as 1 segment up to 160 chars (GSM). Longer messages cost more on Twilio and may not deliver inline on iMessage.</span>
+        <span class="italic">Sends through Twilio from 801-701-0113 when configured. If not configured, the app opens your device text composer.</span>
       </div>
     </div>
     <div class="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-end gap-2">
@@ -7408,6 +7410,25 @@ function engagementChip(l) {
 const ACTION_ICON = { call:'📞', text:'💬', email:'✉️' };
 const ACTION_LABEL = { call:'Call', text:'Text', email:'Email' };
 
+function startRecommendedAction(id, channel) {
+  const l = workingLeads.find(x => x.id === id);
+  if (!l) return;
+  const nextType = channel || l.next_action_type || decideRecommendedChannel(l);
+  if (nextType === 'call') return callLead(id);
+  if (nextType === 'text' || nextType === 'sms') return sendSms(id);
+  if (nextType === 'email') return openDraft(id);
+  toast('No recommended contact action available for ' + l.name);
+}
+
+function renderDrawerContactActions(l) {
+  return `
+    <div class="col-span-2 flex flex-wrap gap-2 pt-1" onclick="event.stopPropagation()">
+      <button type="button" onclick="openDraft('${l.id}')" ${!l.email ? 'disabled title="No email on file"' : `title="Email ${escapeHtml(l.name)}"`} class="text-xs px-2.5 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">✉️ Email</button>
+      <button type="button" onclick="sendSms('${l.id}')" ${!l.phone ? 'disabled title="No cell number on file"' : `title="Text ${escapeHtml(l.name)}"`} class="text-xs px-2.5 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed">💬 Text</button>
+      <button type="button" onclick="callLead('${l.id}')" ${!l.phone ? 'disabled title="No phone number on file"' : `title="Call ${escapeHtml(l.name)}"`} class="text-xs px-2.5 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed">📞 Call</button>
+    </div>`;
+}
+
 function renderActionCell(l) {
   const tLbl = tempLabel(l.temp);
   const state = engagementState(l);
@@ -7438,9 +7459,9 @@ function renderActionCell(l) {
   const t = l.action_totals || { call:0, text:0, email:0 };
   const ttl = (t.call||0) + (t.text||0) + (t.email||0);
   const breakdown = [];
-  if (t.call)  breakdown.push(`☎${t.call}`);
-  if (t.text)  breakdown.push(`💬${t.text}`);
-  if (t.email) breakdown.push(`✉${t.email}`);
+  if (t.call)  breakdown.push(`Calls ${t.call}`);
+  if (t.text)  breakdown.push(`Texts ${t.text}`);
+  if (t.email) breakdown.push(`Emails ${t.email}`);
   const breakdownStr = breakdown.length ? ` <span class="text-zinc-400" title="Channel breakdown: calls, texts, emails">(${breakdown.join(' ')})</span>` : '';
 
   // Outbound/inbound visual ratio
@@ -7473,7 +7494,7 @@ function renderActionCell(l) {
         </div>
         <div class="flex items-center gap-1.5">
           <span class="text-zinc-400 dark:text-zinc-500 w-14 shrink-0">Next</span>
-          <span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-medium">${next}</span>
+          <button type="button" onclick="event.stopPropagation();startRecommendedAction('${l.id}', '${nextType}')" class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-medium hover:ring-2 hover:ring-indigo-300" title="${ACTION_LABEL[nextType]} ${escapeHtml(l.name)}">${next}</button>
         </div>
         <div class="flex items-center gap-1.5">
           <span class="text-zinc-400 dark:text-zinc-500 w-14 shrink-0">Touches</span>
@@ -7490,7 +7511,7 @@ function renderActionCell(l) {
 
    PRODUCTION HOOK: this is a rule-based stand-in. To wire real AI:
      - Replace generateDraft() with a fetch() to your backend (Claude/GPT)
-     - Pass `lead` + extra context (SC history, info@ thread, piano log row, brigham@ gmail thread)
+     - Pass `lead` + extra context (info@ thread, piano log row, brigham@ thread)
      - Receive { channel:'email'|'text', subject, body, video } and store on `l.aiDraft`
      - Keep the UI as-is — render/edit/approve flow is identical.
 
@@ -7943,8 +7964,8 @@ function renderDraftMiniCard(l, d, isRecommended) {
   if (!d) return '';
   const isEmail = d.channel === 'email';
   const channelChip = isEmail
-    ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-semibold uppercase">✉️ Email</span>'
-    : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 font-semibold uppercase">💬 Text</span>';
+    ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-semibold uppercase">Email</span>'
+    : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 font-semibold uppercase">Text</span>';
   const recBadge = isRecommended ? '' : '<span class="text-[9px] text-zinc-400 italic">Alt</span>';
 
   // Truncate preview to fit cell (~2 lines per card)
@@ -7972,7 +7993,7 @@ function renderDraftMiniCard(l, d, isRecommended) {
       <div class="mt-1 flex items-center gap-1.5">
         <label class="flex items-center gap-1 text-[10px] text-zinc-600 dark:text-zinc-400 cursor-pointer" onclick="event.stopPropagation()">
           <input type="checkbox" class="w-3 h-3" onchange="event.stopPropagation();this.checked && approveAndSend('${l.id}', this, '${d.channel}')" />
-          <span class="font-semibold">Approve & ${isEmail ? 'send from info@' : 'send text'}</span>
+          <span class="font-semibold">Approve & ${isEmail ? 'send from brigham@' : 'send text'}</span>
         </label>
       </div>
     </div>`;
@@ -8001,7 +8022,7 @@ function openAiDraftEditor(id, channel) {
   const d = getDraft(l, editingDraftChannel);
   if (!d) return toast(editingDraftChannel === 'email' ? 'No email on file' : 'No cell number on file');
   const isEmail = d.channel === 'email';
-  document.getElementById('aiEditorTitle').textContent = isEmail ? '✉️ Email draft' : '💬 Text draft';
+  document.getElementById('aiEditorTitle').textContent = isEmail ? 'Email draft' : 'Text draft';
   document.getElementById('aiEditorTo').textContent = `To: ${l.name} ` + (isEmail ? `<${l.email || 'no email on file'}>` : `(${l.phone || 'no phone on file'})`);
   document.getElementById('aiEditorChannelLabel').textContent = isEmail ? 'EMAIL' : 'TEXT';
   document.getElementById('aiEditorChannelLabel').className = isEmail
@@ -8050,12 +8071,12 @@ function buildContextSnippet(l) {
   parts.push(`<div><b>Status:</b> ${escapeHtml(l.status_bucket)} (${l.days_since_contact}d since last contact)</div>`);
   if (l.last_action) parts.push(`<div><b>Last action:</b> ${escapeHtml(l.last_action)}</div>`);
   if (l.notes) parts.push(`<div class="mt-1"><b>Sheet notes:</b> <span class="text-zinc-600 dark:text-zinc-400">${escapeHtml(l.notes.slice(0, 280))}${l.notes.length > 280 ? '…' : ''}</span></div>`);
-  parts.push(`<div class="mt-1 text-[10px] italic text-zinc-500">In production, would also pull from: info@ thread history · SC conversation · brigham@gmail.com corpus · piano log row · Brigham voice corpus.</div>`);
+  parts.push(`<div class="mt-1 text-[10px] italic text-zinc-500">In production, would also pull from: info@ thread history · sales conversation · brigham@ thread · piano log row · Brigham voice corpus.</div>`);
   return parts.join('');
 }
 
 /* Approve + send — in prototype: log to timeline + counters; in production: POST to Gmail/SC */
-function approveAndSend(id, checkboxEl, channel) {
+async function approveAndSend(id, checkboxEl, channel) {
   const l = workingLeads.find(x => x.id === id);
   if (!l) return;
   // Default channel = whatever the recommended draft is (legacy callers pass none)
@@ -8066,12 +8087,42 @@ function approveAndSend(id, checkboxEl, channel) {
   if (isEmail && !l.email) return toast('No email on file for ' + l.name);
   if (!isEmail && !l.phone) return toast('No cell number on file for ' + l.name);
 
-  // PRODUCTION HOOK: wire this to Gmail API so email sends from info@brighamlarsonpianos.com.
-  //   await fetch('/api/email/send-from-info', {
-  //     method:'POST',
-  //     headers:{ 'Content-Type':'application/json' },
-  //     body: JSON.stringify({ leadId:id, from:'info@brighamlarsonpianos.com', to:l.email, subject:d.subject, body:d.body })
-  //   });
+  let sendLabel = isEmail ? `email from ${SALES_EMAIL_FROM}` : `text via Twilio (${SALES_TWILIO_FROM_DISPLAY})`;
+  try {
+    if (isEmail) {
+      await postCommunication(SALES_EMAIL_ENDPOINT, {
+        leadId: id,
+        to: l.email,
+        subject: d.subject,
+        body: d.body,
+      });
+    } else {
+      await postCommunication(SALES_SMS_ENDPOINT, {
+        leadId: id,
+        to: l.phone,
+        body: d.body,
+      });
+    }
+  } catch (error) {
+    console.warn('BLP sales communication: backend send unavailable; opening native composer.', error);
+    if (isEmail) {
+      if (!openNativeEmailFallback(l, d)) return toast('No email on file for ' + l.name);
+      sendLabel = `email composer for ${SALES_EMAIL_FROM}`;
+      if (error.status === 501 || (error.data && error.data.configured === false)) {
+        toast('Email sending is not configured yet — opened your email composer instead.');
+      } else {
+        toast('Could not send email through the backend — opened your email composer instead.');
+      }
+    } else {
+      if (!openNativeSmsFallback(l, d.body)) return toast('No cell number on file for ' + l.name);
+      sendLabel = 'device text composer';
+      if (error.status === 501 || (error.data && error.data.configured === false)) {
+        toast('Twilio is not configured yet — opened your device text composer instead.');
+      } else {
+        toast('Could not send through Twilio — opened your device text composer instead.');
+      }
+    }
+  }
 
   // Append full content + date to timeline (direction = outbound)
   const todayDate = todayStr();
@@ -8080,7 +8131,7 @@ function approveAndSend(id, checkboxEl, channel) {
     when: 'just now',
     type: isEmail ? 'email' : 'text',
     direction: 'outbound',
-    text: (isEmail ? `From: info@brighamlarsonpianos.com\nSubject: ${d.subject}\n\n` : '') + d.body,
+    text: (isEmail ? `From: ${SALES_EMAIL_FROM}\nBCC: ${SALES_EMAIL_BCC}\nSubject: ${d.subject}\n\n` : '') + d.body,
   };
   (TIMELINES[id] = TIMELINES[id] || []).unshift(tlEntry);
 
@@ -8107,13 +8158,13 @@ function approveAndSend(id, checkboxEl, channel) {
   ACTIONS.unshift({
     who: 'Karmel',
     when: 'just now',
-    what: `approved & sent ${isEmail ? 'email from info@' : 'text'} to ${l.name}`,
-    icon: isEmail ? '✉️' : '💬',
+    what: `approved & sent ${sendLabel} to ${l.name}`,
+    icon: '✓',
   });
 
   scheduleLeadSync('update', l, { source: 'approveAndSend', channel: d.channel });
   if (checkboxEl) checkboxEl.checked = false;
-  toast(`✅ ${isEmail ? 'Email sent from info@' : 'Text sent'} to ${l.name}`);
+  toast(`✅ ${isEmail ? 'Email action ready' : 'Text action ready'} for ${l.name}`);
   if (!document.getElementById('aiEditorModal').classList.contains('hidden')) closeAiDraftEditor();
   renderAll();
 }
@@ -8177,11 +8228,11 @@ const LEADS = LIVE_LEADS.map(normalizeLeadRecord);
 /* Action type labels for timeline.
    Keys are normalized; UI shows the .label below the days-ago line. */
 const TIMELINE_TYPES = {
-  call:        { label:'Call',         icon:'📞' },
-  text:        { label:'Text',         icon:'💬' },
-  sms:         { label:'Text',         icon:'💬' },
-  email:       { label:'Email',        icon:'✉️' },
-  webchat:     { label:'Webchat',      icon:'💬' },
+  call:        { label:'Call',         icon:'' },
+  text:        { label:'Text',         icon:'' },
+  sms:         { label:'Text',         icon:'' },
+  email:       { label:'Email',        icon:'' },
+  webchat:     { label:'Webchat',      icon:'' },
   note:        { label:'Note',         icon:'📝' },
   store_visit: { label:'Store Visit',  icon:'🏪' },
   walk_in:     { label:'Walk-in',      icon:'🏪' },
@@ -8268,12 +8319,20 @@ let workingLeads = LEADS.map(l => ({ ...l }));
 
 const SALES_SYNC_ENDPOINT = '/.netlify/functions/sales-leads';
 const SALES_MUTATION_ENDPOINT = '/.netlify/functions/sales-lead-mutation';
+const SALES_SMS_ENDPOINT = '/.netlify/functions/sales-send-sms';
+const SALES_EMAIL_ENDPOINT = '/.netlify/functions/sales-send-email';
+const SALES_CALL_ENDPOINT = '/.netlify/functions/sales-start-call';
+const SALES_COMMS_STATUS_ENDPOINT = '/.netlify/functions/sales-communications-status';
+const SALES_TWILIO_FROM_DISPLAY = '801-701-0113';
+const SALES_EMAIL_FROM = 'brigham@brighamlarsonpianos.com';
+const SALES_EMAIL_BCC = 'info@brighamlarsonpianos.com';
 const SALES_SYNC_INTERVAL_MS = 30000;
 const SALES_FLUSH_INTERVAL_MS = 20000;
 let salesSyncLive = false;
 let salesSyncTimer = null;
 let salesFlushTimer = null;
 let salesFlushInFlight = false;
+let salesCommsTimer = null;
 
 /* ---- Team passcode (sent as x-blp-key; validated by Netlify functions) ---- */
 function getTeamKey({ forcePrompt = false } = {}) {
@@ -8281,7 +8340,12 @@ function getTeamKey({ forcePrompt = false } = {}) {
   const alreadyAsked = sessionStorage.getItem('blpKeyPromptShown') === '1';
   if ((!key && !alreadyAsked) || forcePrompt) {
     sessionStorage.setItem('blpKeyPromptShown', '1');
-    key = (window.prompt('Enter the BLP team passcode to connect to the live Leads Log:') || '').trim();
+    try {
+      key = (window.prompt('Enter the BLP team passcode to connect to the live Leads Log:') || '').trim();
+    } catch (error) {
+      console.warn('BLP sync: passcode prompt unavailable; staying in snapshot mode.', error);
+      key = '';
+    }
     if (key) localStorage.setItem('blpTeamKey', key);
   }
   return key;
@@ -8289,6 +8353,78 @@ function getTeamKey({ forcePrompt = false } = {}) {
 function clearTeamKey() { localStorage.removeItem('blpTeamKey'); }
 function authHeaders(extra = {}) {
   return { 'x-blp-key': getTeamKey(), ...extra };
+}
+
+function normalizePhoneForAction(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (raw.startsWith('+')) return '+' + raw.replace(/\D/g, '');
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 10) return '+1' + digits;
+  if (digits.length === 11 && digits.startsWith('1')) return '+' + digits;
+  return digits;
+}
+
+function phoneUri(value) {
+  const phone = normalizePhoneForAction(value);
+  return phone ? 'tel:' + encodeURIComponent(phone) : '';
+}
+
+function smsUri(value, body = '') {
+  const phone = normalizePhoneForAction(value);
+  if (!phone) return '';
+  return 'sms:' + encodeURIComponent(phone) + (body ? '?&body=' + encodeURIComponent(body) : '');
+}
+
+function mailtoUri(to, { subject = '', body = '' } = {}) {
+  if (!to) return '';
+  const params = new URLSearchParams();
+  if (subject) params.set('subject', subject);
+  params.set('bcc', SALES_EMAIL_BCC);
+  const fromNote = `\n\n--\nSend from: ${SALES_EMAIL_FROM}\nBCC: ${SALES_EMAIL_BCC}`;
+  params.set('body', body + fromNote);
+  return 'mailto:' + encodeURIComponent(to) + '?' + params.toString();
+}
+
+async function postCommunication(endpoint, payload) {
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (response.status === 401) {
+    clearTeamKey();
+    throw new Error('Wrong team passcode — reload and enter the passcode again.');
+  }
+  if (!response.ok || !data.ok) {
+    const error = new Error(data.error || ('HTTP ' + response.status));
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
+  return data;
+}
+
+function openNativePhoneFallback(lead) {
+  const href = phoneUri(lead && lead.phone);
+  if (!href) return false;
+  window.open(href, '_self');
+  return true;
+}
+
+function openNativeSmsFallback(lead, body = '') {
+  const href = smsUri(lead && lead.phone, body);
+  if (!href) return false;
+  window.open(href, '_self');
+  return true;
+}
+
+function openNativeEmailFallback(lead, draft = {}) {
+  const href = mailtoUri(lead && lead.email, { subject: draft.subject || '', body: draft.body || '' });
+  if (!href) return false;
+  window.open(href, '_self');
+  return true;
 }
 
 /* ---- Pending mutation queue, persisted so failed saves survive refresh ---- */
@@ -8357,6 +8493,65 @@ function setSyncStatus(text, mode = 'snapshot') {
   } else if (banner) {
     banner.style.display = 'none';
   }
+}
+
+function setCommsStatus(text, mode = 'snapshot', title = '') {
+  const textEl = document.getElementById('salesCommsText');
+  const dotEl = document.getElementById('salesCommsDot');
+  const wrapper = document.getElementById('salesCommsStatus');
+  if (textEl && dotEl) {
+    textEl.textContent = text;
+    dotEl.classList.remove('bg-emerald-500', 'bg-amber-500', 'bg-red-500');
+    dotEl.classList.add(mode === 'live' ? 'bg-emerald-500' : mode === 'error' ? 'bg-red-500' : 'bg-amber-500');
+  }
+  if (wrapper && title) wrapper.title = title;
+}
+
+function summarizeCommsMissing(status) {
+  if (!status || !status.status) return 'Status unavailable';
+  const parts = [];
+  ['sms', 'call', 'email'].forEach((key) => {
+    const channel = status.status[key] || {};
+    const missing = channel.missing || [];
+    const problems = [
+      ...missing,
+      channel.mismatch,
+      channel.fromMismatch,
+      channel.bccMismatch,
+    ].filter(Boolean);
+    if (problems.length) parts.push(`${key}: ${problems.join(', ')}`);
+  });
+  return parts.length ? parts.join(' | ') : 'SMS, call, and email are configured';
+}
+
+async function loadCommunicationStatus({ silent = false } = {}) {
+  if (!silent) setCommsStatus('Comms checking', 'snapshot');
+  let data;
+  try {
+    const response = await fetch(SALES_COMMS_STATUS_ENDPOINT, {
+      cache: 'no-store',
+      headers: authHeaders(),
+    });
+    if (response.status === 401) {
+      clearTeamKey();
+      setCommsStatus('Comms passcode', 'error', 'Wrong team passcode — reload to retry communication status.');
+      return false;
+    }
+    data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      const localOrUnconfigured = response.status === 404 || data.configured === false;
+      setCommsStatus(localOrUnconfigured ? 'Comms setup needed' : 'Comms check failed', localOrUnconfigured ? 'snapshot' : 'error', data.error || 'Communication status unavailable');
+      return false;
+    }
+  } catch (error) {
+    console.warn('BLP comms: status check unavailable', error);
+    setCommsStatus('Comms fallback', 'snapshot', 'Communication status unavailable; actions will use configured backend or native fallbacks.');
+    return false;
+  }
+
+  const summary = summarizeCommsMissing(data);
+  setCommsStatus(data.configured ? 'Comms live' : 'Comms setup needed', data.configured ? 'live' : 'snapshot', summary);
+  return !!data.configured;
 }
 
 function serializeLeadForSync(lead) {
@@ -8522,6 +8717,12 @@ function startSalesSync() {
   salesSyncTimer = setInterval(() => loadLiveLeads({ silent: true }), SALES_SYNC_INTERVAL_MS);
   if (salesFlushTimer) clearInterval(salesFlushTimer);
   salesFlushTimer = setInterval(() => flushPendingMutations(), SALES_FLUSH_INTERVAL_MS);
+}
+
+function startCommunicationStatusChecks() {
+  loadCommunicationStatus();
+  if (salesCommsTimer) clearInterval(salesCommsTimer);
+  salesCommsTimer = setInterval(() => loadCommunicationStatus({ silent: true }), 60000);
 }
 
 /* ============================================================
@@ -8984,6 +9185,7 @@ function openDrawer(id) {
       <div class="blp-detail-grid grid grid-cols-2 gap-3 text-xs">
         <div><div class="text-zinc-500 uppercase text-[10px]">Email</div><div class="font-medium break-all">${escapeHtml(l.email || '—')}</div></div>
         <div><div class="text-zinc-500 uppercase text-[10px]">Phone</div><div class="font-medium">${escapeHtml(l.phone || '—')}</div></div>
+        ${renderDrawerContactActions(l)}
         <div><div class="text-zinc-500 uppercase text-[10px]">Opened by</div><div class="font-medium">${repName(l.rep_opened)}</div></div>
         <div><div class="text-zinc-500 uppercase text-[10px]">Currently working</div><div class="font-medium">${repName(l.rep_working || l.rep)}</div></div>
         <div><div class="text-zinc-500 uppercase text-[10px]">Closed by</div><div class="font-medium">${l.rep_closed ? repName(l.rep_closed) : 'Not closed yet'}</div></div>
@@ -9109,7 +9311,7 @@ function openDrawer(id) {
         <div class="mt-3 flex flex-wrap gap-2">
           <button onclick="openDraft('${l.id}')" ${!l.email ? 'disabled title="No email on file"' : ''} class="text-xs px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">✉️ Draft email</button>
           <button onclick="sendSms('${l.id}')" ${!l.phone ? 'disabled title="No cell number on file"' : ''} class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed">💬 Send SMS</button>
-          <button onclick="callLead('${l.id}')"         class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700">📞 Call</button>
+          <button onclick="callLead('${l.id}')" ${!l.phone ? 'disabled title="No phone number on file"' : ''} class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed">📞 Call</button>
           <button onclick="openInboundLog('${l.id}')"  class="text-xs px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" title="Mark that the lead replied / reached out — updates engagement state">📥 Log reply</button>
           ${!l.brighamFlag ? `<button onclick="escalate('${l.id}')" class="text-xs px-3 py-1.5 rounded-md border border-orange-300 text-orange-700 dark:border-orange-700 dark:text-orange-300">⚠️ ${l.rep === 'brigham' ? 'Flag urgent' : 'Escalate to Brigham'}</button>` : ''}
         </div>
@@ -9147,7 +9349,7 @@ function openDrawer(id) {
                 <div class="text-zinc-700 dark:text-zinc-200 font-medium">${escapeHtml(t.date || '—')}</div>
                 <div class="text-zinc-500">${escapeHtml(t.when || '')}</div>
                 <div class="text-[10px] uppercase tracking-wider text-zinc-500 mt-0.5">
-                  <span class="mr-0.5">${ti.icon}</span>${ti.label}
+                  ${ti.icon ? `<span class="mr-0.5">${ti.icon}</span>` : ''}${ti.label}
                 </div>
               </div>
               <div class="flex-1 border-l-2 border-zinc-200 dark:border-zinc-700 pl-3 pb-1 text-zinc-700 dark:text-zinc-200 whitespace-pre-wrap break-words">
@@ -9302,10 +9504,15 @@ function closeDraft() {
 function saveDraft() {
   const l = workingLeads.find(x => x.id === (draftLeadId || drawerLeadId));
   if (!l) return;
+  const draft = {
+    subject: document.getElementById('draftSubject').value,
+    body: document.getElementById('draftBody').value,
+  };
   closeDraft();
-  toast('Saved to Gmail Drafts (info@brighamlarsonpianos.com)');
-  ACTIONS.unshift({ who:'Karmel', when:'just now', what:'saved draft for '+l.name, icon:'✉️' });
-  (TIMELINES[l.id] = TIMELINES[l.id] || []).unshift({ date: todayStr(), when:'just now', type:'email', text:'Drafted follow-up email' });
+  openNativeEmailFallback(l, draft);
+  toast('Opened email composer — send from ' + SALES_EMAIL_FROM + '; BCC is prefilled to ' + SALES_EMAIL_BCC);
+  ACTIONS.unshift({ who:'Karmel', when:'just now', what:'opened email composer for '+l.name, icon:'✓' });
+  (TIMELINES[l.id] = TIMELINES[l.id] || []).unshift({ date: todayStr(), when:'just now', type:'email', text:'Opened follow-up email composer' });
   scheduleLeadSync('update', l, { source: 'saveDraft' });
   renderMiniLog();
 }
@@ -9362,35 +9569,33 @@ function loadAiDraftIntoSms() {
   toast('Loaded fresh AI draft');
 }
 
-function sendSmsNow() {
+async function sendSmsNow() {
   if (smsLeadId == null) return;
   const l = workingLeads.find(x => x.id === smsLeadId);
   if (!l) return;
-  const from = document.getElementById('smsFrom').value;
   const body = document.getElementById('smsBody').value.trim();
   if (!body) return toast('Message is empty');
 
-  // PRODUCTION HOOK — replace these branches with real backend calls.
-  if (from === 'imessage') {
-    /* iMessage via macOS Messages.app + AppleScript on a backend running on this Mac:
-         POST /api/sms/imessage { to, body }
-         backend runs:
-           osascript -e 'tell application "Messages" to send "BODY" to buddy "PHONE"
-             of service id "E:karmel@brighamlarsonpianos.com"'
-       Requires Messages signed in + Full Disk Access for Terminal/node. */
-  } else if (from === 'twilio') {
-    /* Twilio:
-         POST /api/sms/twilio { to, body, from: '+18017010113' }
-         backend uses Twilio Node SDK:
-           await twilio(SID, TOKEN).messages.create({ to, from, body });
-       Need TWILIO_ACCOUNT_SID + AUTH_TOKEN env vars + 801-701-0113 provisioned in Twilio. */
-  } else if (from === 'salescaptain') {
-    /* SalesCaptain SMS via existing SC API integration (see scripts/salescaptain_client.py) */
+  let fromLabel = `Twilio (${SALES_TWILIO_FROM_DISPLAY})`;
+  try {
+    await postCommunication(SALES_SMS_ENDPOINT, {
+      leadId: l.id,
+      to: l.phone,
+      body,
+    });
+  } catch (error) {
+    console.warn('BLP sales SMS: backend send unavailable; opening native text composer.', error);
+    if (!openNativeSmsFallback(l, body)) return toast('No cell number on file for ' + l.name);
+    fromLabel = 'device text composer';
+    if (error.status === 501 || (error.data && error.data.configured === false)) {
+      toast('Twilio is not configured yet — opened your device text composer instead.');
+    } else {
+      toast('Could not send through Twilio — opened your device text composer instead.');
+    }
   }
 
-  // Prototype behavior: log to timeline + counters
+  // Log to timeline + counters after the backend send or native composer fallback is started.
   const todayDate = todayStr();
-  const fromLabel = from === 'imessage' ? 'iMessage' : (from === 'twilio' ? 'Twilio (801-701-0113)' : 'SalesCaptain');
   (TIMELINES[l.id] = TIMELINES[l.id] || []).unshift({
     date: todayDate,
     when: 'just now',
@@ -9417,10 +9622,10 @@ function sendSmsNow() {
     who: 'Karmel',
     when: 'just now',
     what: `sent text via ${fromLabel} to ${l.name}`,
-    icon: '💬',
+    icon: '✓',
   });
 
-  scheduleLeadSync('update', l, { source: 'sendSmsNow', from });
+  scheduleLeadSync('update', l, { source: 'sendSmsNow', from: fromLabel });
   closeSmsModal();
   toast(`✅ Text sent to ${l.name} via ${fromLabel}`);
   renderAll();
@@ -9505,11 +9710,24 @@ function closeCallLog() {
   document.getElementById('callModal').classList.add('hidden');
   callLeadId = null;
 }
-function dialNow() {
+async function dialNow() {
   const l = workingLeads.find(x => x.id === callLeadId);
   if (!l || !l.phone) return;
-  // tel: link — macOS Continuity will route through iPhone, or FaceTime audio
-  window.open(`tel:${l.phone.replace(/[^0-9+]/g, '')}`, '_self');
+  try {
+    await postCommunication(SALES_CALL_ENDPOINT, {
+      leadId: l.id,
+      to: l.phone,
+    });
+    toast(`Calling your bridge phone, then ${l.name}, from ${SALES_TWILIO_FROM_DISPLAY}`);
+  } catch (error) {
+    console.warn('BLP sales call: Twilio bridge unavailable; opening native phone dialer.', error);
+    if (!openNativePhoneFallback(l)) return toast('No phone number on file for ' + l.name);
+    if (error.status === 501 || (error.data && error.data.configured === false)) {
+      toast('Twilio calling is not configured yet — opened your phone dialer instead.');
+    } else {
+      toast('Could not start Twilio call — opened your phone dialer instead.');
+    }
+  }
 }
 function logCallOutcome(outcome) {
   if (callLeadId == null) return;
@@ -9520,7 +9738,7 @@ function logCallOutcome(outcome) {
   const outcomeMeta = {
     connected:        { direction: 'inbound',  label: 'Call connected',           emoji: '✅', actionLabel: 'connected with ' },
     voicemail:        { direction: 'outbound', label: 'Left voicemail',           emoji: '📬', actionLabel: 'left VM for '       },
-    no_answer:        { direction: 'outbound', label: 'Called — no answer',        emoji: '📵', actionLabel: 'tried calling '     },
+    no_answer:        { direction: 'outbound', label: 'Called — no answer',        emoji: '—', actionLabel: 'tried calling '     },
     they_called_back: { direction: 'inbound',  label: 'They called us back',      emoji: '🔄', actionLabel: 'received call from ' },
   }[outcome];
   if (!outcomeMeta) return;
@@ -9895,11 +10113,11 @@ async function notifyBrighamOfNewLead(lead) {
       return;
     }
 
-    ACTIONS.unshift({ who:'System', when:'just now', what:'texted Brigham about new lead: '+lead.name, icon:'📲' });
+    ACTIONS.unshift({ who:'System', when:'just now', what:'texted Brigham about new lead: '+lead.name, icon:'🔔' });
     renderMiniLog();
   } catch (error) {
     console.warn('Brigham SMS alert unavailable in this environment', error);
-    ACTIONS.unshift({ who:'System', when:'just now', what:'new lead SMS alert queued locally for '+lead.name, icon:'📲' });
+    ACTIONS.unshift({ who:'System', when:'just now', what:'new lead SMS alert queued locally for '+lead.name, icon:'🔔' });
     renderMiniLog();
   }
 }
@@ -9969,6 +10187,7 @@ document.addEventListener('keydown', (e) => {
 
 renderAll();
 startSalesSync();
+startCommunicationStatusChecks();
 </script>
 </body>
 </html>
