@@ -36,11 +36,14 @@ Do not paste secrets into this file, chat, email, tickets, screenshots, or git. 
 
 ## Email
 
-- Email provider: SendGrid.
-- `SENDGRID_API_KEY`: secret value, enter directly into Netlify.
-- `SALES_EMAIL_FROM`: must be `brigham@brighamlarsonpianos.com`.
+- Email provider: Gmail API OAuth.
+- `GOOGLE_CLIENT_ID`: secret/client value from Google Cloud, enter directly into Netlify.
+- `GOOGLE_CLIENT_SECRET`: secret value from Google Cloud, enter directly into Netlify.
+- `GOOGLE_REFRESH_TOKEN`: secret value created by `node scripts/gmail-oauth-local-authorize.js`, enter directly into Netlify.
+- `GMAIL_SEND_AS`: must be `brigham@brighamlarsonpianos.com`.
 - `SALES_EMAIL_BCC`: must be `info@brighamlarsonpianos.com`.
-- Confirm `brigham@brighamlarsonpianos.com` is a verified sender/domain:
+- Confirm Gmail API is enabled in the Google Cloud project:
+- Confirm `brigham@brighamlarsonpianos.com` completed OAuth authorization:
 - Confirm BCC to `info@brighamlarsonpianos.com` is allowed:
 
 ## Safe Test Recipients

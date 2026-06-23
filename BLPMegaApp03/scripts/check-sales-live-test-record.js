@@ -95,7 +95,8 @@ function containsLikelySecret(markdown) {
   const suspicious = [
     /BLP_APP_ACCESS_KEY\s*=\s*(?!your-passcode\b)(?!\.\.\.\b)\S+/i,
     /TWILIO_AUTH_TOKEN\s*=\s*(?!\.\.\.\b)\S+/i,
-    /SENDGRID_API_KEY\s*=\s*(?!\.\.\.\b)\S+/i,
+    /GOOGLE_CLIENT_SECRET\s*=\s*(?!\.\.\.\b)\S+/i,
+    /GOOGLE_REFRESH_TOKEN\s*=\s*(?!\.\.\.\b)\S+/i,
     /\bSG\.[A-Za-z0-9_-]{12,}/,
     /\bAC[a-f0-9]{32}\b/i,
   ];

@@ -26,6 +26,7 @@ const requiredFiles = [
   path.join(root, "scripts/check-live-sales-communications.js"),
   path.join(root, "scripts/run-live-sales-communications-test.js"),
   path.join(root, "scripts/audit-sales-communication-icons.js"),
+  path.join(root, "scripts/gmail-oauth-local-authorize.js"),
   path.join(root, "scripts/validate-sales-communications-env.js"),
   path.join(root, "scripts/sales-communications-readiness.js"),
   path.join(root, "scripts/check-sales-live-test-record.js"),
@@ -37,8 +38,10 @@ const requiredEnvKeys = [
   "TWILIO_AUTH_TOKEN",
   "TWILIO_FROM_NUMBER=+18017010113",
   "SALES_CALL_BRIDGE_NUMBER",
-  "SENDGRID_API_KEY",
-  "SALES_EMAIL_FROM=brigham@brighamlarsonpianos.com",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "GOOGLE_REFRESH_TOKEN",
+  "GMAIL_SEND_AS=brigham@brighamlarsonpianos.com",
   "SALES_EMAIL_BCC=info@brighamlarsonpianos.com",
 ];
 
@@ -111,6 +114,23 @@ async function withMockFetch(fn) {
   const calls = [];
   global.fetch = async (url, options = {}) => {
     calls.push({ url: String(url), options });
+    if (String(url) === "https://oauth2.googleapis.com/token") {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({
+          access_token: "mock-access-token",
+          scope: "https://www.googleapis.com/auth/gmail.send",
+        }),
+      };
+    }
+    if (String(url) === "https://gmail.googleapis.com/gmail/v1/users/me/messages/send") {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ id: "mock-gmail-message" }),
+      };
+    }
     return {
       ok: true,
       status: 200,
@@ -140,6 +160,10 @@ function event(body) {
 
 function assert(condition, label) {
   condition ? pass(label) : fail(label);
+}
+
+function decodeBase64Url(value) {
+  return Buffer.from(String(value || "").replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8");
 }
 
 for (const file of requiredFiles) {
@@ -212,7 +236,7 @@ contains(salesReadme, "../../docs/sales-communications-production-setup.md")
   ? pass("sales README links sales communications runbook")
   : fail("sales README missing sales communications runbook link");
 
-contains(salesReadme, "SALES_EMAIL_FROM") && contains(salesReadme, "required; must be `brigham@brighamlarsonpianos.com`")
+contains(salesReadme, "GMAIL_SEND_AS") && contains(salesReadme, "required; must be `brigham@brighamlarsonpianos.com`")
   ? pass("sales README marks approved sender as required")
   : fail("sales README should mark approved sender as required");
 
@@ -244,7 +268,7 @@ contains(runbook, "docs/sales-communications-credential-intake.md") &&
 contains(appReadme, "docs/sales-communications-credential-intake.md") &&
 contains(credentialIntake, "Do not paste secrets") &&
 contains(credentialIntake, "TWILIO_FROM_NUMBER`: must be `+18017010113`") &&
-contains(credentialIntake, "SALES_EMAIL_FROM`: must be `brigham@brighamlarsonpianos.com`") &&
+contains(credentialIntake, "GMAIL_SEND_AS`: must be `brigham@brighamlarsonpianos.com`") &&
 contains(credentialIntake, "SALES_EMAIL_BCC`: must be `info@brighamlarsonpianos.com`")
   ? pass("docs link credential intake and capture required approved identities")
   : fail("credential intake should document approved identities without secrets");
@@ -296,8 +320,10 @@ async function verifyMockedProviderPayloads() {
     TWILIO_AUTH_TOKEN: "token",
     TWILIO_FROM_NUMBER: "+18017010113",
     SALES_CALL_BRIDGE_NUMBER: "+18015550101",
-    SENDGRID_API_KEY: "SG.test",
-    SALES_EMAIL_FROM: "brigham@brighamlarsonpianos.com",
+    GOOGLE_CLIENT_ID: "google-client-id",
+    GOOGLE_CLIENT_SECRET: "google-client-secret",
+    GOOGLE_REFRESH_TOKEN: "google-refresh-token",
+    GMAIL_SEND_AS: "brigham@brighamlarsonpianos.com",
     SALES_EMAIL_BCC: "info@brighamlarsonpianos.com",
   }, async () => {
     await withMockFetch(async (calls) => {
@@ -315,14 +341,20 @@ async function verifyMockedProviderPayloads() {
     await withMockFetch(async (calls) => {
       const email = loadFunction("netlify/functions/sales-send-email.js");
       const response = await email.handler(event({ to: "client@example.com", subject: "BLP follow-up", body: "Hi there" }));
-      const payload = JSON.parse(calls[0].options.body);
+      const tokenForm = new URLSearchParams(calls[0].options.body);
+      const payload = JSON.parse(calls[1].options.body);
+      const mime = decodeBase64Url(payload.raw);
       const body = JSON.parse(response.body);
       assert(response.statusCode === 200 && body.ok, "mock email function returns ok");
-      assert(calls[0].url === "https://api.sendgrid.com/v3/mail/send", "mock email uses SendGrid endpoint");
-      assert(payload.from.email === "brigham@brighamlarsonpianos.com", "mock email sends from brigham@");
-      assert(payload.personalizations[0].bcc[0].email === "info@brighamlarsonpianos.com", "mock email includes info@ BCC");
-      assert(payload.personalizations[0].to[0].email === "client@example.com", "mock email sends to requested recipient");
-      assert(payload.subject === "BLP follow-up", "mock email sends requested subject");
+      assert(calls[0].url === "https://oauth2.googleapis.com/token", "mock email refreshes Google OAuth token");
+      assert(tokenForm.get("grant_type") === "refresh_token", "mock email uses Google refresh token grant");
+      assert(calls[1].url === "https://gmail.googleapis.com/gmail/v1/users/me/messages/send", "mock email uses Gmail send endpoint");
+      assert(calls[1].options.headers.Authorization === "Bearer mock-access-token", "mock email sends Gmail access token");
+      assert(mime.includes("From: brigham@brighamlarsonpianos.com"), "mock email sends from brigham@");
+      assert(mime.includes("Bcc: info@brighamlarsonpianos.com"), "mock email includes info@ BCC");
+      assert(mime.includes("To: client@example.com"), "mock email sends to requested recipient");
+      assert(mime.includes("Subject: BLP follow-up"), "mock email sends requested subject");
+      assert(mime.includes("Hi there"), "mock email sends requested body");
     });
 
     await withMockFetch(async (calls) => {
@@ -356,8 +388,10 @@ async function verifyMockedProviderPayloads() {
     TWILIO_AUTH_TOKEN: "token",
     TWILIO_FROM_NUMBER: "+18015550123",
     SALES_CALL_BRIDGE_NUMBER: "+18015550101",
-    SENDGRID_API_KEY: "SG.test",
-    SALES_EMAIL_FROM: "someone-else@brighamlarsonpianos.com",
+    GOOGLE_CLIENT_ID: "google-client-id",
+    GOOGLE_CLIENT_SECRET: "google-client-secret",
+    GOOGLE_REFRESH_TOKEN: "google-refresh-token",
+    GMAIL_SEND_AS: "someone-else@brighamlarsonpianos.com",
     SALES_EMAIL_BCC: "not-info@brighamlarsonpianos.com",
   }, async () => {
     const sms = loadFunction("netlify/functions/sales-send-sms.js");

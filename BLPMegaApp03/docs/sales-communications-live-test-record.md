@@ -2,7 +2,7 @@
 
 Use this record after production environment variables are installed and the deployed Sales Console is ready for live verification.
 
-Do not paste Twilio auth tokens, SendGrid API keys, app passcodes, customer PII, or full message contents into this file.
+Do not paste Twilio auth tokens, Google OAuth secrets, app passcodes, customer PII, or full message contents into this file.
 
 ## Deployment
 

@@ -1,5 +1,6 @@
 const APPROVED_FROM_EMAIL = "brigham@brighamlarsonpianos.com";
 const APPROVED_BCC_EMAIL = "info@brighamlarsonpianos.com";
+const GMAIL_SEND_SCOPE = "https://www.googleapis.com/auth/gmail.send";
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
@@ -13,17 +14,19 @@ exports.handler = async (event) => {
   const authError = requireTeamKey(event);
   if (authError) return authError;
 
-  const apiKey = process.env.SENDGRID_API_KEY;
-  const from = String(process.env.SALES_EMAIL_FROM || "").trim().toLowerCase();
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+  const from = String(process.env.GMAIL_SEND_AS || "").trim().toLowerCase();
   const bcc = String(process.env.SALES_EMAIL_BCC || "").trim().toLowerCase();
 
-  if (!apiKey || !from || !bcc) {
+  if (!clientId || !clientSecret || !refreshToken || !from || !bcc) {
     return json(501, {
       ok: false,
       configured: false,
-      error: "Sales email sending is not configured yet.",
-      required: ["SENDGRID_API_KEY", "SALES_EMAIL_FROM", "SALES_EMAIL_BCC"],
-      approved: { SALES_EMAIL_FROM: APPROVED_FROM_EMAIL, SALES_EMAIL_BCC: APPROVED_BCC_EMAIL },
+      error: "Sales Gmail sending is not configured yet.",
+      required: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN", "GMAIL_SEND_AS", "SALES_EMAIL_BCC"],
+      approved: { GMAIL_SEND_AS: APPROVED_FROM_EMAIL, SALES_EMAIL_BCC: APPROVED_BCC_EMAIL },
     });
   }
   if (from !== APPROVED_FROM_EMAIL || bcc !== APPROVED_BCC_EMAIL) {
@@ -31,8 +34,8 @@ exports.handler = async (event) => {
       ok: false,
       configured: false,
       error: "Sales email sender and BCC must match the approved BLP addresses.",
-      approved: { SALES_EMAIL_FROM: APPROVED_FROM_EMAIL, SALES_EMAIL_BCC: APPROVED_BCC_EMAIL },
-      received: { SALES_EMAIL_FROM: from, SALES_EMAIL_BCC: bcc },
+      approved: { GMAIL_SEND_AS: APPROVED_FROM_EMAIL, SALES_EMAIL_BCC: APPROVED_BCC_EMAIL },
+      received: { GMAIL_SEND_AS: from, SALES_EMAIL_BCC: bcc },
     });
   }
 
@@ -47,35 +50,76 @@ exports.handler = async (event) => {
   if (!subject) return json(400, { ok: false, error: "Subject is required." });
   if (!body) return json(400, { ok: false, error: "Email body is required." });
 
+  let accessToken;
+  try {
+    accessToken = await getGoogleAccessToken({ clientId, clientSecret, refreshToken });
+  } catch (error) {
+    return json(502, { ok: false, error: "Google OAuth token refresh failed.", detail: String(error.message || error).slice(0, 800) });
+  }
+
+  const raw = encodeBase64Url(buildMimeMessage({ from, to, bcc, subject, body }));
   let response;
   try {
-    response = await fetch("https://api.sendgrid.com/v3/mail/send", {
+    response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        personalizations: [{
-          to: [{ email: to }],
-          bcc: isEmail(bcc) ? [{ email: bcc }] : [],
-        }],
-        from: { email: from },
-        subject,
-        content: [{ type: "text/plain", value: body }],
-      }),
+      body: JSON.stringify({ raw }),
     });
   } catch (error) {
-    return json(502, { ok: false, error: "Email provider request failed.", detail: String(error.message || error).slice(0, 800) });
+    return json(502, { ok: false, error: "Gmail send request failed.", detail: String(error.message || error).slice(0, 800) });
   }
 
   const text = await response.text();
   if (!response.ok) {
-    return json(response.status, { ok: false, error: "Email send failed.", detail: text.slice(0, 800) });
+    return json(response.status, { ok: false, error: "Gmail send failed.", detail: text.slice(0, 800) });
   }
 
-  return json(200, { ok: true, from, bcc, to });
+  const result = parseJson(text);
+  return json(200, { ok: true, provider: "gmail", from, bcc, to, messageId: result.ok ? result.data.id : undefined });
 };
+
+async function getGoogleAccessToken({ clientId, clientSecret, refreshToken }) {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+    }),
+  });
+  const text = await response.text();
+  const parsed = parseJson(text);
+  if (!response.ok || !parsed.ok || !parsed.data.access_token) {
+    throw new Error(text || `Google token endpoint returned ${response.status}`);
+  }
+  if (parsed.data.scope && !String(parsed.data.scope).split(/\s+/).includes(GMAIL_SEND_SCOPE)) {
+    throw new Error(`Google refresh token is missing ${GMAIL_SEND_SCOPE}`);
+  }
+  return parsed.data.access_token;
+}
+
+function buildMimeMessage({ from, to, bcc, subject, body }) {
+  return [
+    `From: ${sanitizeHeader(from)}`,
+    `To: ${sanitizeHeader(to)}`,
+    `Bcc: ${sanitizeHeader(bcc)}`,
+    `Subject: ${sanitizeHeader(subject)}`,
+    "MIME-Version: 1.0",
+    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: 8bit",
+    "",
+    body,
+  ].join("\r\n");
+}
+
+function encodeBase64Url(value) {
+  return Buffer.from(value, "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
 
 function requireTeamKey(event) {
   const accessKey = process.env.BLP_APP_ACCESS_KEY;
@@ -99,6 +143,10 @@ function parseJson(body) {
 
 function isEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ""));
+}
+
+function sanitizeHeader(value) {
+  return String(value || "").replace(/[\r\n]+/g, " ").trim();
 }
 
 function corsHeaders() {

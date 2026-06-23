@@ -5,7 +5,7 @@ const APPROVED_BCC_EMAIL = "info@brighamlarsonpianos.com";
 const groups = {
   sms: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER"],
   call: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER", "SALES_CALL_BRIDGE_NUMBER"],
-  email: ["SENDGRID_API_KEY", "SALES_EMAIL_FROM", "SALES_EMAIL_BCC"],
+  email: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN", "GMAIL_SEND_AS", "SALES_EMAIL_BCC"],
 };
 
 exports.handler = async (event) => {
@@ -28,7 +28,7 @@ exports.handler = async (event) => {
   );
 
   const twilioFrom = normalizePhone(process.env.TWILIO_FROM_NUMBER);
-  const emailFrom = String(process.env.SALES_EMAIL_FROM || "").trim().toLowerCase();
+  const emailFrom = String(process.env.GMAIL_SEND_AS || "").trim().toLowerCase();
   const emailBcc = String(process.env.SALES_EMAIL_BCC || "").trim().toLowerCase();
 
   status.email.from = emailFrom || APPROVED_FROM_EMAIL;
@@ -49,7 +49,7 @@ exports.handler = async (event) => {
   }
   if (emailFrom && emailFrom !== APPROVED_FROM_EMAIL) {
     status.email.configured = false;
-    status.email.fromMismatch = "SALES_EMAIL_FROM must be brigham@brighamlarsonpianos.com";
+    status.email.fromMismatch = "GMAIL_SEND_AS must be brigham@brighamlarsonpianos.com";
   }
   if (emailBcc && emailBcc !== APPROVED_BCC_EMAIL) {
     status.email.configured = false;

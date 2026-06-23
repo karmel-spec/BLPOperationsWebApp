@@ -32,17 +32,17 @@ Confirm in Twilio:
 
 The functions reject any `TWILIO_FROM_NUMBER` other than `+18017010113`.
 
-### Email Provider
+### Gmail Provider
 
-The current Netlify email function uses SendGrid. Confirm:
+The Netlify email function uses the Gmail API with OAuth. Confirm:
 
-- `brigham@brighamlarsonpianos.com` is verified as an authenticated sender or domain sender.
-- SendGrid is allowed to send mail for `brighamlarsonpianos.com`.
+- The Google Cloud project has the Gmail API enabled.
+- The OAuth consent screen is configured for BLP/Google Workspace.
+- The OAuth client has `http://localhost:7777/oauth2callback` registered as a redirect URI for the local authorization helper.
+- `brigham@brighamlarsonpianos.com` authorizes the app with the `https://www.googleapis.com/auth/gmail.send` scope.
 - BCC to `info@brighamlarsonpianos.com` is allowed.
 
 The email function rejects any sender other than `brigham@brighamlarsonpianos.com` or any BCC other than `info@brighamlarsonpianos.com`.
-
-If BLP prefers Google Workspace/Gmail API instead of SendGrid, replace `sales-send-email.js` with a Gmail API implementation and keep the same browser payload contract: `{ to, subject, body }`.
 
 ## Netlify Environment Variables
 
@@ -57,14 +57,24 @@ TWILIO_AUTH_TOKEN=
 TWILIO_FROM_NUMBER=+18017010113
 SALES_CALL_BRIDGE_NUMBER=
 BRIGHAM_LEAD_ALERT_PHONE=
-SENDGRID_API_KEY=
-SALES_EMAIL_FROM=brigham@brighamlarsonpianos.com
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REFRESH_TOKEN=
+GMAIL_SEND_AS=brigham@brighamlarsonpianos.com
 SALES_EMAIL_BCC=info@brighamlarsonpianos.com
 ```
 
 `SALES_CALL_BRIDGE_NUMBER` is the staff phone Twilio calls first. After staff answers, Twilio dials the customer with `+18017010113` as caller ID.
 
 `BRIGHAM_LEAD_ALERT_PHONE` is used by the existing new-lead alert function. It may be the same staff phone as `SALES_CALL_BRIDGE_NUMBER`, but it does not have to be.
+
+To create `GOOGLE_REFRESH_TOKEN`, run the local Gmail authorization helper from `BLPMegaApp03` after creating the Google OAuth client:
+
+```bash
+GOOGLE_CLIENT_ID=your-client-id GOOGLE_CLIENT_SECRET=your-client-secret node scripts/gmail-oauth-local-authorize.js
+```
+
+Open the printed URL, sign in as `brigham@brighamlarsonpianos.com`, approve Gmail send access, then copy only the printed `GOOGLE_REFRESH_TOKEN` value into Netlify.
 
 ## Local Checks Before Deploy
 
@@ -83,7 +93,7 @@ node scripts/sales-communications-readiness.js /path/to/local-sales.env
 Expected result:
 
 ```text
-All 122 sales communication verification checks passed.
+All sales communication verification checks passed.
 ```
 
 Before copying values into Netlify, validate a local env-style file without printing secrets:
@@ -97,7 +107,7 @@ Expected result:
 ```text
 Sales communication environment has the required keys and approved identities.
 TWILIO_FROM_NUMBER=+18017010113
-SALES_EMAIL_FROM=brigham@brighamlarsonpianos.com
+GMAIL_SEND_AS=brigham@brighamlarsonpianos.com
 SALES_EMAIL_BCC=info@brighamlarsonpianos.com
 Secrets were not printed.
 ```
@@ -127,7 +137,7 @@ Expected missing-variable summary:
 
 ```text
 sms 501 true TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN,TWILIO_FROM_NUMBER
-email 501 true SENDGRID_API_KEY,SALES_EMAIL_FROM,SALES_EMAIL_BCC
+email 501 true GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_REFRESH_TOKEN,GMAIL_SEND_AS,SALES_EMAIL_BCC
 call 501 true TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN,TWILIO_FROM_NUMBER,SALES_CALL_BRIDGE_NUMBER
 status 200 true ...
 ```

@@ -49,8 +49,10 @@ Sales communication actions require:
 - `TWILIO_AUTH_TOKEN`
 - `TWILIO_FROM_NUMBER=+18017010113`
 - `SALES_CALL_BRIDGE_NUMBER`
-- `SENDGRID_API_KEY`
-- `SALES_EMAIL_FROM=brigham@brighamlarsonpianos.com`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_REFRESH_TOKEN`
+- `GMAIL_SEND_AS=brigham@brighamlarsonpianos.com`
 - `SALES_EMAIL_BCC=info@brighamlarsonpianos.com`
 
 The Sales Console will try Netlify Functions first. If communication credentials are missing during local/static preview, it falls back to native `sms:`, `tel:`, or `mailto:` actions where the browser/device supports them.
@@ -59,6 +61,12 @@ Run the local communication wiring verifier before deploying changes:
 
 ```bash
 node scripts/verify-sales-communications.js
+```
+
+To authorize Gmail once and create the Netlify refresh token:
+
+```bash
+GOOGLE_CLIENT_ID=your-client-id GOOGLE_CLIENT_SECRET=your-client-secret node scripts/gmail-oauth-local-authorize.js
 ```
 
 For one concise local readiness summary:

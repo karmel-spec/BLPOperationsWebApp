@@ -11,8 +11,10 @@ const required = [
   "TWILIO_AUTH_TOKEN",
   "TWILIO_FROM_NUMBER",
   "SALES_CALL_BRIDGE_NUMBER",
-  "SENDGRID_API_KEY",
-  "SALES_EMAIL_FROM",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "GOOGLE_REFRESH_TOKEN",
+  "GMAIL_SEND_AS",
   "SALES_EMAIL_BCC",
 ];
 
@@ -27,8 +29,8 @@ if (normalizePhone(source.TWILIO_FROM_NUMBER) !== APPROVED_TWILIO_FROM) {
   failures.push(`TWILIO_FROM_NUMBER must be ${APPROVED_TWILIO_FROM}`);
 }
 
-if (normalizeEmail(source.SALES_EMAIL_FROM) !== APPROVED_EMAIL_FROM) {
-  failures.push(`SALES_EMAIL_FROM must be ${APPROVED_EMAIL_FROM}`);
+if (normalizeEmail(source.GMAIL_SEND_AS) !== APPROVED_EMAIL_FROM) {
+  failures.push(`GMAIL_SEND_AS must be ${APPROVED_EMAIL_FROM}`);
 }
 
 if (normalizeEmail(source.SALES_EMAIL_BCC) !== APPROVED_EMAIL_BCC) {
@@ -47,7 +49,7 @@ if (failures.length) {
 
 console.log("Sales communication environment has the required keys and approved identities.");
 console.log(`TWILIO_FROM_NUMBER=${APPROVED_TWILIO_FROM}`);
-console.log(`SALES_EMAIL_FROM=${APPROVED_EMAIL_FROM}`);
+console.log(`GMAIL_SEND_AS=${APPROVED_EMAIL_FROM}`);
 console.log(`SALES_EMAIL_BCC=${APPROVED_EMAIL_BCC}`);
 console.log("Secrets were not printed.");
 
