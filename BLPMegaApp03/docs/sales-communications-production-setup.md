@@ -17,20 +17,22 @@ Use `docs/sales-communications-credential-intake.md` to gather owners, required 
 
 ### Twilio
 
-Use the approved BLP business number:
+Use separate approved Twilio numbers for SMS and call caller ID:
 
 ```text
-+18017010113
+SMS sender: +18019236643
+Call caller ID: +18017010113
 ```
 
 Confirm in Twilio:
 
-- The number is owned by, or fully verified in, the Twilio account.
-- SMS is enabled for the number.
-- Voice calling is enabled for the number.
+- `801-923-6643` is owned by, and fully accessible in, the BLP Twilio account.
+- SMS is enabled for `801-923-6643`.
+- `801-701-0113` is verified in Twilio as an allowed outbound caller ID.
 - The account is allowed to send messages/calls to the customer regions BLP uses.
 
-The functions reject any `TWILIO_FROM_NUMBER` other than `+18017010113`.
+The SMS function rejects any `TWILIO_SMS_FROM_NUMBER` other than `+18019236643`.
+The call function rejects any `TWILIO_CALLER_ID_NUMBER` other than `+18017010113`.
 
 ### Gmail Provider
 
@@ -54,7 +56,8 @@ SALES_LEADS_APPS_SCRIPT_URL=
 SALES_LEADS_SYNC_SECRET=
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
-TWILIO_FROM_NUMBER=+18017010113
+TWILIO_SMS_FROM_NUMBER=+18019236643
+TWILIO_CALLER_ID_NUMBER=+18017010113
 SALES_CALL_BRIDGE_NUMBER=
 BRIGHAM_LEAD_ALERT_PHONE=
 GOOGLE_CLIENT_ID=
@@ -106,7 +109,8 @@ Expected result:
 
 ```text
 Sales communication environment has the required keys and approved identities.
-TWILIO_FROM_NUMBER=+18017010113
+TWILIO_SMS_FROM_NUMBER=+18019236643
+TWILIO_CALLER_ID_NUMBER=+18017010113
 GMAIL_SEND_AS=brigham@brighamlarsonpianos.com
 SALES_EMAIL_BCC=info@brighamlarsonpianos.com
 Secrets were not printed.
@@ -136,9 +140,9 @@ NODE
 Expected missing-variable summary:
 
 ```text
-sms 501 true TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN,TWILIO_FROM_NUMBER
+sms 501 true TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN,TWILIO_SMS_FROM_NUMBER
 email 501 true GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_REFRESH_TOKEN,GMAIL_SEND_AS,SALES_EMAIL_BCC
-call 501 true TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN,TWILIO_FROM_NUMBER,SALES_CALL_BRIDGE_NUMBER
+call 501 true TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN,TWILIO_CALLER_ID_NUMBER,SALES_CALL_BRIDGE_NUMBER
 status 200 true ...
 ```
 
@@ -157,7 +161,7 @@ After deploying with real Netlify environment variables:
    ```bash
    SALES_APP_URL=https://your-site.netlify.app BLP_APP_ACCESS_KEY=your-passcode TEST_SALES_PHONE=+18015551212 TEST_SALES_EMAIL=test@example.com LIVE_SALES_TEST_CONFIRM="send live blp sales communication tests" node scripts/run-live-sales-communications-test.js
    ```
-6. Confirm the SMS arrives from `801-701-0113`.
+6. Confirm the SMS arrives from `801-923-6643`.
 7. Confirm Twilio calls the bridge phone first, then connects to the customer/test phone with `801-701-0113` as caller ID.
 8. Confirm the email sends from `brigham@brighamlarsonpianos.com`.
 9. Confirm `info@brighamlarsonpianos.com` receives the BCC.

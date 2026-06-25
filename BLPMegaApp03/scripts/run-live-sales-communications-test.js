@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-const APPROVED_TWILIO_FROM = "+18017010113";
+const APPROVED_TWILIO_SMS_FROM = "+18019236643";
+const APPROVED_TWILIO_CALLER_ID = "+18017010113";
 const APPROVED_EMAIL_FROM = "brigham@brighamlarsonpianos.com";
 const APPROVED_EMAIL_BCC = "info@brighamlarsonpianos.com";
 const CONFIRM_PHRASE = "send live blp sales communication tests";
@@ -29,7 +30,7 @@ if (!baseUrl || !teamKey || !testPhone || !testCallPhone || !testEmail || confir
   const stamp = new Date().toISOString();
   const sms = await postJson("sales-send-sms", {
     to: testPhone,
-    body: `BLP Sales Console live SMS test from ${APPROVED_TWILIO_FROM}. Timestamp: ${stamp}`,
+    body: `BLP Sales Console live SMS test from ${APPROVED_TWILIO_SMS_FROM}. Timestamp: ${stamp}`,
   });
   console.log(`SMS test accepted by provider. sid=${sms.sid || "n/a"} to=${sms.to || "n/a"}`);
 
@@ -59,8 +60,8 @@ async function assertLiveStatus() {
   const status = await getJson("sales-communications-status");
   const failures = [];
   if (!status.configured) failures.push("status endpoint reports configured=false");
-  if (((status.status || {}).sms || {}).from !== APPROVED_TWILIO_FROM) failures.push(`SMS from is not ${APPROVED_TWILIO_FROM}`);
-  if (((status.status || {}).call || {}).from !== APPROVED_TWILIO_FROM) failures.push(`call from is not ${APPROVED_TWILIO_FROM}`);
+  if (((status.status || {}).sms || {}).from !== APPROVED_TWILIO_SMS_FROM) failures.push(`SMS from is not ${APPROVED_TWILIO_SMS_FROM}`);
+  if (((status.status || {}).call || {}).from !== APPROVED_TWILIO_CALLER_ID) failures.push(`call caller ID is not ${APPROVED_TWILIO_CALLER_ID}`);
   if (!(((status.status || {}).call || {}).bridgeConfigured)) failures.push("call bridge is not configured");
   if (((status.status || {}).email || {}).from !== APPROVED_EMAIL_FROM) failures.push(`email from is not ${APPROVED_EMAIL_FROM}`);
   if (((status.status || {}).email || {}).bcc !== APPROVED_EMAIL_BCC) failures.push(`email BCC is not ${APPROVED_EMAIL_BCC}`);

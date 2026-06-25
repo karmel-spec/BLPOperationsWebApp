@@ -23,7 +23,8 @@ Expected result:
 
 ```text
 Live sales communications status is configured.
-SMS/call from: +18017010113
+SMS from: +18019236643
+Call caller ID: +18017010113
 Email from: brigham@brighamlarsonpianos.com
 Email BCC: info@brighamlarsonpianos.com
 No SMS, call, or email was sent by this check.
@@ -49,7 +50,7 @@ SALES_APP_URL=https://your-site.netlify.app BLP_APP_ACCESS_KEY=your-passcode TES
 ## Receipt Checks
 
 - SMS arrived:
-- SMS sender displayed as `801-701-0113`:
+- SMS sender displayed as `801-923-6643`:
 - Bridge phone rang first:
 - Test phone/customer leg connected:
 - Caller ID displayed as `801-701-0113`:

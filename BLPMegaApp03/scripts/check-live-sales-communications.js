@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-const APPROVED_TWILIO_FROM = "+18017010113";
+const APPROVED_TWILIO_SMS_FROM = "+18019236643";
+const APPROVED_TWILIO_CALLER_ID = "+18017010113";
 const APPROVED_EMAIL_FROM = "brigham@brighamlarsonpianos.com";
 const APPROVED_EMAIL_BCC = "info@brighamlarsonpianos.com";
 
@@ -54,8 +55,8 @@ const statusUrl = `${baseUrl}/.netlify/functions/sales-communications-status`;
   requireConfigured(status.call, "call", failures);
   requireConfigured(status.email, "email", failures);
 
-  if ((status.sms || {}).from !== APPROVED_TWILIO_FROM) failures.push(`sms from must be ${APPROVED_TWILIO_FROM}`);
-  if ((status.call || {}).from !== APPROVED_TWILIO_FROM) failures.push(`call from must be ${APPROVED_TWILIO_FROM}`);
+  if ((status.sms || {}).from !== APPROVED_TWILIO_SMS_FROM) failures.push(`sms from must be ${APPROVED_TWILIO_SMS_FROM}`);
+  if ((status.call || {}).from !== APPROVED_TWILIO_CALLER_ID) failures.push(`call caller ID must be ${APPROVED_TWILIO_CALLER_ID}`);
   if (!(status.call || {}).bridgeConfigured) failures.push("call bridge must be configured");
   if ((status.email || {}).from !== APPROVED_EMAIL_FROM) failures.push(`email from must be ${APPROVED_EMAIL_FROM}`);
   if ((status.email || {}).bcc !== APPROVED_EMAIL_BCC) failures.push(`email BCC must be ${APPROVED_EMAIL_BCC}`);
@@ -69,7 +70,8 @@ const statusUrl = `${baseUrl}/.netlify/functions/sales-communications-status`;
   }
 
   console.log("Live sales communications status is configured.");
-  console.log(`SMS/call from: ${APPROVED_TWILIO_FROM}`);
+  console.log(`SMS from: ${APPROVED_TWILIO_SMS_FROM}`);
+  console.log(`Call caller ID: ${APPROVED_TWILIO_CALLER_ID}`);
   console.log(`Email from: ${APPROVED_EMAIL_FROM}`);
   console.log(`Email BCC: ${APPROVED_EMAIL_BCC}`);
   console.log("No SMS, call, or email was sent by this check.");

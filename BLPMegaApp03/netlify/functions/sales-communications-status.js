@@ -1,10 +1,11 @@
-const APPROVED_FROM_NUMBER = "+18017010113";
+const APPROVED_SMS_FROM_NUMBER = "+18019236643";
+const APPROVED_CALLER_ID_NUMBER = "+18017010113";
 const APPROVED_FROM_EMAIL = "brigham@brighamlarsonpianos.com";
 const APPROVED_BCC_EMAIL = "info@brighamlarsonpianos.com";
 
 const groups = {
-  sms: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER"],
-  call: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER", "SALES_CALL_BRIDGE_NUMBER"],
+  sms: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_SMS_FROM_NUMBER"],
+  call: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_CALLER_ID_NUMBER", "SALES_CALL_BRIDGE_NUMBER"],
   email: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN", "GMAIL_SEND_AS", "SALES_EMAIL_BCC"],
 };
 
@@ -27,7 +28,8 @@ exports.handler = async (event) => {
     })
   );
 
-  const twilioFrom = normalizePhone(process.env.TWILIO_FROM_NUMBER);
+  const smsFrom = normalizePhone(process.env.TWILIO_SMS_FROM_NUMBER);
+  const callerId = normalizePhone(process.env.TWILIO_CALLER_ID_NUMBER);
   const emailFrom = String(process.env.GMAIL_SEND_AS || "").trim().toLowerCase();
   const emailBcc = String(process.env.SALES_EMAIL_BCC || "").trim().toLowerCase();
 
@@ -35,17 +37,19 @@ exports.handler = async (event) => {
   status.email.bcc = emailBcc || APPROVED_BCC_EMAIL;
   status.email.approvedFrom = APPROVED_FROM_EMAIL;
   status.email.approvedBcc = APPROVED_BCC_EMAIL;
-  status.sms.from = twilioFrom || APPROVED_FROM_NUMBER;
-  status.sms.approvedFrom = APPROVED_FROM_NUMBER;
-  status.call.from = twilioFrom || APPROVED_FROM_NUMBER;
-  status.call.approvedFrom = APPROVED_FROM_NUMBER;
+  status.sms.from = smsFrom || APPROVED_SMS_FROM_NUMBER;
+  status.sms.approvedFrom = APPROVED_SMS_FROM_NUMBER;
+  status.call.from = callerId || APPROVED_CALLER_ID_NUMBER;
+  status.call.approvedFrom = APPROVED_CALLER_ID_NUMBER;
   status.call.bridgeConfigured = !!process.env.SALES_CALL_BRIDGE_NUMBER;
 
-  if (twilioFrom && twilioFrom !== APPROVED_FROM_NUMBER) {
+  if (smsFrom && smsFrom !== APPROVED_SMS_FROM_NUMBER) {
     status.sms.configured = false;
+    status.sms.mismatch = "TWILIO_SMS_FROM_NUMBER must be +18019236643";
+  }
+  if (callerId && callerId !== APPROVED_CALLER_ID_NUMBER) {
     status.call.configured = false;
-    status.sms.mismatch = "TWILIO_FROM_NUMBER must be +18017010113";
-    status.call.mismatch = "TWILIO_FROM_NUMBER must be +18017010113";
+    status.call.mismatch = "TWILIO_CALLER_ID_NUMBER must be +18017010113";
   }
   if (emailFrom && emailFrom !== APPROVED_FROM_EMAIL) {
     status.email.configured = false;

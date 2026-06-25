@@ -1,7 +1,7 @@
 const twilioCallsEndpoint = (accountSid) =>
   `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`;
 
-const APPROVED_FROM_NUMBER = "+18017010113";
+const APPROVED_CALLER_ID_NUMBER = "+18017010113";
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
@@ -17,7 +17,7 @@ exports.handler = async (event) => {
 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = normalizePhone(process.env.TWILIO_FROM_NUMBER);
+  const fromNumber = normalizePhone(process.env.TWILIO_CALLER_ID_NUMBER);
   const bridgeNumber = normalizePhone(process.env.SALES_CALL_BRIDGE_NUMBER);
 
   if (!accountSid || !authToken || !fromNumber || !bridgeNumber) {
@@ -25,16 +25,16 @@ exports.handler = async (event) => {
       ok: false,
       configured: false,
       error: "Twilio call bridging is not configured yet.",
-      required: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER", "SALES_CALL_BRIDGE_NUMBER"],
+      required: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_CALLER_ID_NUMBER", "SALES_CALL_BRIDGE_NUMBER"],
       note: "SALES_CALL_BRIDGE_NUMBER is the staff phone Twilio should call first before dialing the customer.",
     });
   }
-  if (fromNumber !== APPROVED_FROM_NUMBER) {
+  if (fromNumber !== APPROVED_CALLER_ID_NUMBER) {
     return json(501, {
       ok: false,
       configured: false,
-      error: "TWILIO_FROM_NUMBER must be the approved BLP sales number.",
-      required: ["TWILIO_FROM_NUMBER=+18017010113"],
+      error: "TWILIO_CALLER_ID_NUMBER must be the approved BLP sales caller ID number.",
+      required: ["TWILIO_CALLER_ID_NUMBER=+18017010113"],
       received: fromNumber,
     });
   }

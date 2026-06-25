@@ -1,7 +1,7 @@
 const twilioMessagesEndpoint = (accountSid) =>
   `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
 
-const APPROVED_FROM_NUMBER = "+18017010113";
+const APPROVED_SMS_FROM_NUMBER = "+18019236643";
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
@@ -17,22 +17,22 @@ exports.handler = async (event) => {
 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = normalizePhone(process.env.TWILIO_FROM_NUMBER);
+  const fromNumber = normalizePhone(process.env.TWILIO_SMS_FROM_NUMBER);
 
   if (!accountSid || !authToken || !fromNumber) {
     return json(501, {
       ok: false,
       configured: false,
       error: "Twilio SMS is not configured yet.",
-      required: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER"],
+      required: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_SMS_FROM_NUMBER"],
     });
   }
-  if (fromNumber !== APPROVED_FROM_NUMBER) {
+  if (fromNumber !== APPROVED_SMS_FROM_NUMBER) {
     return json(501, {
       ok: false,
       configured: false,
-      error: "TWILIO_FROM_NUMBER must be the approved BLP sales number.",
-      required: ["TWILIO_FROM_NUMBER=+18017010113"],
+      error: "TWILIO_SMS_FROM_NUMBER must be the approved BLP sales SMS number.",
+      required: ["TWILIO_SMS_FROM_NUMBER=+18019236643"],
       received: fromNumber,
     });
   }

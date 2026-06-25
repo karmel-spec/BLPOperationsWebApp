@@ -36,7 +36,8 @@ const requiredEnvKeys = [
   "BLP_APP_ACCESS_KEY",
   "TWILIO_ACCOUNT_SID",
   "TWILIO_AUTH_TOKEN",
-  "TWILIO_FROM_NUMBER=+18017010113",
+  "TWILIO_SMS_FROM_NUMBER=+18019236643",
+  "TWILIO_CALLER_ID_NUMBER=+18017010113",
   "SALES_CALL_BRIDGE_NUMBER",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
@@ -50,7 +51,8 @@ const requiredHtmlSnippets = [
   "const SALES_EMAIL_ENDPOINT = '/.netlify/functions/sales-send-email';",
   "const SALES_CALL_ENDPOINT = '/.netlify/functions/sales-start-call';",
   "const SALES_COMMS_STATUS_ENDPOINT = '/.netlify/functions/sales-communications-status';",
-  "const SALES_TWILIO_FROM_DISPLAY = '801-701-0113';",
+  "const SALES_TWILIO_SMS_DISPLAY = '801-923-6643';",
+  "const SALES_TWILIO_CALLER_ID_DISPLAY = '801-701-0113';",
   "const SALES_EMAIL_FROM = 'brigham@brighamlarsonpianos.com';",
   "const SALES_EMAIL_BCC = 'info@brighamlarsonpianos.com';",
   "startRecommendedAction",
@@ -202,11 +204,11 @@ contains(html, "onclick=\"callLead('${l.id}')\" ${!l.phone ? 'disabled title=\"N
   ? pass("status function requires explicit sales bridge number")
   : fail("status function still falls back to BRIGHAM_LEAD_ALERT_PHONE");
 
-contains(smsFunctionSource, 'APPROVED_FROM_NUMBER = "+18017010113"')
+contains(smsFunctionSource, 'APPROVED_SMS_FROM_NUMBER = "+18019236643"')
   ? pass("SMS function pins approved Twilio sender")
   : fail("SMS function should pin approved Twilio sender");
 
-contains(callFunctionSource, 'APPROVED_FROM_NUMBER = "+18017010113"')
+contains(callFunctionSource, 'APPROVED_CALLER_ID_NUMBER = "+18017010113"')
   ? pass("call function pins approved Twilio caller ID")
   : fail("call function should pin approved Twilio caller ID");
 
@@ -267,13 +269,15 @@ contains(appReadme, "scripts/check-sales-live-test-record.js")
 contains(runbook, "docs/sales-communications-credential-intake.md") &&
 contains(appReadme, "docs/sales-communications-credential-intake.md") &&
 contains(credentialIntake, "Do not paste secrets") &&
-contains(credentialIntake, "TWILIO_FROM_NUMBER`: must be `+18017010113`") &&
+contains(credentialIntake, "TWILIO_SMS_FROM_NUMBER`: must be `+18019236643`") &&
+contains(credentialIntake, "TWILIO_CALLER_ID_NUMBER`: must be `+18017010113`") &&
 contains(credentialIntake, "GMAIL_SEND_AS`: must be `brigham@brighamlarsonpianos.com`") &&
 contains(credentialIntake, "SALES_EMAIL_BCC`: must be `info@brighamlarsonpianos.com`")
   ? pass("docs link credential intake and capture required approved identities")
   : fail("credential intake should document approved identities without secrets");
 
-contains(liveTestRecord, "SMS sender displayed as `801-701-0113`") &&
+contains(liveTestRecord, "SMS sender displayed as `801-923-6643`") &&
+contains(liveTestRecord, "Caller ID displayed as `801-701-0113`") &&
 contains(liveTestRecord, "Email sender displayed as `brigham@brighamlarsonpianos.com`") &&
 contains(liveTestRecord, "BCC arrived at `info@brighamlarsonpianos.com`") &&
 contains(liveTestRecord, "Do not paste Twilio auth tokens")
@@ -318,7 +322,8 @@ async function verifyMockedProviderPayloads() {
     BLP_APP_ACCESS_KEY: "test-key",
     TWILIO_ACCOUNT_SID: "AC123",
     TWILIO_AUTH_TOKEN: "token",
-    TWILIO_FROM_NUMBER: "+18017010113",
+    TWILIO_SMS_FROM_NUMBER: "+18019236643",
+    TWILIO_CALLER_ID_NUMBER: "+18017010113",
     SALES_CALL_BRIDGE_NUMBER: "+18015550101",
     GOOGLE_CLIENT_ID: "google-client-id",
     GOOGLE_CLIENT_SECRET: "google-client-secret",
@@ -333,7 +338,7 @@ async function verifyMockedProviderPayloads() {
       const body = JSON.parse(response.body);
       assert(response.statusCode === 200 && body.ok, "mock SMS function returns ok");
       assert(calls[0].url.includes("/Accounts/AC123/Messages.json"), "mock SMS uses Twilio messages endpoint");
-      assert(form.get("From") === "+18017010113", "mock SMS sends from +18017010113");
+      assert(form.get("From") === "+18019236643", "mock SMS sends from +18019236643");
       assert(form.get("To") === "+18015551212", "mock SMS normalizes destination phone");
       assert(form.get("Body") === "Hello from BLP", "mock SMS sends requested body");
     });
@@ -376,7 +381,7 @@ async function verifyMockedProviderPayloads() {
     const body = JSON.parse(response.body);
     assert(response.statusCode === 200 && body.ok, "mock status function returns ok");
     assert(body.configured === true, "mock status reports fully configured");
-    assert(body.status.sms.from === "+18017010113", "mock status reports approved SMS number");
+    assert(body.status.sms.from === "+18019236643", "mock status reports approved SMS number");
     assert(body.status.call.from === "+18017010113", "mock status reports approved call number");
     assert(body.status.email.from === "brigham@brighamlarsonpianos.com", "mock status reports brigham@ sender");
     assert(body.status.email.bcc === "info@brighamlarsonpianos.com", "mock status reports info@ BCC");
@@ -386,7 +391,8 @@ async function verifyMockedProviderPayloads() {
     BLP_APP_ACCESS_KEY: "test-key",
     TWILIO_ACCOUNT_SID: "AC123",
     TWILIO_AUTH_TOKEN: "token",
-    TWILIO_FROM_NUMBER: "+18015550123",
+    TWILIO_SMS_FROM_NUMBER: "+18015550123",
+    TWILIO_CALLER_ID_NUMBER: "+18015550123",
     SALES_CALL_BRIDGE_NUMBER: "+18015550101",
     GOOGLE_CLIENT_ID: "google-client-id",
     GOOGLE_CLIENT_SECRET: "google-client-secret",

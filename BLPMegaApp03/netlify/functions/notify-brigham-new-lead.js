@@ -55,14 +55,14 @@ exports.handler = async (event) => {
 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_FROM_NUMBER;
+  const fromNumber = process.env.TWILIO_SMS_FROM_NUMBER || process.env.TWILIO_FROM_NUMBER;
   const brighamNumber = process.env.BRIGHAM_LEAD_ALERT_PHONE;
 
   if (!accountSid || !authToken || !fromNumber || !brighamNumber) {
     return json(500, {
       ok: false,
       error: "SMS environment variables are not configured.",
-      required: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER", "BRIGHAM_LEAD_ALERT_PHONE"],
+      required: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_SMS_FROM_NUMBER", "BRIGHAM_LEAD_ALERT_PHONE"],
     });
   }
 
