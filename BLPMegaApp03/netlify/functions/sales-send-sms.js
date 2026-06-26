@@ -1,7 +1,7 @@
 const twilioMessagesEndpoint = (accountSid) =>
   `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
 
-const APPROVED_SMS_FROM_NUMBER = "+18019236643";
+const APPROVED_SMS_FROM_NUMBER = "+18017690054";
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
@@ -32,7 +32,7 @@ exports.handler = async (event) => {
       ok: false,
       configured: false,
       error: "TWILIO_SMS_FROM_NUMBER must be the approved BLP sales SMS number.",
-      required: ["TWILIO_SMS_FROM_NUMBER=+18019236643"],
+      required: ["TWILIO_SMS_FROM_NUMBER=+18017690054"],
       received: fromNumber,
     });
   }

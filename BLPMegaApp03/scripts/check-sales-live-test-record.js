@@ -24,7 +24,7 @@ const requiredNonEmpty = [
 
 const requiredYes = [
   "SMS arrived",
-  "SMS sender displayed as `801-923-6643`",
+  "SMS sender displayed as `801-769-0054`",
   "Bridge phone rang first",
   "Test phone/customer leg connected",
   "Caller ID displayed as `801-701-0113`",

@@ -1,4 +1,4 @@
-const APPROVED_SMS_FROM_NUMBER = "+18019236643";
+const APPROVED_SMS_FROM_NUMBER = "+18017690054";
 const APPROVED_CALLER_ID_NUMBER = "+18017010113";
 const APPROVED_FROM_EMAIL = "brigham@brighamlarsonpianos.com";
 const APPROVED_BCC_EMAIL = "info@brighamlarsonpianos.com";
@@ -45,7 +45,7 @@ exports.handler = async (event) => {
 
   if (smsFrom && smsFrom !== APPROVED_SMS_FROM_NUMBER) {
     status.sms.configured = false;
-    status.sms.mismatch = "TWILIO_SMS_FROM_NUMBER must be +18019236643";
+    status.sms.mismatch = "TWILIO_SMS_FROM_NUMBER must be +18017690054";
   }
   if (callerId && callerId !== APPROVED_CALLER_ID_NUMBER) {
     status.call.configured = false;

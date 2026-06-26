@@ -22,9 +22,9 @@ Do not paste secrets into this file, chat, email, tickets, screenshots, or git. 
 - Twilio account owner:
 - `TWILIO_ACCOUNT_SID`: secret value, enter directly into Netlify.
 - `TWILIO_AUTH_TOKEN`: secret value, enter directly into Netlify.
-- `TWILIO_SMS_FROM_NUMBER`: must be `+18019236643`.
+- `TWILIO_SMS_FROM_NUMBER`: must be `+18017690054`.
 - `TWILIO_CALLER_ID_NUMBER`: must be `+18017010113`.
-- Confirm `801-923-6643` is fully accessible in BLP's Twilio account and supports SMS:
+- Confirm `801-769-0054` is fully accessible in BLP's Twilio account and supports SMS:
 - Confirm `801-701-0113` is verified as an allowed outbound caller ID:
 - Confirm outbound region/country permissions are sufficient:
 

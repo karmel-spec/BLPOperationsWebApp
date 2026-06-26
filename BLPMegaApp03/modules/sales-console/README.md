@@ -45,7 +45,7 @@ Communication environment variables:
 - `BLP_APP_ACCESS_KEY` — shared app passcode required by the Netlify functions.
 - `TWILIO_ACCOUNT_SID` — Twilio account SID.
 - `TWILIO_AUTH_TOKEN` — Twilio auth token.
-- `TWILIO_SMS_FROM_NUMBER` — BLP-owned Twilio SMS number, expected to be `+18019236643`.
+- `TWILIO_SMS_FROM_NUMBER` — BLP-owned Twilio SMS number, expected to be `+18017690054`.
 - `TWILIO_CALLER_ID_NUMBER` — BLP sales caller ID, expected to be `+18017010113`.
 - `SALES_CALL_BRIDGE_NUMBER` — staff phone Twilio should call first before dialing the customer.
 - `GOOGLE_CLIENT_ID` — Google OAuth client ID for Gmail sending.

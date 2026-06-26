@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const APPROVED_TWILIO_SMS_FROM = "+18019236643";
+const APPROVED_TWILIO_SMS_FROM = "+18017690054";
 const APPROVED_TWILIO_CALLER_ID = "+18017010113";
 const APPROVED_EMAIL_FROM = "brigham@brighamlarsonpianos.com";
 const APPROVED_EMAIL_BCC = "info@brighamlarsonpianos.com";
