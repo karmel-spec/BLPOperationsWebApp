@@ -8376,9 +8376,10 @@ const SALES_TWILIO_SMS_DISPLAY = '801-769-0054';
 const SALES_TWILIO_CALLER_ID_DISPLAY = '801-701-0113';
 const SALES_EMAIL_FROM = 'brigham@brighamlarsonpianos.com';
 const SALES_EMAIL_BCC = 'info@brighamlarsonpianos.com';
-const SALES_SYNC_INTERVAL_MS = 30000;
+const SALES_SYNC_INTERVAL_MS = 120000;
 const SALES_FLUSH_INTERVAL_MS = 20000;
 let salesSyncLive = false;
+let salesSyncInFlight = false;
 let salesSyncTimer = null;
 let salesFlushTimer = null;
 let salesFlushInFlight = false;
@@ -8679,47 +8680,56 @@ async function loadLiveLeads({ silent = false } = {}) {
     if (!silent) setSyncStatus('Enter team key', 'snapshot');
     return false;
   }
-  if (!silent) setSyncStatus('Checking live sheet', 'snapshot');
-  let data;
-  try {
-    const response = await fetch(SALES_SYNC_ENDPOINT, { cache: 'no-store', headers: authHeaders() });
-    if (response.status === 401) {
-      salesSyncLive = false;
-      clearTeamKey();
-      setSyncStatus('Wrong team key — enter again', 'error');
-      if (!silent) openTeamKeyModal('Wrong team passcode. Enter the key again to retry live sync.');
-      return false;
-    }
-    data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.ok || !Array.isArray(data.leads)) {
-      salesSyncLive = false;
-      const localOrUnconfigured = response.status === 404 || data.configured === false;
-      setSyncStatus(localOrUnconfigured ? 'Snapshot mode' : 'Sync unavailable', localOrUnconfigured ? 'snapshot' : 'error');
-      return false;
-    }
-  } catch (error) {
-    console.error('BLP sync: network error talking to ' + SALES_SYNC_ENDPOINT, error);
-    salesSyncLive = false;
-    setSyncStatus('Connection hiccup — retrying', 'error');
+  if (salesSyncInFlight) {
+    if (!silent) setSyncStatus('Live sync still running', 'snapshot');
     return false;
   }
-  // Data arrived fine. Anything that fails past this point is a display bug,
-  // NOT a connection problem — log it loudly and say so, instead of blaming
-  // the network (which previously hid a render crash behind "hiccup").
+  salesSyncInFlight = true;
+  if (!silent) setSyncStatus('Checking live sheet...', 'snapshot');
   try {
-    workingLeads = data.leads.map(normalizeLeadRecord);
-    rebuildTimelines(workingLeads);
-    salesSyncLive = true;
-    setSyncStatus('Live sheet synced', 'live');
-    renderAll();
-    if (drawerLeadId) openDrawer(drawerLeadId);
-    flushPendingMutations();
-    return true;
-  } catch (error) {
-    console.error('BLP sync: leads loaded OK but processing/rendering failed', error);
-    salesSyncLive = true; // the connection itself is healthy; saves still work
-    setSyncStatus('Synced — display error (see console)', 'error');
-    return false;
+    let data;
+    try {
+      const response = await fetch(SALES_SYNC_ENDPOINT, { cache: 'no-store', headers: authHeaders() });
+      if (response.status === 401) {
+        salesSyncLive = false;
+        clearTeamKey();
+        setSyncStatus('Wrong team key — enter again', 'error');
+        if (!silent) openTeamKeyModal('Wrong team passcode. Enter the key again to retry live sync.');
+        return false;
+      }
+      data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok || !Array.isArray(data.leads)) {
+        salesSyncLive = false;
+        const localOrUnconfigured = response.status === 404 || data.configured === false;
+        setSyncStatus(localOrUnconfigured ? 'Snapshot mode' : 'Sync unavailable', localOrUnconfigured ? 'snapshot' : 'error');
+        return false;
+      }
+    } catch (error) {
+      console.error('BLP sync: network error talking to ' + SALES_SYNC_ENDPOINT, error);
+      salesSyncLive = false;
+      setSyncStatus('Connection hiccup — retrying', 'error');
+      return false;
+    }
+    // Data arrived fine. Anything that fails past this point is a display bug,
+    // NOT a connection problem — log it loudly and say so, instead of blaming
+    // the network (which previously hid a render crash behind "hiccup").
+    try {
+      workingLeads = data.leads.map(normalizeLeadRecord);
+      rebuildTimelines(workingLeads);
+      salesSyncLive = true;
+      setSyncStatus('Live sheet synced', 'live');
+      renderAll();
+      if (drawerLeadId) openDrawer(drawerLeadId);
+      flushPendingMutations();
+      return true;
+    } catch (error) {
+      console.error('BLP sync: leads loaded OK but processing/rendering failed', error);
+      salesSyncLive = true; // the connection itself is healthy; saves still work
+      setSyncStatus('Synced — display error (see console)', 'error');
+      return false;
+    }
+  } finally {
+    salesSyncInFlight = false;
   }
 }
 
