@@ -175,6 +175,22 @@
   .rep-badge--admin { background: #b7923b; color: #161514; }
   .rep-badge--default { background: #36566f; }
 
+  .rep-badge-select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 1;
+    text-align: center;
+    text-align-last: center;
+    padding: 0;
+  }
+
+  .rep-badge-select:focus {
+    outline: 2px solid rgba(79, 105, 91, 0.45);
+    outline-offset: 2px;
+  }
+
   .blp-brand-lockup {
     min-width: 230px;
     padding-right: 14px;
@@ -7201,12 +7217,26 @@ function repOptions(selected, allowBlank = false) {
     .join('');
 }
 
+function repInitialOptions(selected, allowBlank = false) {
+  const blank = allowBlank ? `<option value="" ${!selected ? 'selected' : ''}>-</option>` : '';
+  return blank + Object.entries(REPS)
+    .map(([key, r]) => `<option value="${key}" ${selected === key ? 'selected' : ''}>${r.name.charAt(0)}</option>`)
+    .join('');
+}
+
 function repInitial(repKey) {
   return repName(repKey).charAt(0) || '-';
 }
 
 function repBadgeClass(repKey) {
   return REPS[repKey] ? `rep-badge rep-badge--${repKey}` : 'rep-badge rep-badge--default';
+}
+
+function repBadgeSelectHtml(id, field, selected, label, allowBlank = false) {
+  const key = selected || '';
+  const cls = key ? repBadgeClass(key) : 'rep-badge rep-badge--empty';
+  const title = `${label}: ${key ? repName(key) : 'Not closed yet'}`;
+  return `<select aria-label="${escapeHtml(label)} rep for ${escapeHtml(id)}" title="${escapeHtml(title)}" onclick="event.stopPropagation()" onchange="event.stopPropagation(); updateRepFromBadge('${id}', '${field}', this.value)" class="${cls} rep-badge-select font-bold">${repInitialOptions(key, allowBlank)}</select>`;
 }
 
 const MESSAGE_TEMPLATES = {
@@ -8939,9 +8969,9 @@ function renderLeads() {
     return `
     <div class="blp-sales-row grid gap-2 px-4 py-3 text-sm items-start hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer" style="grid-template-columns: 0.28fr 1.55fr 1.25fr 1.15fr 2.0fr 3.4fr;" onclick="if(!event.target.closest('.ai-draft-cell')) openDrawer('${l.id}')">
       <div class="text-[10px] leading-tight space-y-1" title="Opened: ${repName(l.rep_opened)} · Working: ${repName(l.rep_working || l.rep)} · Closed: ${l.rep_closed ? repName(l.rep_closed) : 'Not closed yet'}">
-        <div class="flex items-center justify-center gap-1"><span class="text-zinc-400">O</span><span class="${repBadgeClass(l.rep_opened)} flex items-center justify-center font-bold">${repInitial(l.rep_opened)}</span></div>
-        <div class="flex items-center justify-center gap-1"><span class="text-zinc-400">W</span><span class="${repBadgeClass(l.rep_working || l.rep)} flex items-center justify-center font-bold">${repInitial(l.rep_working || l.rep)}</span></div>
-        <div class="flex items-center justify-center gap-1"><span class="text-zinc-400">C</span><span class="${l.rep_closed ? repBadgeClass(l.rep_closed) : 'rep-badge rep-badge--empty'} flex items-center justify-center font-bold">${l.rep_closed ? repInitial(l.rep_closed) : '-'}</span></div>
+        <div class="flex items-center justify-center gap-1"><span class="text-zinc-400">O</span>${repBadgeSelectHtml(l.id, 'rep_opened', l.rep_opened, 'Opened')}</div>
+        <div class="flex items-center justify-center gap-1"><span class="text-zinc-400">W</span>${repBadgeSelectHtml(l.id, 'rep_working', l.rep_working || l.rep, 'Working')}</div>
+        <div class="flex items-center justify-center gap-1"><span class="text-zinc-400">C</span>${repBadgeSelectHtml(l.id, 'rep_closed', l.rep_closed, 'Closed', true)}</div>
       </div>
       <div>
         <div class="blp-lead-name font-medium flex items-center gap-1.5">
@@ -9503,6 +9533,26 @@ function updateLeadField(id, field, value) {
   scheduleLeadSync('update', l, { source: 'fieldEdit', field });
   renderAll();
   openDrawer(id);
+}
+
+function updateRepFromBadge(id, field, value) {
+  const l = workingLeads.find(x => x.id === id);
+  if (!l) return;
+  l[field] = value;
+  if (field === 'rep_working') {
+    l.rep = value;
+  } else if (field === 'rep') {
+    l.rep_working = value;
+  }
+  const label = field === 'rep_opened' ? 'opened rep'
+    : field === 'rep_working' ? 'working rep'
+    : field === 'rep_closed' ? 'closed rep'
+    : field.replace('_', ' ');
+  ACTIONS.unshift({ who:'Karmel', when:'just now', what:`changed ${label} for ${l.name}`, icon:'✎' });
+  scheduleLeadSync('update', l, { source: 'repBadgeEdit', field });
+  renderAll();
+  if (drawerLeadId === id) openDrawer(id);
+  toast(`${label.charAt(0).toUpperCase() + label.slice(1)} updated`);
 }
 
 function snoozeOptionsHtml(id) {
