@@ -269,8 +269,6 @@ function toDate_(value) {
     const d = new Date(value);
     if (!isNaN(d)) return d;
   }
-  const rowNumber = Number(lead && lead.rowNumber);
-  if (rowNumber && rowNumber > 1 && rowNumber <= rows.length + 1) return { rowNumber };
   return null;
 }
 
