@@ -197,12 +197,20 @@ function normalizeRow_(headers, row, rowNumber) {
     if (col >= 0) lead[field] = row[col];
   });
 
+  // The live sales sheet stores client first/last in columns G and H.
+  // Keep these positional fallbacks because fuzzy header matching can treat
+  // "First Name" as the generic name field before the display name is composed.
+  lead.first = cleanStr_(lead.first) || cleanStr_(row[6]);
+  lead.last = cleanStr_(lead.last) || cleanStr_(row[7]);
+
   lead.id = String(lead.id || "").trim() || lead.rowNumber;
   lead.blp_id = lead.id;
 
-  // Compose display name from FIRST + LAST columns.
+  // Compose display name from FIRST + LAST columns. Prefer the composed value
+  // whenever either name part exists; otherwise fall back to any legacy name
+  // column that may exist.
   const composed = [lead.first, lead.last].map(v => String(v || "").trim()).filter(Boolean).join(" ");
-  lead.name = String(lead.name || "").trim() || composed;
+  lead.name = composed || String(lead.name || "").trim();
 
   lead.rep = cleanStr_(lead.rep) || "admin";
   lead.rep_working = cleanStr_(lead.rep_working) || lead.rep;
