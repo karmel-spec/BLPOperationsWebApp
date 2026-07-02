@@ -316,6 +316,7 @@
   #tab-inbox > div.border,
   details,
   #tab-funnel .border,
+  #tab-log #commLog,
   #tab-log #fullLog,
   #tab-guide .border {
     box-shadow: var(--blp-shadow);
@@ -687,7 +688,17 @@
 
   <!-- ============== ACTION LOG TAB ============== -->
   <section id="tab-log" class="tab-pane hidden">
-    <h2 class="text-lg font-semibold mb-3">Action Log</h2>
+    <h2 class="text-lg font-semibold mb-3">Communication & Action Log</h2>
+    <div class="mb-4">
+      <div class="flex items-end justify-between gap-3 mb-2">
+        <div>
+          <h3 class="text-sm font-semibold">Sent Email/Text Log</h3>
+          <p class="text-xs text-zinc-500">Gmail/Twilio accepted sends show provider receipt IDs. Composer entries mean the app opened your email/text composer but cannot confirm final delivery.</p>
+        </div>
+      </div>
+      <div id="commLog" class="border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800 text-sm"></div>
+    </div>
+    <h3 class="text-sm font-semibold mb-2">App Action Log</h3>
     <div id="fullLog" class="border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800 text-sm"></div>
   </section>
 
@@ -8165,23 +8176,33 @@ async function approveAndSend(id, checkboxEl, channel) {
   const outboundBody = isEmail ? d.body : formatSalesSmsBody(l, d.body);
 
   let sendLabel = isEmail ? `email from ${SALES_EMAIL_FROM}` : `text via Twilio (${SALES_TWILIO_SMS_DISPLAY})`;
+  let sendStatus = 'accepted';
+  let sendProvider = isEmail ? 'gmail' : 'twilio';
+  let providerId = '';
+  let sendResult = null;
   try {
     if (isEmail) {
-      await postCommunication(SALES_EMAIL_ENDPOINT, {
+      sendResult = await postCommunication(SALES_EMAIL_ENDPOINT, {
         leadId: id,
         to: l.email,
         subject: d.subject,
         body: d.body,
       });
+      providerId = sendResult.messageId || '';
+      sendProvider = sendResult.provider || 'gmail';
     } else {
-      await postCommunication(SALES_SMS_ENDPOINT, {
+      sendResult = await postCommunication(SALES_SMS_ENDPOINT, {
         leadId: id,
         to: l.phone,
         body: outboundBody,
       });
+      providerId = sendResult.sid || '';
+      sendProvider = 'twilio';
     }
   } catch (error) {
     console.warn('BLP sales communication: backend send unavailable; opening native composer.', error);
+    sendStatus = 'composer_opened';
+    sendProvider = 'native composer';
     if (isEmail) {
       if (!openNativeEmailFallback(l, d)) return toast('No email on file for ' + l.name);
       sendLabel = `email composer for ${SALES_EMAIL_FROM}`;
@@ -8208,26 +8229,45 @@ async function approveAndSend(id, checkboxEl, channel) {
     when: 'just now',
     type: isEmail ? 'email' : 'text',
     direction: 'outbound',
-    text: (isEmail ? `From: ${SALES_EMAIL_FROM}\nBCC: ${SALES_EMAIL_BCC}\nSubject: ${d.subject}\n\n` : '') + outboundBody,
+    text: (sendStatus === 'accepted'
+      ? `SENT via ${sendProvider}${providerId ? ` (${providerId})` : ''}`
+      : `Opened ${isEmail ? 'email' : 'text'} composer; app cannot confirm final send`)
+      + '\n'
+      + (isEmail ? `From: ${SALES_EMAIL_FROM}\nBCC: ${SALES_EMAIL_BCC}\nSubject: ${d.subject}\n\n` : '')
+      + outboundBody,
   };
   (TIMELINES[id] = TIMELINES[id] || []).unshift(tlEntry);
 
-  // Update counters — channel-specific
-  l.action_totals = l.action_totals || { call:0, text:0, email:0 };
-  if (isEmail) l.action_totals.email = (l.action_totals.email || 0) + 1;
-  else         l.action_totals.text  = (l.action_totals.text  || 0) + 1;
-  l.total_actions = (l.action_totals.call||0) + (l.action_totals.text||0) + (l.action_totals.email||0);
+  recordCommunicationLog({
+    leadId: id,
+    leadName: l.name,
+    channel: isEmail ? 'email' : 'text',
+    status: sendStatus,
+    provider: sendProvider,
+    providerId,
+    from: isEmail ? SALES_EMAIL_FROM : SALES_TWILIO_SMS_DISPLAY,
+    to: isEmail ? l.email : l.phone,
+    subject: isEmail ? d.subject : '',
+  });
 
-  // Direction-aware counters (drive engagement state)
-  l.outbound_count = (l.outbound_count || 0) + 1;
-  l.last_outbound_date = todayDate;
+  if (sendStatus === 'accepted') {
+    // Update counters — channel-specific
+    l.action_totals = l.action_totals || { call:0, text:0, email:0 };
+    if (isEmail) l.action_totals.email = (l.action_totals.email || 0) + 1;
+    else         l.action_totals.text  = (l.action_totals.text  || 0) + 1;
+    l.total_actions = (l.action_totals.call||0) + (l.action_totals.text||0) + (l.action_totals.email||0);
 
-  l.last_action = isEmail ? 'email' : 'text';
-  l.last_contact_date = todayDate;
-  l.days_since_contact = 0;
-  // Flip next recommended: last email → next text, last text → next email
-  l.next_action_type = isEmail ? 'text' : 'email';
-  l.is_lonely = false;
+    // Direction-aware counters (drive engagement state)
+    l.outbound_count = (l.outbound_count || 0) + 1;
+    l.last_outbound_date = todayDate;
+
+    l.last_action = isEmail ? 'email' : 'text';
+    l.last_contact_date = todayDate;
+    l.days_since_contact = 0;
+    // Flip next recommended: last email → next text, last text → next email
+    l.next_action_type = isEmail ? 'text' : 'email';
+    l.is_lonely = false;
+  }
 
   // Invalidate both drafts — fresh ones will be generated on next render w/ updated context
   delete AI_DRAFTS[id];
@@ -8235,13 +8275,17 @@ async function approveAndSend(id, checkboxEl, channel) {
   ACTIONS.unshift({
     who: 'Karmel',
     when: 'just now',
-    what: `approved & sent ${sendLabel} to ${l.name}`,
-    icon: '✓',
+    what: sendStatus === 'accepted'
+      ? `approved & sent ${sendLabel} to ${l.name}${providerId ? ` (${providerId})` : ''}`
+      : `opened ${sendLabel} for ${l.name}; final send not confirmed by app`,
+    icon: sendStatus === 'accepted' ? '✓' : '↗',
   });
 
   scheduleLeadSync('update', l, { source: 'approveAndSend', channel: d.channel });
   if (checkboxEl) checkboxEl.checked = false;
-  toast(`✅ ${isEmail ? 'Email action ready' : 'Text action ready'} for ${l.name}`);
+  toast(sendStatus === 'accepted'
+    ? `✅ ${isEmail ? 'Email sent' : 'Text sent'} for ${l.name}`
+    : `${isEmail ? 'Email' : 'Text'} composer opened for ${l.name}`);
   if (!document.getElementById('aiEditorModal').classList.contains('hidden')) closeAiDraftEditor();
   renderAll();
 }
@@ -8414,6 +8458,25 @@ const ACTIONS = [
   { who:'Sally', when:'1 hr ago', what:'queued ' + LEADS.filter(l => l.is_lonely).length + ' lonely leads for win-back', icon:'⏰' },
   { who:'Karmel', when:'this morning', what:'reviewed the sheet — see new leads from June', icon:'👀' },
 ];
+
+const COMM_LOG_KEY = 'blpSalesCommunicationLog';
+let COMM_LOG = [];
+try { COMM_LOG = JSON.parse(localStorage.getItem(COMM_LOG_KEY) || '[]'); } catch (e) {}
+if (!Array.isArray(COMM_LOG)) COMM_LOG = [];
+
+function persistCommunicationLog() {
+  try { localStorage.setItem(COMM_LOG_KEY, JSON.stringify(COMM_LOG.slice(0, 250))); } catch (e) {}
+}
+
+function recordCommunicationLog(entry) {
+  COMM_LOG.unshift({
+    id: 'comm-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+    at: new Date().toISOString(),
+    ...entry,
+  });
+  COMM_LOG = COMM_LOG.slice(0, 250);
+  persistCommunicationLog();
+}
 
 let activeTab = 'inbox';
 let drawerLeadId = null;
@@ -8704,12 +8767,24 @@ async function loadCommunicationStatus({ silent = false } = {}) {
   return !!data.configured;
 }
 
+function formatTimelineForSheet(timeline) {
+  return (timeline || []).slice(0, 40).map(entry => {
+    const date = String(entry && entry.date ? entry.date : '').trim();
+    const rawType = String(entry && entry.type ? entry.type : 'note').toLowerCase();
+    const type = (TIMELINE_TYPES[rawType] && TIMELINE_TYPES[rawType].label) || rawType || 'Note';
+    const text = String(entry && entry.text ? entry.text : '').replace(/\s+/g, ' ').trim();
+    return [date, type, text].filter(Boolean).join(' | ');
+  }).filter(Boolean).join('\n');
+}
+
 function serializeLeadForSync(lead) {
+  const timeline = TIMELINES[lead.id] || [];
   return {
     ...lead,
     status_bucket: lead.outcome || 'Active',
-    timeline: TIMELINES[lead.id] || [],
-    timeline_json: JSON.stringify(TIMELINES[lead.id] || []),
+    timeline,
+    timeline_json: formatTimelineForSheet(timeline),
+    timeline_data_json: JSON.stringify(timeline),
   };
 }
 
@@ -9060,6 +9135,33 @@ function renderMiniLog() {
   document.getElementById('miniLog').innerHTML = ACTIONS.map(a =>
     `<div>${a.icon} <span class="font-medium text-zinc-700 dark:text-zinc-300">${a.who}</span> ${escapeHtml(a.what)} <span class="text-zinc-500">— ${a.when}</span></div>`
   ).join('');
+  document.getElementById('commLog').innerHTML = COMM_LOG.length ? COMM_LOG.map(entry => {
+    const accepted = entry.status === 'accepted';
+    const channelClass = entry.channel === 'email'
+      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+      : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300';
+    const statusClass = accepted
+      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+      : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+    const date = entry.at ? new Date(entry.at) : null;
+    const when = date && !isNaN(date) ? date.toLocaleString() : 'Unknown time';
+    const receipt = entry.providerId
+      ? `<div class="text-[11px] text-zinc-500 mt-1">Receipt: <span class="font-mono">${escapeHtml(entry.providerId)}</span></div>`
+      : '';
+    return `
+      <div class="px-4 py-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase ${channelClass}">${escapeHtml(entry.channel || 'message')}</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase ${statusClass}">${accepted ? 'Provider accepted' : 'Composer opened'}</span>
+          <span class="font-medium">${escapeHtml(entry.leadName || 'Unknown lead')}</span>
+          <span class="text-zinc-500">to ${escapeHtml(entry.to || 'unknown recipient')}</span>
+          <span class="text-xs text-zinc-500 ml-auto">${escapeHtml(when)}</span>
+        </div>
+        ${entry.subject ? `<div class="text-xs text-zinc-600 dark:text-zinc-400 mt-1">Subject: ${escapeHtml(entry.subject)}</div>` : ''}
+        <div class="text-xs text-zinc-500 mt-1">Provider: ${escapeHtml(entry.provider || 'unknown')}${entry.from ? ` · From: ${escapeHtml(entry.from)}` : ''}</div>
+        ${receipt}
+      </div>`;
+  }).join('') : '<div class="px-4 py-8 text-center text-sm text-zinc-500">No email or text sends logged in this browser yet.</div>';
   document.getElementById('fullLog').innerHTML = ACTIONS.map(a => `
     <div class="px-4 py-2 flex items-center gap-3">
       <div class="text-lg">${a.icon}</div>

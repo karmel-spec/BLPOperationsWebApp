@@ -284,6 +284,31 @@ function parseTimelineJson_(value) {
   }
 }
 
+function prepareLeadForSheet_(lead) {
+  const out = Object.assign({}, lead || {});
+  const rawTimelineData = cleanStr_(out.timeline_data_json)
+    || (Array.isArray(out.timeline) ? JSON.stringify(out.timeline) : "")
+    || (looksLikeJson_(out.timeline_json) ? cleanStr_(out.timeline_json) : "");
+  const timeline = rawTimelineData ? parseTimelineJson_(rawTimelineData) : [];
+  if (rawTimelineData) out.timeline_data_json = rawTimelineData;
+  if (timeline.length) out.timeline_json = formatTimelineForSheet_(timeline);
+  else if (looksLikeJson_(out.timeline_json)) out.timeline_json = "";
+  return out;
+}
+
+function formatTimelineForSheet_(timeline) {
+  return (timeline || []).slice(0, 40).map(function(entry) {
+    const date = cleanStr_(entry && entry.date);
+    const type = titleCase_(cleanStr_(entry && entry.type) || "note");
+    const text = cleanStr_(entry && entry.text).replace(/\s+/g, " ");
+    return [date, type, text].filter(Boolean).join(" | ");
+  }).filter(Boolean).join("\n");
+}
+
+function titleCase_(value) {
+  return cleanStr_(value).replace(/_/g, " ").replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
+}
+
 function deriveBucket_(text) {
   const s = String(text || "").toLowerCase();
   if (/won|sold|purchased|closed deal/.test(s)) return "Won";
@@ -378,6 +403,7 @@ function repCellValue_(lead, existing) {
 /* ---------------- write path ---------------- */
 
 function writeLead_(sheet, headers, rowNumber, lead) {
+  lead = prepareLeadForSheet_(lead);
   // ONE read + ONE write for the whole row (was ~20 setValue calls).
   // Keeps lock time short so rapid edits from the app don't collide.
   const live = liveHeaders_(sheet);
@@ -429,6 +455,7 @@ function writeStatusCell_(sheet, rowNumber, lead) {
 }
 
 function appendLead_(sheet, lead) {
+  lead = prepareLeadForSheet_(lead);
   const live = liveHeaders_(sheet);
   const row = live.map(header => {
     const field = fieldForHeader_(header);
