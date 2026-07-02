@@ -19,9 +19,10 @@
     "Outcome/Status (+ reason)" text; app status changes write back to it.
   - Days-since-contact computed from "Date of Last Contact".
   - "Activity Timeline" (your hand-written history) is READ-ONLY: shown in the
-    app, never overwritten. The app's structured timeline persists in a new
-    auto-created "timeline_json" column at the far right.
-  - blp_id and timeline_json columns are auto-created if missing.
+    app, never overwritten. The visible app activity column stores readable
+    summary text; the structured app timeline persists in a hidden
+    "timeline_data_json" column at the far right.
+  - blp_id and timeline_data_json columns are auto-created if missing.
 */
 
 /* v4: The secret now lives in Script Properties, NOT in this code.
@@ -40,7 +41,9 @@ function getSecret_() {
 }
 const SHEET_NAME = "Shop/Sales LEADS-30 Days";
 const ID_COLUMN_HEADER = "blp_id";
-const TIMELINE_COLUMN_HEADER = "timeline_json";
+const TIMELINE_SUMMARY_COLUMN_HEADER = "App Activity";
+const TIMELINE_LEGACY_COLUMN_HEADER = "timeline_json";
+const TIMELINE_DATA_COLUMN_HEADER = "timeline_data_json";
 
 const FIELD_ALIASES = {
   id: ["blp_id", "lead_id"],
@@ -70,7 +73,8 @@ const FIELD_ALIASES = {
   location: ["location", "city state"],
   social: ["social", "social handle", "customer social media handle"],
   timeline_text: ["activity timeline"],
-  timeline_json: ["timeline json"],
+  timeline_json: ["timeline json", "app activity"],
+  timeline_data_json: ["timeline_data_json", "timeline data json", "timeline data"],
 };
 
 // Fields the app sends that must NEVER be written to the sheet.
@@ -116,7 +120,9 @@ function doPost(e) {
   try {
     const sheet = getSheet_();
     ensureColumn_(sheet, ID_COLUMN_HEADER);
-    ensureColumn_(sheet, TIMELINE_COLUMN_HEADER);
+    ensureReadableTimelineColumn_(sheet);
+    const timelineDataCol = ensureColumn_(sheet, TIMELINE_DATA_COLUMN_HEADER);
+    hideTimelineDataColumn_(sheet, timelineDataCol);
     const { headers, rows } = readSheet_(sheet);
     const action = payload.action;
 
@@ -162,8 +168,31 @@ function liveHeaders_(sheet) {
 
 function ensureColumn_(sheet, headerName) {
   const normalized = liveHeaders_(sheet).map(normalizeHeader_);
-  if (normalized.indexOf(normalizeHeader_(headerName)) >= 0) return;
-  sheet.getRange(1, sheet.getLastColumn() + 1).setValue(headerName);
+  const existing = normalized.indexOf(normalizeHeader_(headerName));
+  if (existing >= 0) return existing + 1;
+  const col = sheet.getLastColumn() + 1;
+  sheet.getRange(1, col).setValue(headerName);
+  return col;
+}
+
+function ensureReadableTimelineColumn_(sheet) {
+  const headers = liveHeaders_(sheet);
+  const normalized = headers.map(normalizeHeader_);
+  const legacy = normalized.indexOf(normalizeHeader_(TIMELINE_LEGACY_COLUMN_HEADER));
+  if (legacy >= 0) {
+    sheet.getRange(1, legacy + 1).setValue(TIMELINE_SUMMARY_COLUMN_HEADER);
+    return legacy + 1;
+  }
+  const readable = normalized.indexOf(normalizeHeader_(TIMELINE_SUMMARY_COLUMN_HEADER));
+  if (readable >= 0) return readable + 1;
+  const col = sheet.getLastColumn() + 1;
+  sheet.getRange(1, col).setValue(TIMELINE_SUMMARY_COLUMN_HEADER);
+  return col;
+}
+
+function hideTimelineDataColumn_(sheet, col) {
+  if (!col) return;
+  try { sheet.hideColumns(col); } catch (err) {}
 }
 
 function ensureRowId_(sheet, rowNumber) {
@@ -230,16 +259,29 @@ function normalizeRow_(headers, row, rowNumber) {
   lead.last_contact_date = dateStr_(lead.last_contact_date);
   lead.date_added = dateStr_(lead.date_added);
 
-  // Structured timeline from timeline_json column; otherwise seed one entry
-  // from the hand-written Activity Timeline so history shows in the app.
-  if (lead.timeline_json) {
-    try { lead.timeline = JSON.parse(lead.timeline_json); } catch (err) {}
-  }
+  // Structured timeline from the hidden JSON column. Older sheets may still
+  // have raw JSON in the visible timeline_json/App Activity column, so keep
+  // that as a fallback while future writes replace it with readable text.
+  const timelineJson = cleanStr_(lead.timeline_data_json) || (looksLikeJson_(lead.timeline_json) ? cleanStr_(lead.timeline_json) : "");
+  if (timelineJson) lead.timeline = parseTimelineJson_(timelineJson);
   const handwritten = cleanStr_(lead.timeline_text);
   if ((!lead.timeline || !lead.timeline.length) && handwritten) {
     lead.timeline = [{ date: lead.last_contact_date || "", when: "from sheet", type: "sheet", text: handwritten.slice(0, 2000) }];
   }
   return lead;
+}
+
+function looksLikeJson_(value) {
+  return /^\s*[\[{]/.test(String(value || ""));
+}
+
+function parseTimelineJson_(value) {
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    return [];
+  }
 }
 
 function deriveBucket_(text) {
