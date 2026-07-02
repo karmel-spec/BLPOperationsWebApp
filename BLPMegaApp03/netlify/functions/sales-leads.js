@@ -40,11 +40,18 @@ exports.handler = async (event) => {
   url.searchParams.set("secret", syncSecret);
   url.searchParams.set("action", "list");
 
-  const response = await fetch(url);
+  let response;
+  try {
+    response = await fetch(url);
+  } catch (error) {
+    return json(502, { ok: false, error: "Could not reach the leads sync service.", detail: String(error.message || error).slice(0, 800) });
+  }
   const text = await response.text();
 
   if (!response.ok) {
-    return json(response.status, { ok: false, error: "Apps Script read failed.", detail: text.slice(0, 800) });
+    // Always answer 502 for upstream failures: relaying an upstream 401
+    // would make the app think the team passcode was rejected and erase it.
+    return json(502, { ok: false, error: "Apps Script read failed.", upstreamStatus: response.status, detail: text.slice(0, 800) });
   }
 
   try {

@@ -138,6 +138,14 @@ function doPost(e) {
       const blpId = /^BLP-/.test(String(lead.blp_id || lead.id || "")) ? String(lead.blp_id || lead.id) : newId_();
       lead.blp_id = blpId;
       lead.id = blpId;
+      // Idempotent create: the app retries failed/timed-out creates with the
+      // same client-minted BLP id. If that id already has a row (the first
+      // attempt actually landed), update it instead of inserting a duplicate.
+      const existing = findRow_(headers, rows, { blp_id: blpId });
+      if (existing) {
+        writeLead_(sheet, headers, existing.rowNumber, lead);
+        return json_({ ok: true, action, rowNumber: existing.rowNumber, blp_id: blpId, id: blpId, deduped: true });
+      }
       const rowNumber = appendLead_(sheet, lead);
       writeStatusCell_(sheet, rowNumber, lead);
       return json_({ ok: true, action, rowNumber, blp_id: blpId, id: blpId });

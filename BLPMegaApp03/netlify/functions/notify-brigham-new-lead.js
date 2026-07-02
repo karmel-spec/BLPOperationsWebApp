@@ -99,7 +99,9 @@ exports.handler = async (event) => {
   const result = await response.text();
 
   if (!response.ok) {
-    return json(response.status, { ok: false, error: "Twilio send failed.", detail: result.slice(0, 800) });
+    // Always answer 502 for provider failures: relaying Twilio's own 401/403
+    // would make the app think the team passcode was rejected and erase it.
+    return json(502, { ok: false, error: "Twilio send failed.", providerStatus: response.status, detail: result.slice(0, 800) });
   }
 
   return json(200, { ok: true });

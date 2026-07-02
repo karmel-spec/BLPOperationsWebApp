@@ -74,7 +74,9 @@ exports.handler = async (event) => {
 
   const text = await response.text();
   if (!response.ok) {
-    return json(response.status, { ok: false, error: "Gmail send failed.", detail: text.slice(0, 800) });
+    // Always answer 502 for provider failures: relaying Gmail's own 401/403
+    // would make the app think the team passcode was rejected and erase it.
+    return json(502, { ok: false, error: "Gmail send failed.", providerStatus: response.status, detail: text.slice(0, 800) });
   }
 
   const result = parseJson(text);
@@ -103,18 +105,77 @@ async function getGoogleAccessToken({ clientId, clientSecret, refreshToken }) {
   return parsed.data.access_token;
 }
 
+/* The app's drafts use markdown-style [label](url) links (videos, Calendly).
+   Send multipart/alternative so customers get real clickable links instead of
+   literal [label](url) text, with a readable plain-text part as fallback. */
 function buildMimeMessage({ from, to, bcc, subject, body }) {
+  const boundary = "blp_" + Buffer.from(subject + to).toString("hex").slice(0, 24);
   return [
     `From: ${sanitizeHeader(from)}`,
     `To: ${sanitizeHeader(to)}`,
     `Bcc: ${sanitizeHeader(bcc)}`,
-    `Subject: ${sanitizeHeader(subject)}`,
+    `Subject: ${encodeHeaderWord(sanitizeHeader(subject))}`,
     "MIME-Version: 1.0",
-    "Content-Type: text/plain; charset=UTF-8",
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    "",
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
     "Content-Transfer-Encoding: 8bit",
     "",
-    body,
+    markdownToText(body),
+    "",
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    "Content-Transfer-Encoding: 8bit",
+    "",
+    markdownToHtml(body),
+    "",
+    `--${boundary}--`,
+    "",
   ].join("\r\n");
+}
+
+/* [label](url) -> "label (url)" for the plain-text part. */
+function markdownToText(md) {
+  return String(md).replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => `${label} (${url})`);
+}
+
+/* [label](url) -> <a href="url">label</a>; newlines -> <br>. Everything else
+   escaped, and only http(s) links become anchors. */
+function markdownToHtml(md) {
+  const LINK = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let out = "";
+  let last = 0;
+  let m;
+  while ((m = LINK.exec(md)) !== null) {
+    out += escapeHtml(md.slice(last, m.index));
+    const label = escapeHtml(m[1]);
+    const url = String(m[2]).trim();
+    if (/^https?:\/\//i.test(url)) {
+      out += `<a href="${escapeHtml(url)}">${label}</a>`;
+    } else {
+      out += `${label} (${escapeHtml(url)})`;
+    }
+    last = m.index + m[0].length;
+  }
+  out += escapeHtml(md.slice(last));
+  const withBreaks = out.replace(/\r?\n/g, "<br>\n");
+  return `<!DOCTYPE html><html><body style="font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#1a1a1a;line-height:1.5;">${withBreaks}</body></html>`;
+}
+
+/* RFC 2047 encoded-word so non-ASCII subjects survive transport. */
+function encodeHeaderWord(value) {
+  if (/^[\x20-\x7E]*$/.test(value)) return value;
+  return `=?UTF-8?B?${Buffer.from(value, "utf-8").toString("base64")}?=`;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function encodeBase64Url(value) {
