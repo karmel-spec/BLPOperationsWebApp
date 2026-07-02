@@ -8249,12 +8249,36 @@ async function approveAndSend(id, checkboxEl, channel) {
 /* Map free-text rep values from the sheet ("Sally", "BRIGHAM R.", blank)
    onto the app's rep keys. Empty or unrecognized = Brigham by default. */
 function normalizeRepKey(value) {
-  const s = String(value || '').toLowerCase();
+  const s = String(value || '').toLowerCase().trim();
+  const compact = s.replace(/[^a-z]/g, '');
+  if (['bl', 'brighamlarson'].includes(compact)) return 'brigham';
+  if (['sl', 'sally'].includes(compact)) return 'sally';
+  if (['kl', 'karmel'].includes(compact)) return 'karmel';
+  if (['a', 'admin'].includes(compact)) return 'admin';
   if (s.includes('sally'))  return 'sally';
   if (s.includes('brig'))   return 'brigham';
   if (s.includes('karmel')) return 'karmel';
   if (s.includes('admin'))  return 'admin';
   return 'brigham';
+}
+
+function parseRepTrail(value) {
+  const raw = String(value || '').trim();
+  const labeled = {};
+  raw.replace(/\b([owc])\s*:\s*([^,;|/]+)/gi, (_, label, rep) => {
+    labeled[label.toLowerCase()] = normalizeRepKey(rep);
+    return '';
+  });
+  if (labeled.o || labeled.w || labeled.c) {
+    const fallback = labeled.w || labeled.o || 'brigham';
+    return {
+      opened: labeled.o || fallback,
+      working: labeled.w || fallback,
+      closed: labeled.c || '',
+    };
+  }
+  const singleRep = normalizeRepKey(raw);
+  return { opened: singleRep, working: singleRep, closed: '' };
 }
 
 /* Outcome = business status from the sheet's Outcome/Status column.
@@ -8283,14 +8307,15 @@ function normalizeLeadRecord(l, index = 0) {
   const incoming = l.outcome || l.status_bucket || 'Active';
   const outcome = incoming === 'Brand New' ? 'Active'
     : (['Active','Snoozed','Won','Lost','Inactive'].includes(incoming) ? incoming : 'Active');
+  const repTrail = parseRepTrail(l.rep);
   const lead = {
     ...l,
     id: String(l.id || l.blp_id || l.rowNumber || index + 1),
     name: composedName || l.name,
-    rep: normalizeRepKey(l.rep),
-    rep_opened: normalizeRepKey(l.rep_opened || l.rep),
-    rep_working: normalizeRepKey(l.rep_working || l.rep),
-    rep_closed: l.rep_closed ? normalizeRepKey(l.rep_closed) : '',
+    rep: normalizeRepKey(l.rep_working || repTrail.working || l.rep),
+    rep_opened: l.rep_opened ? normalizeRepKey(l.rep_opened) : repTrail.opened,
+    rep_working: l.rep_working ? normalizeRepKey(l.rep_working) : repTrail.working,
+    rep_closed: l.rep_closed ? normalizeRepKey(l.rep_closed) : repTrail.closed,
     brighamFlag: l.brighamFlag || false,
     reason: l.reason || '',
     outcome,
