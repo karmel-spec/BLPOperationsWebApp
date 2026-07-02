@@ -541,6 +541,9 @@
         <span id="salesCommsDot" class="w-1.5 h-1.5 rounded-full bg-amber-500 pulse-dot"></span>
         <span id="salesCommsText">Comms checking</span>
       </div>
+      <button id="teamKeyBtn" onclick="openTeamKeyModal()" class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold" title="Enter the BLP team passcode for live Leads Log sync">
+        Team Key
+      </button>
       <button id="newLeadBtn" onclick="openNewLeadModal()" class="text-sm px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 flex items-center gap-1.5 font-medium shadow-sm">
         <span class="text-base leading-none">+</span> New Lead
       </button>
@@ -784,6 +787,32 @@
       </div>
       <div class="text-[11px] text-zinc-500 italic">
         "Connected" and "They called us back" log as inbound contact (engagement state shifts). VM and no-answer log as outbound attempt.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================== TEAM KEY =========================== -->
+<div id="teamKeyModal" class="fixed inset-0 z-[70] hidden">
+  <div class="fixed inset-0 bg-black/50" onclick="closeTeamKeyModal()"></div>
+  <div class="fixed inset-x-4 top-24 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-[440px] bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-2xl">
+    <div class="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+      <div>
+        <div class="text-sm font-semibold">Live Leads Log access</div>
+        <div id="teamKeyModalSubhead" class="text-xs text-zinc-500 mt-0.5">Enter the BLP team passcode to sync live sales leads.</div>
+      </div>
+      <button onclick="closeTeamKeyModal()" class="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">x</button>
+    </div>
+    <div class="p-4 space-y-3">
+      <label class="text-[11px] uppercase text-zinc-500">Team passcode</label>
+      <input id="teamKeyInput" type="password" autocomplete="current-password" class="w-full px-3 py-2 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800" />
+      <p class="text-[11px] text-zinc-500">Stored only in this browser's local storage and sent as the sales function access header.</p>
+    </div>
+    <div class="p-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2">
+      <button onclick="forgetTeamKey()" class="px-3 py-1.5 text-sm rounded-md border border-red-200 text-red-700 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">Forget key</button>
+      <div class="flex items-center gap-2">
+        <button onclick="closeTeamKeyModal()" class="px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700">Cancel</button>
+        <button onclick="saveTeamKey()" class="px-4 py-1.5 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700 font-semibold">Connect live</button>
       </div>
     </div>
   </div>
@@ -7816,6 +7845,7 @@ function generateDraft(l, channel) {
           body = `Hi ${fn}, Brigham — following up on the ${hl}. ${quoted ? `Where did you land on the ${quoted} idea?` : 'Where are you at on this?'} Lmk.`;
         }
     }
+    body = formatSalesSmsBody(l, body);
     return { channel: 'text', subject: '', body, video: null, ctaUrl: CALENDLY_URL, state };
   }
 
@@ -7922,6 +7952,22 @@ function generateDraft(l, channel) {
   lines.push('Brigham');
 
   return { channel: 'email', subject, body: lines.join('\n'), video, ctaUrl: CALENDLY_URL, state };
+}
+
+const SALES_SMS_PREFIX = 'Brigham Larson Pianos -';
+const SALES_SMS_FOOTER = 'Reply STOP to unsubscribe.';
+
+function formatSalesSmsBody(lead, body) {
+  const first = firstName(lead?.name || '') || 'there';
+  let text = String(body || '').trim();
+  text = text.replace(/^Brigham Larson Pianos\s*-\s*/i, '').trim();
+  text = text.replace(/(?:\n\s*)*Reply STOP to unsubscribe\.?$/i, '').trim();
+
+  if (!/^hi\b/i.test(text)) {
+    text = `Hi ${first},\n\n${text}`;
+  }
+
+  return `${SALES_SMS_PREFIX} ${text}\n\n${SALES_SMS_FOOTER}`;
 }
 
 /* Cache drafts per channel so re-renders don't regenerate (and so edits survive sort/filter).
@@ -8086,6 +8132,7 @@ async function approveAndSend(id, checkboxEl, channel) {
   const isEmail = d.channel === 'email';
   if (isEmail && !l.email) return toast('No email on file for ' + l.name);
   if (!isEmail && !l.phone) return toast('No cell number on file for ' + l.name);
+  const outboundBody = isEmail ? d.body : formatSalesSmsBody(l, d.body);
 
   let sendLabel = isEmail ? `email from ${SALES_EMAIL_FROM}` : `text via Twilio (${SALES_TWILIO_SMS_DISPLAY})`;
   try {
@@ -8100,7 +8147,7 @@ async function approveAndSend(id, checkboxEl, channel) {
       await postCommunication(SALES_SMS_ENDPOINT, {
         leadId: id,
         to: l.phone,
-        body: d.body,
+        body: outboundBody,
       });
     }
   } catch (error) {
@@ -8114,7 +8161,7 @@ async function approveAndSend(id, checkboxEl, channel) {
         toast('Could not send email through the backend — opened your email composer instead.');
       }
     } else {
-      if (!openNativeSmsFallback(l, d.body)) return toast('No cell number on file for ' + l.name);
+      if (!openNativeSmsFallback(l, outboundBody)) return toast('No cell number on file for ' + l.name);
       sendLabel = 'device text composer';
       if (error.status === 501 || (error.data && error.data.configured === false)) {
         toast('Twilio is not configured yet — opened your device text composer instead.');
@@ -8131,7 +8178,7 @@ async function approveAndSend(id, checkboxEl, channel) {
     when: 'just now',
     type: isEmail ? 'email' : 'text',
     direction: 'outbound',
-    text: (isEmail ? `From: ${SALES_EMAIL_FROM}\nBCC: ${SALES_EMAIL_BCC}\nSubject: ${d.subject}\n\n` : '') + d.body,
+    text: (isEmail ? `From: ${SALES_EMAIL_FROM}\nBCC: ${SALES_EMAIL_BCC}\nSubject: ${d.subject}\n\n` : '') + outboundBody,
   };
   (TIMELINES[id] = TIMELINES[id] || []).unshift(tlEntry);
 
@@ -8202,12 +8249,14 @@ function timelineBucketFor(l, outcome) {
 }
 
 function normalizeLeadRecord(l, index = 0) {
+  const composedName = [l.first, l.last].map(v => String(v || '').trim()).filter(Boolean).join(' ');
   const incoming = l.outcome || l.status_bucket || 'Active';
   const outcome = incoming === 'Brand New' ? 'Active'
     : (['Active','Snoozed','Won','Lost','Inactive'].includes(incoming) ? incoming : 'Active');
   const lead = {
     ...l,
     id: String(l.id || l.blp_id || l.rowNumber || index + 1),
+    name: composedName || l.name,
     rep: normalizeRepKey(l.rep),
     rep_opened: normalizeRepKey(l.rep_opened || l.rep),
     rep_working: normalizeRepKey(l.rep_working || l.rep),
@@ -8336,24 +8385,63 @@ let salesFlushInFlight = false;
 let salesCommsTimer = null;
 
 /* ---- Team passcode (sent as x-blp-key; validated by Netlify functions) ---- */
-function getTeamKey({ forcePrompt = false } = {}) {
-  let key = localStorage.getItem('blpTeamKey') || '';
-  const alreadyAsked = sessionStorage.getItem('blpKeyPromptShown') === '1';
-  if ((!key && !alreadyAsked) || forcePrompt) {
-    sessionStorage.setItem('blpKeyPromptShown', '1');
-    try {
-      key = (window.prompt('Enter the BLP team passcode to connect to the live Leads Log:') || '').trim();
-    } catch (error) {
-      console.warn('BLP sync: passcode prompt unavailable; staying in snapshot mode.', error);
-      key = '';
-    }
-    if (key) localStorage.setItem('blpTeamKey', key);
-  }
-  return key;
+function getTeamKey() {
+  return (localStorage.getItem('blpTeamKey') || '').trim();
 }
-function clearTeamKey() { localStorage.removeItem('blpTeamKey'); }
+function setTeamKey(key) {
+  const clean = String(key || '').trim();
+  if (clean) localStorage.setItem('blpTeamKey', clean);
+  else localStorage.removeItem('blpTeamKey');
+  updateTeamKeyButton();
+  return clean;
+}
+function clearTeamKey() { setTeamKey(''); }
 function authHeaders(extra = {}) {
   return { 'x-blp-key': getTeamKey(), ...extra };
+}
+function updateTeamKeyButton() {
+  const btn = document.getElementById('teamKeyBtn');
+  if (!btn) return;
+  const hasKey = !!getTeamKey();
+  btn.textContent = hasKey ? 'Key set' : 'Team Key';
+  btn.classList.toggle('border-emerald-300', hasKey);
+  btn.classList.toggle('text-emerald-700', hasKey);
+  btn.classList.toggle('dark:text-emerald-300', hasKey);
+  btn.title = hasKey ? 'Live sync key is stored for this browser' : 'Enter the BLP team passcode for live Leads Log sync';
+}
+function openTeamKeyModal(message = '') {
+  const modal = document.getElementById('teamKeyModal');
+  const input = document.getElementById('teamKeyInput');
+  const subhead = document.getElementById('teamKeyModalSubhead');
+  if (!modal || !input) return;
+  if (subhead) subhead.textContent = message || 'Enter the BLP team passcode to sync live sales leads.';
+  input.value = getTeamKey();
+  modal.classList.remove('hidden');
+  setTimeout(() => input.focus(), 0);
+}
+function closeTeamKeyModal() {
+  document.getElementById('teamKeyModal')?.classList.add('hidden');
+}
+function saveTeamKey() {
+  const key = setTeamKey(document.getElementById('teamKeyInput')?.value || '');
+  if (!key) {
+    setSyncStatus('Enter team key', 'snapshot');
+    setCommsStatus('Comms locked', 'snapshot', 'Enter the team key to check sales communication status.');
+    return;
+  }
+  closeTeamKeyModal();
+  setSyncStatus('Checking live sheet', 'snapshot');
+  setCommsStatus('Comms checking', 'snapshot');
+  loadLiveLeads();
+  loadCommunicationStatus();
+  flushPendingMutations();
+}
+function forgetTeamKey() {
+  clearTeamKey();
+  closeTeamKeyModal();
+  salesSyncLive = false;
+  setSyncStatus('Enter team key', 'snapshot');
+  setCommsStatus('Comms locked', 'snapshot', 'Enter the team key to check sales communication status.');
 }
 
 function normalizePhoneForAction(value) {
@@ -8526,6 +8614,10 @@ function summarizeCommsMissing(status) {
 }
 
 async function loadCommunicationStatus({ silent = false } = {}) {
+  if (!getTeamKey()) {
+    if (!silent) setCommsStatus('Comms locked', 'snapshot', 'Enter the team key to check sales communication status.');
+    return false;
+  }
   if (!silent) setCommsStatus('Comms checking', 'snapshot');
   let data;
   try {
@@ -8535,7 +8627,8 @@ async function loadCommunicationStatus({ silent = false } = {}) {
     });
     if (response.status === 401) {
       clearTeamKey();
-      setCommsStatus('Comms passcode', 'error', 'Wrong team passcode — reload to retry communication status.');
+      setCommsStatus('Comms passcode', 'error', 'Wrong team passcode. Enter the key again to retry communication status.');
+      if (!silent) openTeamKeyModal('Wrong team passcode. Enter the key again to retry communication status.');
       return false;
     }
     data = await response.json().catch(() => ({}));
@@ -8581,6 +8674,11 @@ async function loadLiveLeads({ silent = false } = {}) {
   // Never let a background refresh stomp on someone who is mid-edit,
   // and never overwrite local state while unsaved changes are still queued.
   if (silent && (userIsEditing() || pendingSalesMutations.length > 0)) return false;
+  if (!getTeamKey()) {
+    salesSyncLive = false;
+    if (!silent) setSyncStatus('Enter team key', 'snapshot');
+    return false;
+  }
   if (!silent) setSyncStatus('Checking live sheet', 'snapshot');
   let data;
   try {
@@ -8588,7 +8686,8 @@ async function loadLiveLeads({ silent = false } = {}) {
     if (response.status === 401) {
       salesSyncLive = false;
       clearTeamKey();
-      setSyncStatus('Wrong team passcode — reload to retry', 'error');
+      setSyncStatus('Wrong team key — enter again', 'error');
+      if (!silent) openTeamKeyModal('Wrong team passcode. Enter the key again to retry live sync.');
       return false;
     }
     data = await response.json().catch(() => ({}));
@@ -8631,6 +8730,11 @@ async function syncLeadMutation(action, lead, meta = {}) {
 }
 
 async function sendMutationPayload(payload, lead = null) {
+  if (!getTeamKey()) {
+    queueMutation(payload);
+    setSyncStatus('Enter team key to save', 'snapshot');
+    return false;
+  }
   try {
     const response = await fetch(SALES_MUTATION_ENDPOINT, {
       method: 'POST',
@@ -8640,7 +8744,8 @@ async function sendMutationPayload(payload, lead = null) {
     if (response.status === 401) {
       queueMutation(payload);
       clearTeamKey();
-      setSyncStatus('Wrong team passcode — reload to retry', 'error');
+      setSyncStatus('Wrong team key — enter again', 'error');
+      openTeamKeyModal('Wrong team passcode. Enter the key again so queued changes can retry.');
       return false;
     }
     const data = await response.json().catch(() => ({}));
@@ -8668,6 +8773,7 @@ async function sendMutationPayload(payload, lead = null) {
 
 async function flushPendingMutations() {
   if (salesFlushInFlight || pendingSalesMutations.length === 0) return;
+  if (!getTeamKey()) return;
   salesFlushInFlight = true;
   try {
     while (pendingSalesMutations.length > 0) {
@@ -9150,7 +9256,7 @@ function applySelectedTemplate() {
     document.getElementById('draftSubject').value = renderTemplateSubject(template, lead);
     document.getElementById('draftBody').value = body;
   } else {
-    document.getElementById('smsBody').value = body;
+    document.getElementById('smsBody').value = formatSalesSmsBody(lead, body);
     updateSmsCounter();
   }
   ACTIONS.unshift({ who:'Karmel', when:'just now', what:`loaded ${templateChannel === 'email' ? 'email' : 'text'} template for ${lead.name}`, icon:'✎' });
@@ -9537,7 +9643,7 @@ function sendSms(id) {
   const seed = d && d.channel === 'text'
     ? d.body
     : `Hi ${firstName(l.name)}, Brigham here — just following up on the ${lowerForSentence(l.instrument || 'piano')}. Lmk what works best.`;
-  document.getElementById('smsBody').value = seed;
+  document.getElementById('smsBody').value = formatSalesSmsBody(l, seed);
   updateSmsCounter();
   document.getElementById('smsModal').classList.remove('hidden');
   setTimeout(() => document.getElementById('smsBody').focus(), 50);
@@ -9565,7 +9671,7 @@ function loadAiDraftIntoSms() {
   if (!l) return;
   // Force-regenerate as text channel
   const d = generateDraft(l, 'text');
-  document.getElementById('smsBody').value = d.body;
+  document.getElementById('smsBody').value = formatSalesSmsBody(l, d.body);
   updateSmsCounter();
   toast('Loaded fresh AI draft');
 }
@@ -9574,8 +9680,10 @@ async function sendSmsNow() {
   if (smsLeadId == null) return;
   const l = workingLeads.find(x => x.id === smsLeadId);
   if (!l) return;
-  const body = document.getElementById('smsBody').value.trim();
+  const body = formatSalesSmsBody(l, document.getElementById('smsBody').value);
   if (!body) return toast('Message is empty');
+  document.getElementById('smsBody').value = body;
+  updateSmsCounter();
 
   let fromLabel = `Twilio (${SALES_TWILIO_SMS_DISPLAY})`;
   try {
@@ -10166,11 +10274,17 @@ document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', (
   el.addEventListener('change', renderLeads);
 });
 document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+document.getElementById('teamKeyInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    saveTeamKey();
+  }
+});
 
 // Keyboard shortcuts: ESC closes any open modal; ⌘/Ctrl+N opens new-lead modal
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    closeNewLeadModal(); closeNoteModal(); closeDraft(); closeCustomSnooze(); closeAiDraftEditor(); closeSmsModal(); closeInboundLog(); closeCallLog(); closeTemplatePicker();
+    closeNewLeadModal(); closeNoteModal(); closeDraft(); closeCustomSnooze(); closeAiDraftEditor(); closeSmsModal(); closeInboundLog(); closeCallLog(); closeTemplatePicker(); closeTeamKeyModal();
   }
   if ((e.metaKey || e.ctrlKey) && (e.key === 'n' || e.key === 'N')) {
     // Avoid hijacking when user is typing in an input
@@ -10186,6 +10300,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+updateTeamKeyButton();
 renderAll();
 startSalesSync();
 startCommunicationStatusChecks();
