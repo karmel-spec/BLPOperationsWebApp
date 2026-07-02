@@ -261,6 +261,55 @@
     background: #8f141a !important;
   }
 
+  /* Map the remaining off-brand indigo utilities onto BLP oxblood red.
+     Override-only (no markup renamed); dark: variants get their own
+     .dark-scoped rules below so dark mode keeps working. */
+  .blp-sales .text-indigo-700 {
+    color: var(--blp-red) !important;
+  }
+
+  .blp-sales .hover\:text-indigo-600:hover {
+    color: #8c1219 !important;
+  }
+
+  .blp-sales .bg-indigo-50 {
+    background: rgba(167, 25, 32, 0.05) !important;
+  }
+
+  .blp-sales .bg-indigo-100 {
+    background: rgba(167, 25, 32, 0.1) !important;
+  }
+
+  .blp-sales .border-indigo-200 {
+    border-color: rgba(167, 25, 32, 0.3) !important;
+  }
+
+  .blp-sales .hover\:ring-indigo-300:hover {
+    --tw-ring-color: rgba(167, 25, 32, 0.25) !important;
+  }
+
+  .dark .blp-sales .dark\:text-indigo-300,
+  .dark .blp-sales .dark\:hover\:text-indigo-300:hover {
+    color: #e39096 !important;
+  }
+
+  .dark .blp-sales .dark\:bg-indigo-900\/30 {
+    background: rgba(167, 25, 32, 0.3) !important;
+  }
+
+  .dark .blp-sales .dark\:bg-indigo-900\/20 {
+    background: rgba(167, 25, 32, 0.2) !important;
+  }
+
+  .dark .blp-sales .dark\:hover\:bg-indigo-950:hover {
+    background: rgba(140, 18, 25, 0.25) !important;
+  }
+
+  .dark .blp-sales .dark\:border-indigo-800,
+  .dark .blp-sales .dark\:border-indigo-700 {
+    border-color: rgba(167, 25, 32, 0.55) !important;
+  }
+
   #darkToggle {
     display: none;
   }
@@ -7252,7 +7301,7 @@ function repBadgeSelectHtml(id, field, selected, label, allowBlank = false) {
   const key = selected || '';
   const cls = key ? repBadgeClass(key) : 'rep-badge rep-badge--empty';
   const title = `${label}: ${key ? repName(key) : 'Not closed yet'}`;
-  return `<select aria-label="${escapeHtml(label)} rep for ${escapeHtml(id)}" title="${escapeHtml(title)}" onclick="event.stopPropagation()" onchange="event.stopPropagation(); updateRepFromBadge('${id}', '${field}', this.value)" class="${cls} rep-badge-select font-bold">${repInitialOptions(key, allowBlank)}</select>`;
+  return `<select aria-label="${escapeHtml(label)} rep for ${escapeHtml(id)}" title="${escapeHtml(title)}" onclick="event.stopPropagation()" onchange="event.stopPropagation(); updateRepFromBadge('${jsArg(id)}', '${field}', this.value)" class="${cls} rep-badge-select font-bold">${repInitialOptions(key, allowBlank)}</select>`;
 }
 
 const MESSAGE_TEMPLATES = {
@@ -7454,11 +7503,22 @@ function engagementState(l) {
 
 function parseSheetDate(s) {
   if (!s) return null;
-  const m = String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
-  if (!m) return null;
-  const mo = parseInt(m[1], 10);
-  const day = parseInt(m[2], 10);
-  let y = parseInt(m[3], 10);
+  let mo, day, y;
+  // ISO form (yyyy-MM-dd) — what the Apps Script backend returns. Parse the parts
+  // ourselves so the date is LOCAL midnight; new Date('yyyy-MM-dd') is UTC midnight
+  // and shifts a day in Utah evenings.
+  const iso = String(s).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (iso) {
+    y = parseInt(iso[1], 10);
+    mo = parseInt(iso[2], 10);
+    day = parseInt(iso[3], 10);
+  } else {
+    const m = String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+    if (!m) return null;
+    mo = parseInt(m[1], 10);
+    day = parseInt(m[2], 10);
+    y = parseInt(m[3], 10);
+  }
   if (y < 100) y += 2000;
   // Reject out-of-range parts so a typo like "99/99/9999" doesn't silently roll over
   // into a wrong (but valid) Date and corrupt aging / lonely math.
@@ -7505,9 +7565,9 @@ function startRecommendedAction(id, channel) {
 function renderDrawerContactActions(l) {
   return `
     <div class="col-span-2 flex flex-wrap gap-2 pt-1" onclick="event.stopPropagation()">
-      <button type="button" onclick="openDraft('${l.id}')" ${!l.email ? 'disabled title="No email on file"' : `title="Email ${escapeHtml(l.name)}"`} class="text-xs px-2.5 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">✉️ Email</button>
-      <button type="button" onclick="sendSms('${l.id}')" ${!l.phone ? 'disabled title="No cell number on file"' : `title="Text ${escapeHtml(l.name)}"`} class="text-xs px-2.5 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed">💬 Text</button>
-      <button type="button" onclick="callLead('${l.id}')" ${!l.phone ? 'disabled title="No phone number on file"' : `title="Call ${escapeHtml(l.name)}"`} class="text-xs px-2.5 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed">📞 Call</button>
+      <button type="button" onclick="openDraft('${jsArg(l.id)}')" ${!l.email ? 'disabled title="No email on file"' : `title="Email ${escapeHtml(l.name)}"`} class="text-xs px-2.5 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">✉️ Email</button>
+      <button type="button" onclick="sendSms('${jsArg(l.id)}')" ${!l.phone ? 'disabled title="No cell number on file"' : `title="Text ${escapeHtml(l.name)}"`} class="text-xs px-2.5 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed">💬 Text</button>
+      <button type="button" onclick="callLead('${jsArg(l.id)}')" ${!l.phone ? 'disabled title="No phone number on file"' : `title="Call ${escapeHtml(l.name)}"`} class="text-xs px-2.5 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed">📞 Call</button>
     </div>`;
 }
 
@@ -7577,7 +7637,7 @@ function renderActionCell(l) {
         <div class="flex items-center gap-1.5">
           <span class="text-zinc-400 dark:text-zinc-500 w-14 shrink-0">Next</span>
           ${nextType
-            ? `<button type="button" onclick="event.stopPropagation();startRecommendedAction('${l.id}', '${nextType}')" class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-medium hover:ring-2 hover:ring-indigo-300" title="${ACTION_LABEL[nextType]} ${escapeHtml(l.name)}">${next}</button>`
+            ? `<button type="button" onclick="event.stopPropagation();startRecommendedAction('${jsArg(l.id)}', '${nextType}')" class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-medium hover:ring-2 hover:ring-indigo-300" title="${ACTION_LABEL[nextType]} ${escapeHtml(l.name)}">${next}</button>`
             : '<span class="px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 italic" title="No email or phone on file — add contact info to propose a next contact">Add contact info</span>'}
         </div>
         <div class="flex items-center gap-1.5">
@@ -8305,9 +8365,11 @@ function saveAiDraftEdits() {
 }
 async function approveAndSendFromEditor() {
   if (editingDraftId == null || !editingDraftChannel) return;
+  // Capture before saveAiDraftEdits() — it calls closeAiDraftEditor(), which nulls these.
+  const id = editingDraftId;
   const ch = editingDraftChannel;
   saveAiDraftEdits();
-  await approveAndSend(editingDraftId, null, ch);
+  await approveAndSend(id, null, ch);
 }
 
 /* Build the "context Arnold pulled from" snippet for the editor */
@@ -8498,7 +8560,9 @@ function parseRepTrail(value) {
 const OUTCOME_TERMINAL = ['Won', 'Lost', 'Inactive'];
 
 function leadAgeDays(l) {
-  const d = new Date(l.date_added || '');
+  // parseSheetDate handles yyyy-MM-dd and M/D/Y as LOCAL time; new Date(string)
+  // would parse yyyy-MM-dd as UTC midnight and shift a day in Utah evenings.
+  const d = parseSheetDate(l.date_added) || new Date(l.date_added || '');
   if (!isNaN(d)) return Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
   const n = Number(l.days);
   return Number.isFinite(n) ? n : 0;
@@ -8765,12 +8829,14 @@ function smsUri(value, body = '') {
 
 function mailtoUri(to, { subject = '', body = '' } = {}) {
   if (!to) return '';
-  const params = new URLSearchParams();
-  if (subject) params.set('subject', subject);
-  params.set('bcc', SALES_EMAIL_BCC);
+  // encodeURIComponent, NOT URLSearchParams — the latter encodes spaces as '+',
+  // which mail clients show literally in the composer.
+  const parts = [];
+  if (subject) parts.push('subject=' + encodeURIComponent(subject));
+  parts.push('bcc=' + encodeURIComponent(SALES_EMAIL_BCC));
   const fromNote = `\n\n--\nSend from: ${SALES_EMAIL_FROM}\nBCC: ${SALES_EMAIL_BCC}`;
-  params.set('body', body + fromNote);
-  return 'mailto:' + encodeURIComponent(to) + '?' + params.toString();
+  parts.push('body=' + encodeURIComponent(body + fromNote));
+  return 'mailto:' + encodeURIComponent(to) + '?' + parts.join('&');
 }
 
 async function postCommunication(endpoint, payload) {
@@ -8983,7 +9049,7 @@ function applyServerLeadResult(localLead, result) {
 async function loadLiveLeads({ silent = false } = {}) {
   // Never let a background refresh stomp on someone who is mid-edit,
   // and never overwrite local state while unsaved changes are still queued.
-  if (silent && (userIsEditing() || pendingSalesMutations.length > 0)) return false;
+  if (silent && (userIsEditing() || pendingSalesMutations.length > 0 || syncOutbox.length > 0 || outboxPumping)) return false;
   if (!getTeamKey()) {
     salesSyncLive = false;
     if (!silent) setSyncStatus('Enter team key', 'snapshot');
@@ -9258,10 +9324,10 @@ function renderLeads() {
           ${escapeHtml(l.name)}
         </div>
         <div class="blp-lead-meta text-[11px] text-zinc-500 truncate" title="${escapeHtml(l.email || '')}">
-          <button onclick="event.stopPropagation(); openTemplatePicker('${l.id}', 'email')" ${!l.email ? 'disabled title="No email on file"' : 'title="Pick an email template"'} class="text-zinc-400 dark:text-zinc-500 font-semibold disabled:opacity-40 hover:text-indigo-600 dark:hover:text-indigo-300">E:</button> ${l.email ? escapeHtml(l.email) : '<span class="text-zinc-300 dark:text-zinc-600">—</span>'}
+          <button onclick="event.stopPropagation(); openTemplatePicker('${jsArg(l.id)}', 'email')" ${!l.email ? 'disabled title="No email on file"' : 'title="Pick an email template"'} class="text-zinc-400 dark:text-zinc-500 font-semibold disabled:opacity-40 hover:text-indigo-600 dark:hover:text-indigo-300">E:</button> ${l.email ? escapeHtml(l.email) : '<span class="text-zinc-300 dark:text-zinc-600">—</span>'}
         </div>
         <div class="blp-lead-meta text-[11px] text-zinc-500 truncate" title="${escapeHtml(l.phone || '')}">
-          <button onclick="event.stopPropagation(); openTemplatePicker('${l.id}', 'sms')" ${!l.phone ? 'disabled title="No phone on file"' : 'title="Pick a text template"'} class="text-zinc-400 dark:text-zinc-500 font-semibold disabled:opacity-40 hover:text-emerald-600 dark:hover:text-emerald-300">#:</button> ${l.phone ? escapeHtml(l.phone) : '<span class="text-zinc-300 dark:text-zinc-600">—</span>'}
+          <button onclick="event.stopPropagation(); openTemplatePicker('${jsArg(l.id)}', 'sms')" ${!l.phone ? 'disabled title="No phone on file"' : 'title="Pick a text template"'} class="text-zinc-400 dark:text-zinc-500 font-semibold disabled:opacity-40 hover:text-emerald-600 dark:hover:text-emerald-300">#:</button> ${l.phone ? escapeHtml(l.phone) : '<span class="text-zinc-300 dark:text-zinc-600">—</span>'}
         </div>
         <div class="blp-lead-meta text-[11px] text-zinc-500 truncate" title="${escapeHtml(l.source || '')}">
           <span class="text-zinc-400 dark:text-zinc-500">SOB:</span> ${l.source ? escapeHtml(l.source) : '<span class="text-zinc-300 dark:text-zinc-600">—</span>'}
@@ -9372,10 +9438,10 @@ function renderBrigham() {
           ? `<span class="text-orange-700 dark:text-orange-300 font-semibold">⚠️ Escalated</span>${l.reason ? ' — ' + escapeHtml(l.reason) : ''}`
           : '<span class="text-indigo-700 dark:text-indigo-300">Owned by Brigham</span>'}
       </div>
-      <div class="mt-2 text-[11px] text-zinc-500">Waiting ${l.days} day${l.days===1?'':'s'} • ${l.band} • ${l.status_bucket}</div>
+      <div class="mt-2 text-[11px] text-zinc-500">Waiting ${l.days} day${l.days===1?'':'s'} • ${escapeHtml(l.band)} • ${escapeHtml(l.status_bucket)}</div>
       <div class="mt-3 flex items-center gap-2">
-        <button onclick="openDrawer('${l.id}')" class="text-[11px] px-2 py-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Open</button>
-        <select onchange="this.value && assignLead('${l.id}', this.value); this.value='';" class="text-[11px] px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+        <button onclick="openDrawer('${jsArg(l.id)}')" class="text-[11px] px-2 py-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Open</button>
+        <select onchange="this.value && assignLead('${jsArg(l.id)}', this.value); this.value='';" class="text-[11px] px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
           <option value="">Assign…</option>
           <option value="arnold">Arnold</option>
           <option value="admin">Admin</option>
@@ -9654,17 +9720,17 @@ function openDrawer(id) {
             <div class="text-[11px] uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-2">Commission rep trail</div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
               <label>Rep opened lead
-                <select onchange="updateLeadField('${l.id}', 'rep_opened', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${jsArg(l.id)}', 'rep_opened', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${repOptions(l.rep_opened)}
                 </select>
               </label>
               <label>Rep currently working
-                <select onchange="updateLeadField('${l.id}', 'rep_working', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${jsArg(l.id)}', 'rep_working', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${repOptions(l.rep_working || l.rep)}
                 </select>
               </label>
               <label>Rep closed lead
-                <select onchange="updateLeadField('${l.id}', 'rep_closed', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${jsArg(l.id)}', 'rep_closed', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${repOptions(l.rep_closed, true)}
                 </select>
               </label>
@@ -9674,63 +9740,63 @@ function openDrawer(id) {
             <div class="text-[11px] uppercase tracking-wider text-zinc-500 mb-2">Lead capture data</div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
               <label>Lead added date
-                <input value="${escapeHtml(l.date_added || '')}" onchange="updateLeadField('${l.id}', 'date_added', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.date_added || '')}" onchange="updateLeadField('${jsArg(l.id)}', 'date_added', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>$ Value
-                <input value="${escapeHtml(l.band || '')}" onchange="updateLeadField('${l.id}', 'band', this.value)" list="nlBandList" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.band || '')}" onchange="updateLeadField('${jsArg(l.id)}', 'band', this.value)" list="nlBandList" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>Source of business
-                <input value="${escapeHtml(l.source || '')}" onchange="updateLeadField('${l.id}', 'source', this.value)" list="sobList" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.source || '')}" onchange="updateLeadField('${jsArg(l.id)}', 'source', this.value)" list="sobList" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>Inquiry method
-                <select onchange="updateLeadField('${l.id}', 'inquiry_method', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${jsArg(l.id)}', 'inquiry_method', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${['', 'Phone call', 'Text', 'SC - Text', 'Web Form', 'Web (email)', 'Walk-in', 'Voicemail', 'Facebook Messenger', 'Webchat', 'Other'].map(v => `<option value="${v}" ${String(l.inquiry_method || '') === v ? 'selected' : ''}>${v || '—'}</option>`).join('')}
                 </select>
               </label>
               <label>Type of lead
-                <select onchange="updateLeadField('${l.id}', 'lead_type', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${jsArg(l.id)}', 'lead_type', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${['', 'Sales', 'Restoration', 'Refinishing', 'Refurbishing', 'Player Restoration', 'QRS', 'Trade-in Sales Lead', 'Hailun New', 'Event Rental', 'Possible Restoration', 'Consignment?'].map(v => `<option value="${v}" ${String(l.lead_type || '') === v ? 'selected' : ''}>${v || '—'}</option>`).join('')}
                 </select>
               </label>
               <label>Type of piano
-                <select onchange="updateLeadField('${l.id}', 'piano_type', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                <select onchange="updateLeadField('${jsArg(l.id)}', 'piano_type', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   ${['', 'Upright', 'Grand', 'Baby Grand', 'Spinet', 'Heirloom Upright', 'Heirloom Grand', 'Digital', 'Hailun New', 'Square Grand', 'Player Piano'].map(v => `<option value="${v}" ${String(l.piano_type || '') === v ? 'selected' : ''}>${v || '—'}</option>`).join('')}
                 </select>
               </label>
               <label>Location
-                <input value="${escapeHtml(l.location || '')}" onchange="updateLeadField('${l.id}', 'location', this.value)" placeholder="City, State" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.location || '')}" onchange="updateLeadField('${jsArg(l.id)}', 'location', this.value)" placeholder="City, State" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>Social handle / URL
-                <input value="${escapeHtml(l.social || '')}" onchange="updateLeadField('${l.id}', 'social', this.value)" placeholder="@username or URL" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.social || '')}" onchange="updateLeadField('${jsArg(l.id)}', 'social', this.value)" placeholder="@username or URL" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>Email
-                <input value="${escapeHtml(l.email || '')}" onchange="updateLeadField('${l.id}', 'email', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.email || '')}" onchange="updateLeadField('${jsArg(l.id)}', 'email', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label>Cell / Phone
-                <input value="${escapeHtml(l.phone || '')}" onchange="updateLeadField('${l.id}', 'phone', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+                <input value="${escapeHtml(l.phone || '')}" onchange="updateLeadField('${jsArg(l.id)}', 'phone', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
               </label>
               <label class="md:col-span-2">Pricing / quote details
-                <textarea rows="2" onchange="updateLeadField('${l.id}', 'pricing_extracted', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.pricing_extracted || '')}</textarea>
+                <textarea rows="2" onchange="updateLeadField('${jsArg(l.id)}', 'pricing_extracted', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.pricing_extracted || '')}</textarea>
               </label>
               <label class="md:col-span-2">Lead notes
-                <textarea rows="3" onchange="updateLeadField('${l.id}', 'notes', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.notes || '')}</textarea>
+                <textarea rows="3" onchange="updateLeadField('${jsArg(l.id)}', 'notes', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.notes || '')}</textarea>
               </label>
             </div>
           </div>
           <label>Lead name
-            <input value="${escapeHtml(l.name)}" onchange="updateLeadField('${l.id}', 'name', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+            <input value="${escapeHtml(l.name)}" onchange="updateLeadField('${jsArg(l.id)}', 'name', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
           </label>
           <label>Headline
-            <textarea rows="2" onchange="updateLeadField('${l.id}', 'instrument', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.instrument || '')}</textarea>
+            <textarea rows="2" onchange="updateLeadField('${jsArg(l.id)}', 'instrument', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">${escapeHtml(l.instrument || '')}</textarea>
           </label>
           <div class="grid grid-cols-2 gap-2">
             <label>Timeline
-              <select onchange="updateLeadField('${l.id}', 'status_bucket', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+              <select onchange="updateLeadField('${jsArg(l.id)}', 'status_bucket', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                 ${Object.keys(STATUS_COLORS).map(s => `<option ${l.status_bucket === s ? 'selected' : ''}>${s}</option>`).join('')}
               </select>
             </label>
             <label>Next action
-              <input value="${escapeHtml(l.next || '')}" onchange="updateLeadField('${l.id}', 'next', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
+              <input value="${escapeHtml(l.next || '')}" onchange="updateLeadField('${jsArg(l.id)}', 'next', this.value)" class="w-full mt-1 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900" />
             </label>
           </div>
         </div>
@@ -9748,7 +9814,7 @@ function openDrawer(id) {
           <div class="text-[11px] uppercase tracking-wider text-zinc-500">Temperature (1–10)</div>
           <div class="text-xs"><span class="font-semibold">${l.temp}</span> ${tLbl.emoji} ${tLbl.name}</div>
         </div>
-        <input type="range" min="1" max="10" value="${l.temp}" oninput="setTemp('${l.id}', this.value)" class="w-full" />
+        <input type="range" min="1" max="10" value="${l.temp}" oninput="setTemp('${jsArg(l.id)}', this.value)" class="w-full" />
         <div class="flex justify-between text-[9px] text-zinc-500 -mt-1">
           <span>1 Cold</span><span>5 Warm</span><span>10 Blazing</span>
         </div>
@@ -9762,17 +9828,17 @@ function openDrawer(id) {
 
         <!-- ACTION BUTTONS ROW 1: outreach -->
         <div class="mt-3 flex flex-wrap gap-2">
-          <button onclick="openDraft('${l.id}')" ${!l.email ? 'disabled title="No email on file"' : ''} class="text-xs px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">✉️ Draft email</button>
-          <button onclick="sendSms('${l.id}')" ${!l.phone ? 'disabled title="No cell number on file"' : ''} class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed">💬 Send SMS</button>
-          <button onclick="callLead('${l.id}')" ${!l.phone ? 'disabled title="No phone number on file"' : ''} class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed">📞 Call</button>
-          <button onclick="openInboundLog('${l.id}')"  class="text-xs px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" title="Mark that the lead replied / reached out — updates engagement state">📥 Log reply</button>
-          ${!l.brighamFlag ? `<button onclick="escalate('${l.id}')" class="text-xs px-3 py-1.5 rounded-md border border-orange-300 text-orange-700 dark:border-orange-700 dark:text-orange-300">⚠️ ${l.rep === 'brigham' ? 'Flag urgent' : 'Escalate to Brigham'}</button>` : ''}
+          <button onclick="openDraft('${jsArg(l.id)}')" ${!l.email ? 'disabled title="No email on file"' : ''} class="text-xs px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">✉️ Draft email</button>
+          <button onclick="sendSms('${jsArg(l.id)}')" ${!l.phone ? 'disabled title="No cell number on file"' : ''} class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed">💬 Send SMS</button>
+          <button onclick="callLead('${jsArg(l.id)}')" ${!l.phone ? 'disabled title="No phone number on file"' : ''} class="text-xs px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed">📞 Call</button>
+          <button onclick="openInboundLog('${jsArg(l.id)}')"  class="text-xs px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" title="Mark that the lead replied / reached out — updates engagement state">📥 Log reply</button>
+          ${!l.brighamFlag ? `<button onclick="escalate('${jsArg(l.id)}')" class="text-xs px-3 py-1.5 rounded-md border border-orange-300 text-orange-700 dark:border-orange-700 dark:text-orange-300">⚠️ ${l.rep === 'brigham' ? 'Flag urgent' : 'Escalate to Brigham'}</button>` : ''}
         </div>
 
         <!-- ACTION BUTTONS ROW 2: lifecycle / close-out -->
         <div class="mt-2 flex flex-wrap gap-2 items-stretch">
-          <button onclick="markWon('${l.id}')"   class="text-xs px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">✓ Won</button>
-          <button onclick="markLost('${l.id}')"  class="text-xs px-3 py-1.5 rounded-md border border-red-200 text-red-700 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">✕ Mark Lost</button>
+          <button onclick="markWon('${jsArg(l.id)}')"   class="text-xs px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">✓ Won</button>
+          <button onclick="markLost('${jsArg(l.id)}')"  class="text-xs px-3 py-1.5 rounded-md border border-red-200 text-red-700 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20">✕ Mark Lost</button>
 
           <!-- Inactive dropdown -->
           <div class="relative inline-block">
@@ -9791,7 +9857,7 @@ function openDrawer(id) {
       <div class="blp-timeline-panel">
         <div class="flex items-center justify-between mb-2">
           <div class="text-[11px] uppercase tracking-wider text-zinc-500">Timeline</div>
-          <button onclick="openNoteModal('${l.id}')" class="text-[11px] px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700">📝 Add note</button>
+          <button onclick="openNoteModal('${jsArg(l.id)}')" class="text-[11px] px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700">📝 Add note</button>
         </div>
         <div id="timelineList" class="space-y-3">
           ${timeline.map((t, index) => {
@@ -9883,9 +9949,13 @@ function snoozeOptionsHtml(id) {
 
 function toggleSnoozeMenu(ev, id) {
   ev.stopPropagation();
+  // Build side uses id="snoozeMenu-${escapeHtml(l.id)}": the HTML parser decodes the
+  // entities, so the live DOM id is the RAW lead id. getElementById takes the raw id
+  // too (it does no selector parsing), so raw lookup here matches for ids containing
+  // quotes/angle brackets/ampersands. Do not switch this to querySelector.
   const menu = document.getElementById('snoozeMenu-' + id);
   document.querySelectorAll('[id^="snoozeMenu-"]').forEach(m => { if (m !== menu) m.classList.add('hidden'); });
-  menu.classList.toggle('hidden');
+  if (menu) menu.classList.toggle('hidden');
 }
 
 document.addEventListener('click', (e) => {
@@ -9895,7 +9965,8 @@ document.addEventListener('click', (e) => {
 });
 
 function chooseSnooze(id, val) {
-  document.getElementById('snoozeMenu-' + id).classList.add('hidden');
+  const snoozeMenuEl = document.getElementById('snoozeMenu-' + id);
+  if (snoozeMenuEl) snoozeMenuEl.classList.add('hidden');
   if (val === 'custom') {
     document.getElementById('customSnoozeModal').classList.remove('hidden');
     return;
@@ -9951,13 +10022,20 @@ function applySnooze(id, days, label) {
 /* ============================================================
    ACTIONS
    ============================================================ */
+let setTempDebounceTimer = null;
 function setTemp(id, v) {
   const l = workingLeads.find(x => x.id === id);
   if (!l) return;
   l.temp = parseInt(v, 10);
-  scheduleLeadSync('update', l, { source: 'setTemp' });
-  // re-open drawer to reflect chip
-  openDrawer(id);
+  // Debounce: 'input' fires on every pixel of a slider drag. Only queue the sync
+  // (and re-render the drawer to reflect the chip) once the value settles.
+  clearTimeout(setTempDebounceTimer);
+  setTempDebounceTimer = setTimeout(() => {
+    const lead = workingLeads.find(x => x.id === id);
+    if (!lead) return;
+    scheduleLeadSync('update', lead, { source: 'setTemp' });
+    if (drawerLeadId === id) openDrawer(id);
+  }, 600);
 }
 
 let draftLeadId = null;
@@ -10055,6 +10133,7 @@ async function sendSmsNow() {
   updateSmsCounter();
 
   let fromLabel = `Twilio (${SALES_TWILIO_SMS_DISPLAY})`;
+  let sendStatus = 'accepted';
   try {
     await postCommunication(SALES_SMS_ENDPOINT, {
       leadId: l.id,
@@ -10065,6 +10144,7 @@ async function sendSmsNow() {
     console.warn('BLP sales SMS: backend send unavailable; opening native text composer.', error);
     if (!openNativeSmsFallback(l, body)) return toast('No cell number on file for ' + l.name);
     fromLabel = 'device text composer';
+    sendStatus = 'composer_opened';
     if (error.status === 501 || (error.data && error.data.configured === false)) {
       toast('Twilio is not configured yet — opened your device text composer instead.');
     } else {
@@ -10072,26 +10152,32 @@ async function sendSmsNow() {
     }
   }
 
-  // Log to timeline + counters after the backend send or native composer fallback is started.
+  // Log to timeline after the backend send or native composer fallback is started.
   const todayDate = todayStr();
   (TIMELINES[l.id] = TIMELINES[l.id] || []).unshift({
     date: todayDate,
     when: 'just now',
     type: 'text',
     direction: 'outbound',
-    text: `Sent via ${fromLabel}:\n\n${body}`,
+    text: sendStatus === 'accepted'
+      ? `Sent via ${fromLabel}:\n\n${body}`
+      : `Opened device text composer (send not confirmed by app):\n\n${body}`,
   });
 
-  l.action_totals = l.action_totals || { call:0, text:0, email:0 };
-  l.action_totals.text = (l.action_totals.text || 0) + 1;
-  l.total_actions = (l.action_totals.call||0) + (l.action_totals.text||0) + (l.action_totals.email||0);
-  l.outbound_count = (l.outbound_count || 0) + 1;
-  l.last_outbound_date = todayDate;
-  l.last_action = 'text';
-  l.last_contact_date = todayDate;
-  l.days_since_contact = 0;
-  l.next_action_type = channelAvailable(l, 'email') ? 'email' : 'text'; // text just sent → recommend email next if they have one
-  l.is_lonely = false;
+  if (sendStatus === 'accepted') {
+    // Counters / engagement state only when the app actually confirmed the send —
+    // mirrors approveAndSend's composer_opened handling.
+    l.action_totals = l.action_totals || { call:0, text:0, email:0 };
+    l.action_totals.text = (l.action_totals.text || 0) + 1;
+    l.total_actions = (l.action_totals.call||0) + (l.action_totals.text||0) + (l.action_totals.email||0);
+    l.outbound_count = (l.outbound_count || 0) + 1;
+    l.last_outbound_date = todayDate;
+    l.last_action = 'text';
+    l.last_contact_date = todayDate;
+    l.days_since_contact = 0;
+    l.next_action_type = channelAvailable(l, 'email') ? 'email' : 'text'; // text just sent → recommend email next if they have one
+    l.is_lonely = false;
+  }
 
   // Invalidate the AI draft cache so the next-recommended draft is the opposite channel
   delete AI_DRAFTS[l.id];
@@ -10099,13 +10185,17 @@ async function sendSmsNow() {
   ACTIONS.unshift({
     who: 'Karmel',
     when: 'just now',
-    what: `sent text via ${fromLabel} to ${l.name}`,
-    icon: '✓',
+    what: sendStatus === 'accepted'
+      ? `sent text via ${fromLabel} to ${l.name}`
+      : `opened text composer for ${l.name}; final send not confirmed by app`,
+    icon: sendStatus === 'accepted' ? '✓' : '↗',
   });
 
   scheduleLeadSync('update', l, { source: 'sendSmsNow', from: fromLabel });
   closeSmsModal();
-  toast(`✅ Text sent to ${l.name} via ${fromLabel}`);
+  toast(sendStatus === 'accepted'
+    ? `✅ Text sent to ${l.name} via ${fromLabel}`
+    : `Opened your text composer for ${l.name} — send it from your phone`);
   renderAll();
 }
 
@@ -10269,6 +10359,7 @@ function logCallOutcome(outcome) {
 
 function escalate(id) {
   const l = workingLeads.find(x => x.id===id);
+  if (!l) return;
   const wasOwnedByBrigham = (l.rep === 'brigham');
   l.brighamFlag = true;
   l.reason = wasOwnedByBrigham ? 'Flagged urgent by Karmel' : 'Escalated by Karmel';
@@ -10281,16 +10372,15 @@ function escalate(id) {
 }
 
 function markLost(id) {
-  if (!confirm('Mark this lead as Lost and archive?')) return;
   const l = workingLeads.find(x => x.id===id);
+  if (!l) return;
+  if (!confirm('Mark this lead as Lost and archive?')) return;
   ACTIONS.unshift({ who:'Karmel', when:'just now', what:'marked '+l.name+' LOST', icon:'✕' });
-  if (l) {
-    l.status_bucket = 'Lost';
-    l.outcome = 'Lost';
-    l.raw_status = 'Lost';
-    (TIMELINES[id] = TIMELINES[id] || []).unshift({ date: todayStr(), when:'just now', type:'status', text:'Lost — archived from active queue' });
-    scheduleLeadSync('update', l, { source: 'markLost' });
-  }
+  l.status_bucket = 'Lost';
+  l.outcome = 'Lost';
+  l.raw_status = 'Lost';
+  (TIMELINES[id] = TIMELINES[id] || []).unshift({ date: todayStr(), when:'just now', type:'status', text:'Lost — archived from active queue' });
+  scheduleLeadSync('update', l, { source: 'markLost' });
   workingLeads = workingLeads.filter(x => x.id !== id);
   closeDrawer();
   toast('Marked lost & archived');
@@ -10298,8 +10388,9 @@ function markLost(id) {
 }
 
 function markWon(id) {
-  if (!confirm('Mark this lead as Won?')) return;
   const l = workingLeads.find(x => x.id===id);
+  if (!l) return;
+  if (!confirm('Mark this lead as Won?')) return;
   l.rep_closed = l.rep_closed || l.rep_working || l.rep;
   const commissionTrail = `opened by ${repName(l.rep_opened)}, worked by ${repName(l.rep_working || l.rep)}, closed by ${repName(l.rep_closed)}`;
   l.status_bucket = 'Won';
