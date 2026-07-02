@@ -212,10 +212,11 @@ function normalizeRow_(headers, row, rowNumber) {
   const composed = [lead.first, lead.last].map(v => String(v || "").trim()).filter(Boolean).join(" ");
   lead.name = composed || String(lead.name || "").trim();
 
-  lead.rep = cleanStr_(lead.rep) || "admin";
-  lead.rep_working = cleanStr_(lead.rep_working) || lead.rep;
-  lead.rep_opened = cleanStr_(lead.rep_opened) || lead.rep;
-  lead.rep_closed = cleanStr_(lead.rep_closed);
+  const repTrail = parseRepTrail_(lead.rep);
+  lead.rep = normalizeRepKey_(lead.rep_working || repTrail.working || lead.rep);
+  lead.rep_working = normalizeRepKey_(lead.rep_working || repTrail.working || lead.rep);
+  lead.rep_opened = normalizeRepKey_(lead.rep_opened || repTrail.opened || lead.rep);
+  lead.rep_closed = cleanStr_(lead.rep_closed) ? normalizeRepKey_(lead.rep_closed) : repTrail.closed;
 
   lead.temp = clampTemp_(lead.temp);
 
@@ -282,6 +283,56 @@ function cleanStr_(value) {
   return value == null ? "" : String(value).trim();
 }
 
+function normalizeRepKey_(value) {
+  const s = cleanStr_(value).toLowerCase();
+  const compact = s.replace(/[^a-z]/g, "");
+  if (["bl", "brighamlarson"].indexOf(compact) >= 0) return "brigham";
+  if (["sl", "sally"].indexOf(compact) >= 0) return "sally";
+  if (["kl", "karmel"].indexOf(compact) >= 0) return "karmel";
+  if (["a", "admin"].indexOf(compact) >= 0) return "admin";
+  if (s.indexOf("sally") >= 0) return "sally";
+  if (s.indexOf("brig") >= 0) return "brigham";
+  if (s.indexOf("karmel") >= 0) return "karmel";
+  if (s.indexOf("admin") >= 0) return "admin";
+  return "brigham";
+}
+
+function parseRepTrail_(value) {
+  const raw = cleanStr_(value);
+  const labeled = {};
+  raw.replace(/\b([owc])\s*:\s*([^,;|/]+)/gi, function(_, label, rep) {
+    labeled[label.toLowerCase()] = normalizeRepKey_(rep);
+    return "";
+  });
+  if (labeled.o || labeled.w || labeled.c) {
+    const fallback = labeled.w || labeled.o || "brigham";
+    return {
+      opened: labeled.o || fallback,
+      working: labeled.w || fallback,
+      closed: labeled.c || "",
+    };
+  }
+  const singleRep = normalizeRepKey_(raw);
+  return { opened: singleRep, working: singleRep, closed: "" };
+}
+
+function repCode_(repKey) {
+  const key = normalizeRepKey_(repKey);
+  if (key === "brigham") return "BL";
+  if (key === "sally") return "S";
+  if (key === "karmel") return "K";
+  if (key === "admin") return "A";
+  return "BL";
+}
+
+function repCellValue_(lead, existing) {
+  const current = parseRepTrail_(existing);
+  const opened = normalizeRepKey_(lead && (lead.rep_opened || current.opened || lead.rep));
+  const working = normalizeRepKey_(lead && (lead.rep_working || lead.rep || current.working || opened));
+  const closed = cleanStr_(lead && lead.rep_closed) ? normalizeRepKey_(lead.rep_closed) : current.closed;
+  return "O: " + repCode_(opened) + ", W: " + repCode_(working) + ", C:" + (closed ? " " + repCode_(closed) : "");
+}
+
 /* ---------------- write path ---------------- */
 
 function writeLead_(sheet, headers, rowNumber, lead) {
@@ -303,6 +354,9 @@ function writeLead_(sheet, headers, rowNumber, lead) {
     const v = statusCellValue_(lead, current[sCol]);
     if (v) current[sCol] = v;
   }
+
+  const rCol = findCol_(live, "rep");
+  if (rCol >= 0) current[rCol] = repCellValue_(lead, current[rCol]);
 
   const idCol = findCol_(live, "id");
   if (idCol >= 0 && !cleanStr_(current[idCol])) current[idCol] = newId_();
