@@ -7811,9 +7811,12 @@ function lcSubject(headline, fallback) {
   return s.length > 60 ? s.slice(0, 58) + '…' : s;
 }
 
+/* Emails go out as text/plain (see sales-send-email.js), so markdown
+   [label](url) reaches the customer as literal brackets. Render links as
+   natural text with a bare URL instead. */
 function emailLink(label, url) {
   if (!url) return label;
-  return `[${label}](${url})`;
+  return `${label}: ${url}`;
 }
 
 /* Decide whether to draft a text or an email.
@@ -8177,6 +8180,8 @@ async function requestArnoldDraft(id, channel) {
       body: JSON.stringify({
         channel,
         engagement_state: engagementState(l),
+        calendly_url: CALENDLY_URL,
+        video: pickVideo(l),
         lead: {
           name: l.name, email: l.email, phone: l.phone,
           instrument: l.instrument, lead_type: l.lead_type, piano_type: l.piano_type,

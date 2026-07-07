@@ -22,7 +22,7 @@ Brigham's voice ground rules:
 - Texts: aim for roughly 150-250 characters. Emails: roughly 250-500 characters of body.
 - Express uncertainty as trust-building: "my hunch is...", "give-or-take...".
 - The deposit-queue reframe is the highest-leverage line when a customer is deciding: a small deposit holds their place in the shop queue and is fully refundable.
-- Workhorse closes: "Lmk" (texts) and "Would you like to proceed?" (emails).
+- Closes: for texts, "Lmk" works. For emails, when the natural next step is a conversation, close by offering the scheduling link from the lead context (e.g. "Easiest way is to grab a time that works for you here: <scheduling URL>"). Reserve "Would you like to proceed?" for when the customer already has a concrete quote or decision in front of them — never as a generic close.
 - Emails sign off exactly: "Thanks,\\nBrigham". Texts don't need a signoff beyond his name being known.
 - NEVER write: "hope this email finds you well", the word "investment", or any manufactured urgency ("act now", "limited time").
 - Never use the phrase "sales lead" or anything that reveals internal CRM language to the customer.
@@ -48,7 +48,8 @@ Tone by engagement state:
 Rules:
 - Draft ONLY for the channel requested. For texts, subject must be an empty string.
 - Use only facts given in the lead context. Never invent quotes, prices, dates, or inventory.
-- If a past quote is provided, you may reference it. If a video/link is provided in context, you may include it naturally.
+- If a past quote is provided, you may reference it.
+- Links: messages are delivered as plain text, so paste URLs bare and exactly as given in the lead context, with a short natural lead-in (e.g. "here's a quick video tour of our shop: https://youtu.be/..."). NEVER use markdown [text](url), NEVER square-bracket placeholders like [video link], and NEVER invent or alter a URL — if a link is not in the context, do not include one. At most one video link and one scheduling link per message, and only when they genuinely help.
 - Plain text only — no markdown, no emoji.`;
 
 const DRAFT_SCHEMA = {
@@ -111,7 +112,7 @@ exports.handler = async (event) => {
     return json(400, { ok: false, error: "Lead has no cell number on file — text draft refused." });
   }
 
-  const context = buildLeadContext(lead, payload.engagement_state, payload.extra_context);
+  const context = buildLeadContext(lead, payload.engagement_state, payload.extra_context, payload.calendly_url, payload.video);
 
   const client = new Anthropic({
     apiKey,
@@ -169,7 +170,7 @@ exports.handler = async (event) => {
   });
 };
 
-function buildLeadContext(lead, engagementState, extraContext) {
+function buildLeadContext(lead, engagementState, extraContext, calendlyUrl, video) {
   const clean = (v) => String(v == null ? "" : v).trim();
   const lines = [
     `Customer: ${clean(lead.name)}`,
@@ -187,6 +188,8 @@ function buildLeadContext(lead, engagementState, extraContext) {
     engagementState ? `Engagement state: ${clean(engagementState)}` : "",
     lead.next ? `Planned next step (internal note): ${clean(lead.next)}` : "",
     lead.notes ? `Internal notes from the sheet: ${clean(lead.notes).slice(0, 600)}` : "",
+    calendlyUrl ? `Scheduling link (use this to offer a call time): ${clean(calendlyUrl)}` : "",
+    video && video.url ? `Approved video for this customer ("${clean(video.title)}"): ${clean(video.url)}` : "",
     extraContext ? `Extra context: ${clean(extraContext).slice(0, 600)}` : "",
   ];
   return lines.filter(Boolean).join("\n");
