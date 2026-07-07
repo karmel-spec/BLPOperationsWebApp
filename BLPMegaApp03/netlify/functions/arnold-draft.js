@@ -46,6 +46,7 @@ Tone by engagement state:
 - cold_start / unknown: standard warm opener.
 
 Rules:
+- Review the ENTIRE lead row before drafting. The context ends with "Every other field on this lead's row" — read all of it; details like the source, inquiry method, budget band, status, escalation flags, and contact counts routinely change what the right message is. Nothing in the row is filler.
 - Draft ONLY for the channel requested. For texts, subject must be an empty string.
 - Use only facts given in the lead context. Never invent quotes, prices, dates, or inventory.
 - Quotes already given are settled facts. If the lead context shows Brigham already quoted prices (the "already quoted" line, or quotes mentioned in the notes/activity timeline), NEVER offer to "pull together some numbers", "work up a ballpark", or re-quote — reference the existing figures ("the $14.5k restoration and $7.5k QRS numbers I sent over") and move the conversation to the next step instead (answer questions, the deposit-queue reframe, or scheduling a call).
@@ -199,8 +200,34 @@ function buildLeadContext(lead, engagementState, extraContext, calendlyUrl, vide
     calendlyUrl ? `Scheduling link (use this to offer a call time): ${clean(calendlyUrl)}` : "",
     video && video.url ? `Approved video for this customer ("${clean(video.title)}"): ${clean(video.url)}` : "",
     extraContext ? `Extra context: ${clean(extraContext).slice(0, 600)}` : "",
+    fullRowSection(lead),
   ];
   return lines.filter(Boolean).join("\n");
+}
+
+/* Everything on the lead's row that the curated lines above didn't already
+   surface. Arnold's contract requires reviewing all of it before drafting. */
+const CURATED_FIELDS = new Set([
+  "name", "email", "phone", "instrument", "lead_type", "piano_type",
+  "location", "pricing_extracted", "temp", "days_since_contact",
+  "last_contact_date", "last_action", "next", "notes",
+]);
+
+function fullRowSection(lead) {
+  const clean = (v) => String(v == null ? "" : v).trim();
+  const rows = [];
+  let budget = 3000; // keep the prompt bounded even on messy rows
+  for (const [key, value] of Object.entries(lead || {})) {
+    if (CURATED_FIELDS.has(key) || value == null) continue;
+    const rendered = typeof value === "object" ? JSON.stringify(value) : clean(value);
+    if (!rendered || rendered === "false" || rendered === "0") continue;
+    const line = `  - ${key}: ${rendered.slice(0, 300)}`;
+    if (budget - line.length < 0) break;
+    budget -= line.length;
+    rows.push(line);
+  }
+  if (!rows.length) return "";
+  return `Every other field on this lead's row:\n${rows.join("\n")}`;
 }
 
 function json(statusCode, body) {

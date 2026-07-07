@@ -8187,14 +8187,13 @@ async function requestArnoldDraft(id, channel) {
           type: t.type || '',
           text: String(t.text || '').slice(0, 300),
         })),
-        lead: {
-          name: l.name, email: l.email, phone: l.phone,
-          instrument: l.instrument, lead_type: l.lead_type, piano_type: l.piano_type,
-          location: l.location, pricing_extracted: l.pricing_extracted,
-          temp: l.temp, days_since_contact: l.days_since_contact,
-          last_contact_date: l.last_contact_date,
-          last_action: l.last_action, next: l.next, notes: l.notes,
-        },
+        // Send the ENTIRE lead row — Arnold reviews every populated field
+        // before drafting. Only bulky duplicates are dropped (the timeline
+        // goes separately above).
+        lead: Object.fromEntries(Object.entries(l).filter(([k, v]) =>
+          v != null && v !== '' && typeof v !== 'function' &&
+          !['timeline', 'timeline_data_json', 'timeline_text'].includes(k)
+        )),
       }),
     });
     const data = await response.json().catch(() => ({}));
