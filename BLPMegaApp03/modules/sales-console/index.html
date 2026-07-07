@@ -8083,6 +8083,7 @@ function renderDraftMiniCard(l, d, isRecommended) {
     ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-semibold uppercase">Email</span>'
     : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 font-semibold uppercase">Text</span>';
   const recBadge = isRecommended ? '' : '<span class="text-[9px] text-zinc-400 italic">Alt</span>';
+  const arnoldBadge = d.by === 'arnold' ? '<span class="text-[9px] px-1 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 font-semibold" title="Written by Arnold via the Claude API">✨ Arnold</span>' : '';
 
   // Truncate preview to fit cell (~2 lines per card)
   const previewLen = isEmail ? 130 : 160;
@@ -8098,6 +8099,7 @@ function renderDraftMiniCard(l, d, isRecommended) {
     <div class="${cardClass}">
       <div class="flex items-center gap-1.5 mb-1 flex-wrap">
         ${channelChip}
+        ${arnoldBadge}
         ${recBadge}
         <button onclick="event.stopPropagation();openAiDraftEditor('${l.id}', '${d.channel}')" class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Edit / expand">✎</button>
         <button onclick="event.stopPropagation();regenerateDraft('${l.id}', '${d.channel}')" class="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Regenerate">↻</button>
@@ -8124,6 +8126,68 @@ function regenerateDraft(id, channel) {
   }
   renderLeads();
   toast(`Draft regenerated${channel ? ' (' + channel + ')' : ''}`);
+  // Fresh rule draft is showing; ask Arnold for his version of this channel.
+  if (channel) {
+    requestArnoldDraft(id, channel).then(d => {
+      if (!d) return;
+      if (editingDraftId === id && editingDraftChannel === channel) {
+        document.getElementById('aiEditorSubject').value = d.subject || '';
+        document.getElementById('aiEditorBody').value = d.body || '';
+        document.getElementById('aiEditorTitle').textContent = (channel === 'email' ? 'Email draft' : 'Text draft') + ' — drafted by Arnold ✨';
+      }
+      renderLeads();
+    });
+  }
+}
+
+/* ============================================================
+   ARNOLD — live draft upgrades via the Claude API.
+   Rule-based drafts render instantly and free; when a draft is opened in the
+   editor (or regenerated), Arnold rewrites that ONE draft through
+   /.netlify/functions/arnold-draft and replaces it in place. Never fires
+   per-row — each upgrade is an explicit user action, so API cost stays tied
+   to drafts someone is actually about to send. */
+let arnoldAvailable = null; // null = unknown, false = unconfigured (stop asking)
+const arnoldInflight = new Set();
+
+async function requestArnoldDraft(id, channel) {
+  const l = workingLeads.find(x => x.id === id);
+  if (!l || !channel) return null;
+  if (arnoldAvailable === false || !getTeamKey()) return null;
+  if (!channelAvailable(l, channel)) return null;
+  const key = id + ':' + channel;
+  if (arnoldInflight.has(key)) return null;
+  arnoldInflight.add(key);
+  try {
+    const response = await fetch(ARNOLD_DRAFT_ENDPOINT, {
+      method: 'POST',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        channel,
+        engagement_state: engagementState(l),
+        lead: {
+          name: l.name, email: l.email, phone: l.phone,
+          instrument: l.instrument, lead_type: l.lead_type, piano_type: l.piano_type,
+          location: l.location, pricing_extracted: l.pricing_extracted,
+          temp: l.temp, days_since_contact: l.days_since_contact,
+          last_action: l.last_action, next: l.next, notes: l.notes,
+        },
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 404 || data.configured === false) { arnoldAvailable = false; return null; }
+    if (!response.ok || !data.ok || !data.draft) return null;
+    arnoldAvailable = true;
+    const base = (AI_DRAFTS[id] && AI_DRAFTS[id][channel]) || generateDraft(l, channel) || {};
+    const draft = { ...base, ...data.draft, channel, by: 'arnold' };
+    if (!AI_DRAFTS[id]) AI_DRAFTS[id] = {};
+    AI_DRAFTS[id][channel] = draft;
+    return draft;
+  } catch (error) {
+    return null;
+  } finally {
+    arnoldInflight.delete(key);
+  }
 }
 
 /* Editor modal — full draft, editable (per channel) */
@@ -8149,6 +8213,39 @@ function openAiDraftEditor(id, channel) {
   document.getElementById('aiEditorBody').value = d.body || '';
   document.getElementById('aiEditorContext').innerHTML = buildContextSnippet(l);
   document.getElementById('aiEditorModal').classList.remove('hidden');
+  upgradeEditorDraftWithArnold(id, editingDraftChannel, d);
+}
+
+/* Ask Arnold to rewrite the draft that just opened. Swap it in only if the
+   user hasn't started editing the rule-based version in the meantime. */
+function upgradeEditorDraftWithArnold(id, channel, ruleDraft) {
+  const title = document.getElementById('aiEditorTitle');
+  const baseTitle = channel === 'email' ? 'Email draft' : 'Text draft';
+  if (ruleDraft.by === 'arnold') { title.textContent = baseTitle + ' — drafted by Arnold ✨'; return; }
+  if (arnoldAvailable === false || !getTeamKey()) return;
+  const beforeSubject = ruleDraft.subject || '';
+  const beforeBody = ruleDraft.body || '';
+  title.textContent = baseTitle + ' — Arnold is redrafting…';
+  requestArnoldDraft(id, channel).then(upgraded => {
+    const stillOpen = editingDraftId === id && editingDraftChannel === channel;
+    if (!upgraded) {
+      if (stillOpen) title.textContent = baseTitle;
+      return;
+    }
+    if (stillOpen) {
+      const subjEl = document.getElementById('aiEditorSubject');
+      const bodyEl = document.getElementById('aiEditorBody');
+      const untouched = subjEl.value === beforeSubject && bodyEl.value === beforeBody;
+      if (untouched) {
+        subjEl.value = upgraded.subject || '';
+        bodyEl.value = upgraded.body || '';
+        title.textContent = baseTitle + ' — drafted by Arnold ✨';
+      } else {
+        title.textContent = baseTitle + ' (your edits kept — regenerate for Arnold\'s version)';
+      }
+    }
+    renderLeads();
+  });
 }
 function closeAiDraftEditor() {
   document.getElementById('aiEditorModal').classList.add('hidden');
@@ -8534,6 +8631,7 @@ const SALES_SMS_ENDPOINT = '/.netlify/functions/sales-send-sms';
 const SALES_EMAIL_ENDPOINT = '/.netlify/functions/sales-send-email';
 const SALES_CALL_ENDPOINT = '/.netlify/functions/sales-start-call';
 const SALES_COMMS_STATUS_ENDPOINT = '/.netlify/functions/sales-communications-status';
+const ARNOLD_DRAFT_ENDPOINT = '/.netlify/functions/arnold-draft';
 const SALES_TWILIO_SMS_DISPLAY = '801-769-0054';
 const SALES_TWILIO_CALLER_ID_DISPLAY = '801-701-0113';
 const SALES_EMAIL_FROM = 'brigham@brighamlarsonpianos.com';

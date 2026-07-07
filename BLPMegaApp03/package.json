@@ -1,0 +1,11 @@
+{
+  "name": "blp-mega-app",
+  "private": true,
+  "description": "BLP Operating System webapp — static modules + Netlify Functions (Arnold sales agent, sheet sync, Twilio/Gmail actions)",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  }
+}

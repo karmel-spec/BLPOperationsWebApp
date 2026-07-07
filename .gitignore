@@ -6,3 +6,4 @@ Icon?
 !.env.example
 !**/.env.example
 *.zip
+node_modules/
