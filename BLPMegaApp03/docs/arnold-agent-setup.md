@@ -65,6 +65,33 @@ Netlify → Functions → arnold-morning-digest for logs.
 - Costs stay bounded: drafts are generated only on explicit user action
   (open/regenerate), one digest per day, ~1–2¢ per draft at Opus pricing.
 
+## Gmail review before drafting
+
+Arnold checks the mailbox for the 3 most recent emails exchanged with the
+lead (last 120 days) before drafting, so a customer reply that never made it
+onto the sheet can't be contradicted. His rules treat the mailbox as
+outranking the sheet.
+
+This needs the Google refresh token to include read access (the original
+token was send-only). One-time upgrade:
+
+1. Run `GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=... node scripts/gmail-oauth-local-authorize.js`
+2. Sign in as **the account that receives customer email (brighamlarson@gmail.com)**
+   and approve both permissions (send + read).
+3. Replace `GOOGLE_REFRESH_TOKEN` in Netlify with the new value it prints, redeploy.
+
+Until then Arnold notes "Gmail check: unavailable" in his context and drafts
+cautiously from sheet data alone — nothing breaks.
+
+## SalesCaptain review — blocked on account info
+
+Not built yet: the repo has no SalesCaptain API credentials or docs. If the
+BLP SalesCaptain account exposes an API key or webhooks (check its Settings →
+Integrations/API page), the same pattern as the Gmail check can pull the
+lead's SalesCaptain conversation by phone number before drafting. If it only
+sends notification emails to the mailbox, the Gmail review above already
+catches those indirectly.
+
 ## Later (opt-in, not built)
 
 Auto-send for low-risk first follow-ups via the existing send functions, once

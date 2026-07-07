@@ -51,6 +51,7 @@ Rules:
 - Use only facts given in the lead context. Never invent quotes, prices, dates, or inventory.
 - Quotes already given are settled facts. If the lead context shows Brigham already quoted prices (the "already quoted" line, or quotes mentioned in the notes/activity timeline), NEVER offer to "pull together some numbers", "work up a ballpark", or re-quote — reference the existing figures ("the $14.5k restoration and $7.5k QRS numbers I sent over") and move the conversation to the next step instead (answer questions, the deposit-queue reframe, or scheduling a call).
 - Read the activity timeline before drafting: it is the record of what has already been said and done with this customer. Never propose something the timeline shows already happened.
+- The "Gmail check" section is the live mailbox and outranks the sheet. If it shows a message newer than the sheet's last-contact date — especially one FROM the customer — acknowledge and respond to that latest message; do not draft as if the sheet is current, and never re-ask something the customer already answered by email.
 - Links: messages are delivered as plain text, so paste URLs bare and exactly as given in the lead context, with a short natural lead-in (e.g. "here's a quick video tour of our shop: https://youtu.be/..."). NEVER use markdown [text](url), NEVER square-bracket placeholders like [video link], and NEVER invent or alter a URL — if a link is not in the context, do not include one. At most one video link and one scheduling link per message, and only when they genuinely help.
 - Plain text only — no markdown, no emoji.`;
 
@@ -114,7 +115,20 @@ exports.handler = async (event) => {
     return json(400, { ok: false, error: "Lead has no cell number on file — text draft refused." });
   }
 
-  const context = buildLeadContext(lead, payload.engagement_state, payload.extra_context, payload.calendly_url, payload.video, payload.timeline);
+  // Review the mailbox before drafting: recent messages to/from this lead may
+  // be newer than anything on the sheet. Hard 3.5s budget so a slow Gmail API
+  // can never starve the Claude call; failures never block the draft.
+  let gmailReview = null;
+  try {
+    gmailReview = await Promise.race([
+      fetchRecentGmail(lead.email),
+      new Promise((resolve) => setTimeout(() => resolve(null), 3500)),
+    ]);
+  } catch (error) {
+    gmailReview = null;
+  }
+
+  const context = buildLeadContext(lead, payload.engagement_state, payload.extra_context, payload.calendly_url, payload.video, payload.timeline, gmailReview);
 
   const client = new Anthropic({
     apiKey,
@@ -172,7 +186,66 @@ exports.handler = async (event) => {
   });
 };
 
-function buildLeadContext(lead, engagementState, extraContext, calendlyUrl, video, timeline) {
+/* Pull the most recent Gmail messages exchanged with the lead so Arnold sees
+   communications the sheet may not have logged yet. Requires the Google
+   refresh token to carry gmail.readonly (see scripts/gmail-oauth-local-authorize.js);
+   returns null when unavailable so drafting proceeds on sheet data alone. */
+async function fetchRecentGmail(leadEmail) {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+  const email = String(leadEmail || "").trim();
+  if (!clientId || !clientSecret || !refreshToken || !email.includes("@")) return null;
+
+  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+    }),
+    signal: AbortSignal.timeout(2500),
+  });
+  const token = await tokenResponse.json();
+  if (!token.access_token) return null;
+  if (token.scope && !String(token.scope).includes("gmail.readonly")) {
+    return { missing_scope: true };
+  }
+
+  const authHeader = { Authorization: `Bearer ${token.access_token}` };
+  const q = `(from:${email} OR to:${email}) newer_than:120d`;
+  const listResponse = await fetch(
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(q)}&maxResults=3`,
+    { headers: authHeader, signal: AbortSignal.timeout(2500) }
+  );
+  const list = await listResponse.json();
+  if (!listResponse.ok || !Array.isArray(list.messages) || !list.messages.length) {
+    return { messages: [] };
+  }
+
+  const messages = [];
+  for (const m of list.messages.slice(0, 3)) {
+    const msgResponse = await fetch(
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Date&metadataHeaders=Subject`,
+      { headers: authHeader, signal: AbortSignal.timeout(2500) }
+    );
+    if (!msgResponse.ok) continue;
+    const md = await msgResponse.json();
+    const header = (name) =>
+      (((md.payload || {}).headers) || []).find((h) => h.name === name)?.value || "";
+    messages.push({
+      date: header("Date"),
+      from: header("From"),
+      subject: header("Subject"),
+      snippet: String(md.snippet || "").slice(0, 250),
+    });
+  }
+  return { messages };
+}
+
+function buildLeadContext(lead, engagementState, extraContext, calendlyUrl, video, timeline, gmailReview) {
   const clean = (v) => String(v == null ? "" : v).trim();
   const timelineLines = Array.isArray(timeline)
     ? timeline
@@ -197,12 +270,27 @@ function buildLeadContext(lead, engagementState, extraContext, calendlyUrl, vide
     lead.next ? `Planned next step (internal note): ${clean(lead.next)}` : "",
     lead.notes ? `Internal notes from the sheet: ${clean(lead.notes).slice(0, 600)}` : "",
     timelineLines.length ? `Activity timeline (most recent first — what has already happened with this customer):\n${timelineLines.join("\n")}` : "",
+    gmailSection(gmailReview),
     calendlyUrl ? `Scheduling link (use this to offer a call time): ${clean(calendlyUrl)}` : "",
     video && video.url ? `Approved video for this customer ("${clean(video.title)}"): ${clean(video.url)}` : "",
     extraContext ? `Extra context: ${clean(extraContext).slice(0, 600)}` : "",
     fullRowSection(lead),
   ];
   return lines.filter(Boolean).join("\n");
+}
+
+function gmailSection(gmailReview) {
+  if (!gmailReview) return "";
+  if (gmailReview.missing_scope) {
+    return "Gmail check: unavailable (mailbox access not granted yet) — the sheet may be missing recent emails; be careful not to contradict anything the customer may have sent recently.";
+  }
+  if (!Array.isArray(gmailReview.messages) || !gmailReview.messages.length) {
+    return "Gmail check: no email exchanged with this customer in the last 120 days.";
+  }
+  const lines = gmailReview.messages.map(
+    (m) => `  - ${m.date} | from ${m.from} | "${m.subject}" — ${m.snippet}`
+  );
+  return `Gmail check — most recent email actually exchanged with this customer (may be newer than the sheet):\n${lines.join("\n")}`;
 }
 
 /* Everything on the lead's row that the curated lines above didn't already

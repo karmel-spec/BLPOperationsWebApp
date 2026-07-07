@@ -6,7 +6,9 @@ const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const port = Number(process.env.GOOGLE_OAUTH_LOCAL_PORT || 7777);
 const redirectUri = process.env.GOOGLE_REDIRECT_URI || `http://localhost:${port}/oauth2callback`;
-const scope = "https://www.googleapis.com/auth/gmail.send";
+// gmail.send powers outbound sales email; gmail.readonly lets Arnold review
+// the mailbox for recent customer replies before drafting a follow-up.
+const scope = "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly";
 const state = crypto.randomBytes(16).toString("hex");
 
 if (!clientId || !clientSecret) {
@@ -87,7 +89,8 @@ const server = http.createServer(async (req, res) => {
 server.listen(port, () => {
   console.log("Gmail OAuth helper is waiting for authorization.");
   console.log(`Redirect URI: ${redirectUri}`);
-  console.log("\nOpen this URL and sign in as brigham@brighamlarsonpianos.com:\n");
+  console.log("\nOpen this URL and sign in as the Google account that RECEIVES customer email");
+  console.log("(brighamlarson@gmail.com — brigham@brighamlarsonpianos.com sends through it):\n");
   console.log(authUrl.toString());
   console.log("\nKeep this process running until Google redirects back.");
 });
