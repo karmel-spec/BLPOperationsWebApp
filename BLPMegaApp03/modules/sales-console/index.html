@@ -8043,13 +8043,27 @@ function formatSalesSmsBody(lead, body) {
 }
 
 /* Cache drafts per channel so re-renders don't regenerate (and so edits survive sort/filter).
-   Structure: AI_DRAFTS[leadId] = { text: {...}, email: {...} } */
+   Structure: AI_DRAFTS[leadId] = { __for: leadName, text: {...}, email: {...} } */
 const AI_DRAFTS = {};
-function getDraftSet(l) {
-  if (!AI_DRAFTS[l.id]) AI_DRAFTS[l.id] = {};
-  if (leadHasPhone(l) && !AI_DRAFTS[l.id].text) AI_DRAFTS[l.id].text = generateDraft(l, 'text');
-  if (leadHasEmail(l) && !AI_DRAFTS[l.id].email) AI_DRAFTS[l.id].email = generateDraft(l, 'email');
+
+/* The cache is keyed by lead id, but ids are NOT stable across data sources:
+   the embedded snapshot numbers leads 1..N while the live sheet sync keys
+   them by blp_id / row number. When the live data swaps in, id X can suddenly
+   mean a different person — and their cached draft would greet the wrong
+   customer by name ("Hi Jamie" on Dave's lead). Every read/write of
+   AI_DRAFTS[id] must go through this helper: it stamps the set with the
+   lead's name and throws the entry away if it was written for someone else. */
+function draftSetFor(l) {
+  const cached = AI_DRAFTS[l.id];
+  if (!cached || cached.__for !== l.name) AI_DRAFTS[l.id] = { __for: l.name };
   return AI_DRAFTS[l.id];
+}
+
+function getDraftSet(l) {
+  const set = draftSetFor(l);
+  if (leadHasPhone(l) && !set.text) set.text = generateDraft(l, 'text');
+  if (leadHasEmail(l) && !set.email) set.email = generateDraft(l, 'email');
+  return set;
 }
 function getDraft(l, channel) {
   const set = getDraftSet(l);
@@ -8118,11 +8132,9 @@ function renderDraftMiniCard(l, d, isRecommended) {
 }
 
 function regenerateDraft(id, channel) {
-  if (!AI_DRAFTS[id]) AI_DRAFTS[id] = {};
-  if (channel) {
-    delete AI_DRAFTS[id][channel];
-  } else {
-    delete AI_DRAFTS[id];
+  if (AI_DRAFTS[id]) {
+    if (channel) delete AI_DRAFTS[id][channel];
+    else delete AI_DRAFTS[id];
   }
   renderLeads();
   toast(`Draft regenerated${channel ? ' (' + channel + ')' : ''}`);
@@ -8178,10 +8190,10 @@ async function requestArnoldDraft(id, channel) {
     if (response.status === 404 || data.configured === false) { arnoldAvailable = false; return null; }
     if (!response.ok || !data.ok || !data.draft) return null;
     arnoldAvailable = true;
-    const base = (AI_DRAFTS[id] && AI_DRAFTS[id][channel]) || generateDraft(l, channel) || {};
+    const set = draftSetFor(l);
+    const base = set[channel] || generateDraft(l, channel) || {};
     const draft = { ...base, ...data.draft, channel, by: 'arnold' };
-    if (!AI_DRAFTS[id]) AI_DRAFTS[id] = {};
-    AI_DRAFTS[id][channel] = draft;
+    set[channel] = draft;
     return draft;
   } catch (error) {
     return null;
@@ -8254,12 +8266,13 @@ function closeAiDraftEditor() {
 }
 function saveAiDraftEdits() {
   if (editingDraftId == null || !editingDraftChannel) return;
-  if (!AI_DRAFTS[editingDraftId]) AI_DRAFTS[editingDraftId] = {};
-  if (!AI_DRAFTS[editingDraftId][editingDraftChannel]) {
-    const l = workingLeads.find(x => x.id === editingDraftId);
-    AI_DRAFTS[editingDraftId][editingDraftChannel] = generateDraft(l, editingDraftChannel);
+  const l = workingLeads.find(x => x.id === editingDraftId);
+  if (!l) return;
+  const set = draftSetFor(l);
+  if (!set[editingDraftChannel]) {
+    set[editingDraftChannel] = generateDraft(l, editingDraftChannel);
   }
-  const d = AI_DRAFTS[editingDraftId][editingDraftChannel];
+  const d = set[editingDraftChannel];
   d.subject = document.getElementById('aiEditorSubject').value;
   d.body    = document.getElementById('aiEditorBody').value;
   toast('Edits saved (not yet sent)');
@@ -8295,7 +8308,7 @@ async function approveAndSend(id, checkboxEl, channel) {
   if (!l) return;
   // Default channel = whatever the recommended draft is (legacy callers pass none)
   if (!channel) channel = decideRecommendedChannel(l);
-  const d = (AI_DRAFTS[id] && AI_DRAFTS[id][channel]) || generateDraft(l, channel);
+  const d = draftSetFor(l)[channel] || generateDraft(l, channel);
   if (!d) return toast(channel === 'email' ? 'No email on file' : 'No cell number on file');
   const isEmail = d.channel === 'email';
   if (isEmail && !l.email) return toast('No email on file for ' + l.name);
