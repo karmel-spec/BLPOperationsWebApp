@@ -60,6 +60,8 @@ Continue from `mockup.html`. Do not assume SalesCaptain, Twilio, or Google Sheet
 
 ## Recent Edit Batch
 
+- Arnold replaces Sally as the Hermes Chief Sales Agent. Legacy Sally values in the sheet ("Sally", "SL", "S") normalize to Arnold; Arnold's sheet rep code is "AR".
+- Arnold takeover default: any active lead Brigham is working with 30+ days since last contact is shown as Arnold's. Display-side default — the sheet rep updates the next time the lead is saved.
 - Contact-aware draft recommendations: no email draft without email; no text draft without phone/cell.
 - Cleaner email links for videos and Calendly.
 - Piano make capitalization in subject lines and draft bodies.

@@ -351,13 +351,15 @@ function cleanStr_(value) {
 }
 
 function normalizeRepKey_(value) {
+  // Arnold replaced Sally (July 2026); legacy Sally values map to Arnold.
   const s = cleanStr_(value).toLowerCase();
   const compact = s.replace(/[^a-z]/g, "");
   if (["bl", "brighamlarson"].indexOf(compact) >= 0) return "brigham";
-  if (["sl", "sally"].indexOf(compact) >= 0) return "sally";
-  if (["kl", "karmel"].indexOf(compact) >= 0) return "karmel";
+  if (["ar", "arnold", "sl", "sally", "s"].indexOf(compact) >= 0) return "arnold";
+  if (["kl", "karmel", "k"].indexOf(compact) >= 0) return "karmel";
   if (["a", "admin"].indexOf(compact) >= 0) return "admin";
-  if (s.indexOf("sally") >= 0) return "sally";
+  if (s.indexOf("arnold") >= 0) return "arnold";
+  if (s.indexOf("sally") >= 0) return "arnold";
   if (s.indexOf("brig") >= 0) return "brigham";
   if (s.indexOf("karmel") >= 0) return "karmel";
   if (s.indexOf("admin") >= 0) return "admin";
@@ -386,7 +388,7 @@ function parseRepTrail_(value) {
 function repCode_(repKey) {
   const key = normalizeRepKey_(repKey);
   if (key === "brigham") return "BL";
-  if (key === "sally") return "S";
+  if (key === "arnold") return "AR";
   if (key === "karmel") return "K";
   if (key === "admin") return "A";
   return "BL";

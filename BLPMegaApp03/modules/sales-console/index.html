@@ -171,7 +171,7 @@
 
   .rep-badge--brigham { background: #151514; }
   .rep-badge--karmel { background: #a8171f; }
-  .rep-badge--sally { background: #4f695b; }
+  .rep-badge--arnold { background: #4f695b; }
   .rep-badge--admin { background: #b7923b; color: #161514; }
   .rep-badge--default { background: #36566f; }
 
@@ -604,7 +604,7 @@
       </select>
       <select id="filterRep" class="px-2 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
         <option value="">All reps</option>
-        <option value="sally">Sally</option><option value="brigham">Brigham</option><option value="karmel">Karmel</option><option value="admin">Admin</option>
+        <option value="arnold">Arnold</option><option value="brigham">Brigham</option><option value="karmel">Karmel</option><option value="admin">Admin</option>
       </select>
       <select id="filterType" class="px-2 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
         <option value="">All instruments</option>
@@ -1196,7 +1196,7 @@
         <div>
           <label class="text-[11px] uppercase text-zinc-500">Opened by</label>
           <select id="nlRepOpened" class="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
-            <option value="sally" selected>Sally</option>
+            <option value="arnold" selected>Arnold</option>
             <option value="brigham">Brigham</option>
             <option value="karmel">Karmel</option>
             <option value="admin">Admin</option>
@@ -1205,7 +1205,7 @@
         <div>
           <label class="text-[11px] uppercase text-zinc-500">Currently working</label>
           <select id="nlRep" class="w-full mt-1 px-3 py-1.5 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
-            <option value="sally">Sally</option>
+            <option value="arnold">Arnold</option>
             <option value="brigham" selected>Brigham</option>
             <option value="karmel">Karmel</option>
             <option value="admin">Admin</option>
@@ -7211,11 +7211,16 @@ const LIVE_LEADS = [
 ];
 
 const REPS = {
-  sally:   { name: 'Sally',   color: 'bg-pink-500',    ai: true  },
+  /* Arnold is the Hermes Chief Sales Agent (replaced Sally, July 2026). */
+  arnold:  { name: 'Arnold',  color: 'bg-pink-500',    ai: true  },
   brigham: { name: 'Brigham', color: 'bg-indigo-600',  ai: false },
   karmel:  { name: 'Karmel',  color: 'bg-purple-600',  ai: false },
   admin:   { name: 'Admin',   color: 'bg-teal-500',    ai: false },
 };
+
+/* Any active lead Brigham is working goes to Arnold by default once it has
+   had no contact for more than this many days. */
+const ARNOLD_TAKEOVER_DAYS = 30;
 
 function repName(repKey) {
   return REPS[repKey]?.name || 'Unassigned';
@@ -8147,7 +8152,7 @@ function approveAndSendFromEditor() {
   approveAndSend(editingDraftId, null, ch);
 }
 
-/* Build the "context Sally pulled from" snippet for the editor */
+/* Build the "context Arnold pulled from" snippet for the editor */
 function buildContextSnippet(l) {
   const parts = [];
   parts.push(`<div><b>Lead:</b> ${escapeHtml(l.name)} · ${escapeHtml(l.instrument || '')}</div>`);
@@ -8156,6 +8161,7 @@ function buildContextSnippet(l) {
   if (l.piano_type) parts.push(`<div><b>Piano:</b> ${escapeHtml(l.piano_type.split('\n')[0])}</div>`);
   if (l.pricing_extracted) parts.push(`<div><b>Past quote(s):</b> ${escapeHtml(l.pricing_extracted)}</div>`);
   parts.push(`<div><b>Status:</b> ${escapeHtml(l.status_bucket)} (${l.days_since_contact}d since last contact)</div>`);
+  if (l.auto_arnold) parts.push(`<div><b>Rep:</b> Arnold took over by default — no contact by Brigham in ${ARNOLD_TAKEOVER_DAYS}+ days</div>`);
   if (l.last_action) parts.push(`<div><b>Last action:</b> ${escapeHtml(l.last_action)}</div>`);
   if (l.notes) parts.push(`<div class="mt-1"><b>Sheet notes:</b> <span class="text-zinc-600 dark:text-zinc-400">${escapeHtml(l.notes.slice(0, 280))}${l.notes.length > 280 ? '…' : ''}</span></div>`);
   parts.push(`<div class="mt-1 text-[10px] italic text-zinc-500">In production, would also pull from: info@ thread history · sales conversation · brigham@ thread · piano log row · Brigham voice corpus.</div>`);
@@ -8290,16 +8296,18 @@ async function approveAndSend(id, checkboxEl, channel) {
   renderAll();
 }
 
-/* Map free-text rep values from the sheet ("Sally", "BRIGHAM R.", blank)
-   onto the app's rep keys. Empty or unrecognized = Brigham by default. */
+/* Map free-text rep values from the sheet ("Arnold", "BRIGHAM R.", blank)
+   onto the app's rep keys. Legacy Sally values ("Sally", "SL", "S") map to
+   Arnold, who replaced her. Empty or unrecognized = Brigham by default. */
 function normalizeRepKey(value) {
   const s = String(value || '').toLowerCase().trim();
   const compact = s.replace(/[^a-z]/g, '');
   if (['bl', 'brighamlarson'].includes(compact)) return 'brigham';
-  if (['sl', 'sally'].includes(compact)) return 'sally';
-  if (['kl', 'karmel'].includes(compact)) return 'karmel';
+  if (['ar', 'arnold', 'sl', 'sally', 's'].includes(compact)) return 'arnold';
+  if (['kl', 'karmel', 'k'].includes(compact)) return 'karmel';
   if (['a', 'admin'].includes(compact)) return 'admin';
-  if (s.includes('sally'))  return 'sally';
+  if (s.includes('arnold')) return 'arnold';
+  if (s.includes('sally'))  return 'arnold';
   if (s.includes('brig'))   return 'brigham';
   if (s.includes('karmel')) return 'karmel';
   if (s.includes('admin'))  return 'admin';
@@ -8366,6 +8374,14 @@ function normalizeLeadRecord(l, index = 0) {
   };
   lead.status_bucket = timelineBucketFor(lead, outcome);
   const days = Number(lead.days_since_contact != null ? lead.days_since_contact : lead.days) || 0;
+  /* Default: Arnold (Hermes Chief Sales Agent) takes over any active lead
+     Brigham is working once it passes 30 days without contact. Display-side
+     default only — the sheet keeps its rep until the lead is next saved. */
+  if (outcome === 'Active' && lead.rep === 'brigham' && days > ARNOLD_TAKEOVER_DAYS) {
+    lead.rep = 'arnold';
+    lead.rep_working = 'arnold';
+    lead.auto_arnold = true;
+  }
   lead.is_lonely = outcome === 'Active' && days > 7;
   return lead;
 }
@@ -8455,9 +8471,11 @@ LEADS.forEach(l => {
 
 const ACTIONS = [
   { who:'Walter', when:'just now', what:'pulled live snapshot from Shop/Sales LEADS-30 Days', icon:'🔄' },
-  { who:'Sally', when:'1 hr ago', what:'queued ' + LEADS.filter(l => l.is_lonely).length + ' lonely leads for win-back', icon:'⏰' },
+  { who:'Arnold', when:'1 hr ago', what:'queued ' + LEADS.filter(l => l.is_lonely).length + ' lonely leads for win-back', icon:'⏰' },
   { who:'Karmel', when:'this morning', what:'reviewed the sheet — see new leads from June', icon:'👀' },
 ];
+const arnoldTakeoverCount = LEADS.filter(l => l.auto_arnold).length;
+if (arnoldTakeoverCount) ACTIONS.unshift({ who:'Arnold', when:'just now', what:'took over ' + arnoldTakeoverCount + ' of Brigham\'s leads — ' + ARNOLD_TAKEOVER_DAYS + '+ days since last contact', icon:'🤝' });
 
 const COMM_LOG_KEY = 'blpSalesCommunicationLog';
 let COMM_LOG = [];
@@ -9198,7 +9216,7 @@ function renderBrigham() {
         <button onclick="openDrawer('${l.id}')" class="text-[11px] px-2 py-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Open</button>
         <select onchange="this.value && assignLead('${l.id}', this.value); this.value='';" class="text-[11px] px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
           <option value="">Assign…</option>
-          <option value="sally">Sally</option>
+          <option value="arnold">Arnold</option>
           <option value="admin">Admin</option>
           <option value="karmel">Karmel</option>
         </select>
@@ -10147,7 +10165,7 @@ function assignLead(id, rep) {
   renderAll();
 }
 
-function deflectToSally(id) { assignLead(id, 'sally'); }
+function deflectToArnold(id) { assignLead(id, 'arnold'); }
 
 function undoLastAssignment() {
   if (!lastAssignmentChange) return toast('No assignment to undo');
@@ -10292,8 +10310,8 @@ function openNewLeadModal() {
   document.getElementById('nlInquiry').value = '';
   document.getElementById('nlLeadType').value = '';
   document.getElementById('nlPianoType').value = '';
-  document.getElementById('nlRepOpened').value = 'sally';
-  document.getElementById('nlRep').value = 'sally';
+  document.getElementById('nlRepOpened').value = 'arnold';
+  document.getElementById('nlRep').value = 'arnold';
   document.getElementById('nlBand').value = '$5-15k';
   document.getElementById('nlTemp').value = '7';
   handleNewLeadSourceChange();

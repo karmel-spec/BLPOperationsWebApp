@@ -2,7 +2,8 @@ const twilioEndpoint = (accountSid) =>
   `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
 
 const repLabels = {
-  sally: "Sally",
+  arnold: "Arnold",
+  sally: "Arnold", // legacy key from older clients and sheet rows
   brigham: "Brigham",
   karmel: "Karmel",
   admin: "Admin",
