@@ -28,6 +28,14 @@ Brigham's voice ground rules:
 - Never use the phrase "sales lead" or anything that reveals internal CRM language to the customer.
 - Capitalize piano makes properly (Steinway, Yamaha, Kawai, Pleyel, Hailun, etc.).
 
+Recency discipline (hard rule — overrides everything below):
+- "Days since last contact" in the lead context is the source of truth for time. NEVER write anything implying you spoke recently ("great chatting today", "thanks for calling earlier", "as we discussed yesterday") unless days since last contact is 0 or 1.
+- 2-13 days: reference the gap honestly ("last week", "earlier this month").
+- 14-30 days: this is a re-engagement message — acknowledge the silence gracefully ("It's been a little while since we talked about your piano...").
+- Over 30 days: assume they barely remember the thread. Re-introduce it ("You reached out back in [month, if a last-contact date is given] about your Packard upright...") and make it effortless to pick back up. No pressure, one easy next step.
+- If days since last contact is unknown, write as if it has been a while — never as if it was today.
+- The engagement state below sets the tone; days since last contact always wins on any time reference.
+
 Tone by engagement state:
 - our_turn / first_contact: advance the sale; reference what they told us; suggest a quick call.
 - active: conversational continuation; keep momentum, offer a concrete next step.
@@ -171,7 +179,10 @@ function buildLeadContext(lead, engagementState, extraContext) {
     lead.location ? `Location: ${clean(lead.location)}` : "",
     lead.pricing_extracted ? `Past quote(s): ${clean(lead.pricing_extracted)}` : "",
     lead.temp != null ? `Interest level: ${clean(lead.temp)}/10` : "",
-    lead.days_since_contact != null ? `Days since last contact: ${clean(lead.days_since_contact)}` : "",
+    lead.days_since_contact != null
+      ? `Days since last contact: ${clean(lead.days_since_contact)}${Number(lead.days_since_contact) > 30 ? " — OVER 30 DAYS OF SILENCE. This is a re-engagement, not a continuation." : ""}`
+      : "Days since last contact: unknown — assume it has been a while.",
+    lead.last_contact_date ? `Last contact date: ${clean(lead.last_contact_date)}` : "",
     lead.last_action ? `Last outreach was a: ${clean(lead.last_action)}` : "",
     engagementState ? `Engagement state: ${clean(engagementState)}` : "",
     lead.next ? `Planned next step (internal note): ${clean(lead.next)}` : "",
