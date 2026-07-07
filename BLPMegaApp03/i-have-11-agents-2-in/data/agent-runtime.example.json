@@ -1,0 +1,18 @@
+{
+  "arnold": {
+    "displayName": "Arnold",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "arnold",
+    "baseUrl": "http://127.0.0.1:8643",
+    "apiKeyEnv": "HERMES_ARNOLD_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": [
+      "chat",
+      "assign_task",
+      "draft_email",
+      "draft_sms",
+      "run_report"
+    ],
+    "customerSendPolicy": "Draft only; never send customer-facing messages without Karmel/Brigham approval"
+  }
+}

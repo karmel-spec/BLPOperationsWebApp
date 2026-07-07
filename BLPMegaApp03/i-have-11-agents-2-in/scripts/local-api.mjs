@@ -9,6 +9,10 @@ const root = path.resolve(import.meta.dirname, "..");
 const dataDir = path.join(root, "data");
 const workQueuePath = path.join(dataDir, "work-queue.json");
 const auditLogPath = path.join(dataDir, "audit-log.jsonl");
+const agentRuntimeConfigPath = process.env.BLP_AGENT_RUNTIME_CONFIG
+  ? path.resolve(process.env.BLP_AGENT_RUNTIME_CONFIG)
+  : path.join(dataDir, "agent-runtime.json");
+const agentRuntimeExamplePath = path.join(dataDir, "agent-runtime.example.json");
 const port = Number(process.env.BLP_CONSOLE_API_PORT || 8787);
 const execFileAsync = promisify(execFile);
 const hermesBinary = process.env.BLP_HERMES_BIN || "/Users/blpadmin/.hermes/hermes-agent/venv/bin/hermes";
@@ -32,6 +36,58 @@ function readJson(file, fallback) {
   } catch {
     return fallback;
   }
+}
+
+function loadAgentRuntimeRegistry() {
+  const fallback = readJson(agentRuntimeExamplePath, {});
+  return readJson(agentRuntimeConfigPath, fallback);
+}
+
+function normalizeAgentId(value = "") {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function getAgentRuntime(agent) {
+  const registry = loadAgentRuntimeRegistry();
+  const normalized = normalizeAgentId(agent);
+  return registry[normalized] || Object.values(registry).find((entry) => normalizeAgentId(entry.displayName) === normalized);
+}
+
+function publicAgentRuntime(entry) {
+  if (!entry) return null;
+  return {
+    displayName: entry.displayName,
+    runtimeSystem: entry.runtimeSystem,
+    hermesProfile: entry.hermesProfile,
+    baseUrl: entry.baseUrl,
+    status: entry.status,
+    capabilities: entry.capabilities || [],
+    apiKeyConfigured: Boolean(process.env[entry.apiKeyEnv]),
+    customerSendPolicy: entry.customerSendPolicy,
+  };
+}
+
+async function callJson(url, options = {}) {
+  const response = await fetch(url, options);
+  const text = await response.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = { raw: text };
+  }
+  if (!response.ok) {
+    const message = payload?.error?.message || payload?.detail || payload?.message || text || `HTTP ${response.status}`;
+    const error = new Error(message);
+    error.status = response.status;
+    error.payload = payload;
+    throw error;
+  }
+  return payload;
 }
 
 function writeJson(file, value) {
@@ -89,11 +145,12 @@ function addWorkQueueItem(item) {
 
 function formatHermesMessage(body, item) {
   const action = body.action || "Message";
-  const title = item?.title || body.title || `${action} for ${body.agent || "Lindsay"}`;
-  const summary = body.summary || "No details supplied.";
+  const agentName = body.agent || item?.agent || "Agent";
+  const title = item?.title || body.title || `${action} for ${agentName}`;
+  const summary = body.summary || body.input || "No details supplied.";
   const nextStep = body.nextStep ? `\nNext step: ${body.nextStep}` : "";
   return [
-    `New ${action} for Lindsay from the BLP Agent Operations Console`,
+    `New ${action} for ${agentName} from the BLP Agent Operations Console`,
     `Title: ${title}`,
     `Risk: ${body.risk || item?.risk || "Low"}`,
     `Approval: ${body.approval || item?.approval || "Internal only"}`,
@@ -261,18 +318,77 @@ async function queryNotionWork() {
   };
 }
 
-async function dispatchToHermes(body, item) {
-  if (body.agent !== "Lindsay") {
-    return { skipped: true, reason: "Only Lindsay is enabled for Hermes dispatch in this MVP bridge." };
+async function submitHermesRun(agentId, input, extra = {}) {
+  const runtime = getAgentRuntime(agentId);
+  if (!runtime) {
+    return { skipped: true, reason: `No Hermes runtime configured for ${agentId}.` };
   }
+
+  const apiKey = process.env[runtime.apiKeyEnv];
+  if (!apiKey) {
+    return {
+      skipped: true,
+      reason: `Set ${runtime.apiKeyEnv} to enable ${runtime.displayName || agentId} Hermes API dispatch.`,
+      agent: publicAgentRuntime(runtime),
+    };
+  }
+
+  const sessionId = extra.session_id || `blp-console-${normalizeAgentId(runtime.displayName || agentId)}-${Date.now()}`;
+  const payload = {
+    input,
+    session_id: sessionId,
+    ...(extra.instructions ? { instructions: extra.instructions } : {}),
+    ...(extra.conversation_history ? { conversation_history: extra.conversation_history } : {}),
+  };
+
+  const response = await callJson(`${runtime.baseUrl.replace(/\/$/, "")}/v1/runs`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "X-Hermes-Session-Key": extra.sessionKey || `agent:${normalizeAgentId(runtime.displayName || agentId)}:console`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return {
+    skipped: false,
+    mode: "hermes runs api",
+    agent: publicAgentRuntime(runtime),
+    sessionId,
+    ...response,
+  };
+}
+
+async function checkHermesRuntimeHealth(agentId) {
+  const runtime = getAgentRuntime(agentId);
+  if (!runtime) return { ok: false, reason: `No Hermes runtime configured for ${agentId}.` };
+  const apiKey = process.env[runtime.apiKeyEnv];
+  if (!apiKey) return { ok: false, reason: `Set ${runtime.apiKeyEnv} to check ${runtime.displayName || agentId}.`, agent: publicAgentRuntime(runtime) };
+  const payload = await callJson(`${runtime.baseUrl.replace(/\/$/, "")}/health`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+  return { ok: true, agent: publicAgentRuntime(runtime), health: payload };
+}
+
+async function dispatchToHermes(body, item) {
+  const message = formatHermesMessage(body, item);
+  const runtime = getAgentRuntime(body.agent);
+  if (runtime) {
+    return submitHermesRun(body.agent, message, {
+      session_id: body.sessionId,
+      sessionKey: `agent:${normalizeAgentId(runtime.displayName || body.agent)}:console`,
+    });
+  }
+
   if (!hermesSendEnabled) {
-    return { skipped: true, reason: "Set BLP_HERMES_SEND_ENABLED=true to enable hermes send dispatch." };
+    return { skipped: true, reason: `No Hermes API runtime configured for ${body.agent}. Set BLP_HERMES_SEND_ENABLED=true to use legacy hermes send dispatch.` };
   }
   if (!fs.existsSync(hermesBinary)) {
     return { skipped: true, reason: `Hermes binary not found at ${hermesBinary}` };
   }
 
-  const message = formatHermesMessage(body, item);
   const { stdout, stderr } = await execFileAsync(hermesBinary, ["send", "--to", hermesSendTarget, message], {
     timeout: 30_000,
     maxBuffer: 1024 * 1024,
@@ -345,6 +461,10 @@ const server = http.createServer(async (request, response) => {
           binary: hermesBinary,
           sendEnabled: hermesSendEnabled,
           sendTarget: hermesSendTarget,
+          runtimeConfigPath: agentRuntimeConfigPath,
+          runtimes: Object.fromEntries(
+            Object.entries(loadAgentRuntimeRegistry()).map(([key, value]) => [key, publicAgentRuntime(value)]),
+          ),
         },
         openclaw: {
           binary: openclawBinary,
@@ -362,6 +482,33 @@ const server = http.createServer(async (request, response) => {
 
     if (request.method === "GET" && url.pathname === "/api/notion/work") {
       send(response, 200, await queryNotionWork());
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/agents") {
+      send(response, 200, {
+        agents: Object.fromEntries(Object.entries(loadAgentRuntimeRegistry()).map(([key, value]) => [key, publicAgentRuntime(value)])),
+      });
+      return;
+    }
+
+    const agentHealthMatch = url.pathname.match(/^\/api\/agents\/([^/]+)\/health$/);
+    if (request.method === "GET" && agentHealthMatch) {
+      send(response, 200, await checkHermesRuntimeHealth(agentHealthMatch[1]));
+      return;
+    }
+
+    const agentRunMatch = url.pathname.match(/^\/api\/agents\/([^/]+)\/runs$/);
+    if (request.method === "POST" && agentRunMatch) {
+      const body = await readBody(request);
+      const dispatch = await submitHermesRun(agentRunMatch[1], body.input || body.summary || "", body);
+      const audit = appendAudit({
+        type: "hermes_run_submitted",
+        agent: agentRunMatch[1],
+        source: "local-api",
+        payload: { ...dispatch, agent: dispatch.agent },
+      });
+      send(response, dispatch.skipped ? 400 : 201, { dispatch, audit });
       return;
     }
 

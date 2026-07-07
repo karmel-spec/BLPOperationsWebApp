@@ -74,11 +74,16 @@ window.BLP_AGENTS_DATA = [
   },
   {
     "name": "Arnold",
+    "agentId": "arnold",
     "role": "Chief Sales Agent",
     "department": "Sales",
-    "system": "On Deck",
-    "status": "On Deck",
+    "system": "Hermes",
+    "status": "Active",
+    "connectionStatus": "API Live Local",
     "email": "arnold@brighamlarsonpianos.com",
+    "telegram": "@arnoldlarsonbot",
+    "dashboardRoute": "/agents/arnold",
+    "customerSendPolicy": "Draft only; never send customer-facing messages without Karmel/Brigham approval",
     "avatar": "assets/avatars/arnold (2).png"
   },
   {
