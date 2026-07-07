@@ -26,10 +26,21 @@ Create a local-only config if needed:
 cp data/agent-runtime.example.json data/agent-runtime.json
 ```
 
-Set Arnold's API key before starting the local API:
+Set agent API keys before starting the local API. For Arnold only:
 
 ```bash
 export HERMES_ARNOLD_API_SERVER_KEY="$(security find-generic-password -s blp-agent-console -a arnold:api_server_key -w)"
+export BLP_CONSOLE_API_PORT=8787
+node scripts/local-api.mjs
+```
+
+For every currently prepared local Hermes profile:
+
+```bash
+for agent in arnold ivory melody eddy addie brandy collin desie lee marcus rajeesh sharie yolanda; do
+  env_name="HERMES_$(printf '%s' "$agent" | tr '[:lower:]' '[:upper:]')_API_SERVER_KEY"
+  export "$env_name=$(security find-generic-password -s blp-agent-console -a "$agent:api_server_key" -w)"
+done
 export BLP_CONSOLE_API_PORT=8787
 node scripts/local-api.mjs
 ```

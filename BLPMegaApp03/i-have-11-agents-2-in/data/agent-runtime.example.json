@@ -6,13 +6,127 @@
     "baseUrl": "http://127.0.0.1:8643",
     "apiKeyEnv": "HERMES_ARNOLD_API_SERVER_KEY",
     "status": "api_live_local",
-    "capabilities": [
-      "chat",
-      "assign_task",
-      "draft_email",
-      "draft_sms",
-      "run_report"
-    ],
+    "capabilities": ["chat", "assign_task", "draft_email", "draft_sms", "run_report"],
     "customerSendPolicy": "Draft only; never send customer-facing messages without Karmel/Brigham approval"
+  },
+  "ivory": {
+    "displayName": "Ivory",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "ivory",
+    "baseUrl": "http://127.0.0.1:8644",
+    "apiKeyEnv": "HERMES_IVORY_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "draft_email", "draft_sms", "run_report"],
+    "customerSendPolicy": "Draft only; never send customer-facing messages without Karmel/Brigham approval"
+  },
+  "melody": {
+    "displayName": "Melody",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "melody",
+    "baseUrl": "http://127.0.0.1:8645",
+    "apiKeyEnv": "HERMES_MELODY_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "draft_email", "draft_sms", "run_report"],
+    "customerSendPolicy": "Draft only; never send customer-facing messages without Karmel/Brigham approval"
+  },
+  "eddy": {
+    "displayName": "Eddy",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "eddy",
+    "baseUrl": "http://127.0.0.1:8646",
+    "apiKeyEnv": "HERMES_EDDY_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "run_report"],
+    "customerSendPolicy": "Internal use only unless approved by Karmel/Brigham"
+  },
+  "addie": {
+    "displayName": "Addie",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "addie",
+    "baseUrl": "http://127.0.0.1:8647",
+    "apiKeyEnv": "HERMES_ADDIE_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "run_report"],
+    "customerSendPolicy": "Internal draft/review only"
+  },
+  "brandy": {
+    "displayName": "Brandy",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "brandy",
+    "baseUrl": "http://127.0.0.1:8648",
+    "apiKeyEnv": "HERMES_BRANDY_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "run_report"],
+    "customerSendPolicy": "Internal draft/review only"
+  },
+  "collin": {
+    "displayName": "Collin",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "collin",
+    "baseUrl": "http://127.0.0.1:8649",
+    "apiKeyEnv": "HERMES_COLLIN_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "run_report"],
+    "customerSendPolicy": "Internal draft/review only"
+  },
+  "desie": {
+    "displayName": "Desie",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "desie",
+    "baseUrl": "http://127.0.0.1:8650",
+    "apiKeyEnv": "HERMES_DESIE_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "run_report"],
+    "customerSendPolicy": "Internal draft/review only"
+  },
+  "lee": {
+    "displayName": "Lee",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "lee",
+    "baseUrl": "http://127.0.0.1:8651",
+    "apiKeyEnv": "HERMES_LEE_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "run_report"],
+    "customerSendPolicy": "Internal draft/review only"
+  },
+  "marcus": {
+    "displayName": "Marcus",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "marcus",
+    "baseUrl": "http://127.0.0.1:8652",
+    "apiKeyEnv": "HERMES_MARCUS_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "draft_email", "run_report"],
+    "customerSendPolicy": "Draft only; never send customer-facing messages without Karmel/Brigham approval"
+  },
+  "rajeesh": {
+    "displayName": "Rajeesh",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "rajeesh",
+    "baseUrl": "http://127.0.0.1:8653",
+    "apiKeyEnv": "HERMES_RAJEESH_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "run_report"],
+    "customerSendPolicy": "Internal draft/review only"
+  },
+  "sharie": {
+    "displayName": "Sharie",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "sharie",
+    "baseUrl": "http://127.0.0.1:8654",
+    "apiKeyEnv": "HERMES_SHARIE_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "run_report"],
+    "customerSendPolicy": "Internal draft/review only"
+  },
+  "yolanda": {
+    "displayName": "Yolanda",
+    "runtimeSystem": "Hermes",
+    "hermesProfile": "yolanda",
+    "baseUrl": "http://127.0.0.1:8655",
+    "apiKeyEnv": "HERMES_YOLANDA_API_SERVER_KEY",
+    "status": "api_live_local",
+    "capabilities": ["chat", "assign_task", "run_report"],
+    "customerSendPolicy": "Internal draft/review only"
   }
 }
