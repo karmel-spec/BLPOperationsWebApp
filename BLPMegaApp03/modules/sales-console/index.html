@@ -7488,7 +7488,7 @@ const ACTION_LABEL = { call:'Call', text:'Text', email:'Email' };
 function startRecommendedAction(id, channel) {
   const l = workingLeads.find(x => x.id === id);
   if (!l) return;
-  const nextType = channel || l.next_action_type || decideRecommendedChannel(l);
+  const nextType = (channel && channelAvailable(l, channel)) ? channel : recommendedNextType(l);
   if (nextType === 'call') return callLead(id);
   if (nextType === 'text' || nextType === 'sms') return sendSms(id);
   if (nextType === 'email') return openDraft(id);
@@ -7524,9 +7524,9 @@ function renderActionCell(l) {
     lastChunk = '<span class="text-zinc-400">—</span>';
   }
 
-  // Next channel recommendation
-  const nextType = l.next_action_type || decideRecommendedChannel(l);
-  const next = `${ACTION_ICON[nextType]} ${ACTION_LABEL[nextType]}`;
+  // Next channel recommendation — only channels the lead is reachable on
+  const nextType = recommendedNextType(l);
+  const next = nextType ? `${ACTION_ICON[nextType]} ${ACTION_LABEL[nextType]}` : '';
 
   // Touches — sent vs received
   const out = l.outbound_count || 0;
@@ -7569,7 +7569,9 @@ function renderActionCell(l) {
         </div>
         <div class="flex items-center gap-1.5">
           <span class="text-zinc-400 dark:text-zinc-500 w-14 shrink-0">Next</span>
-          <button type="button" onclick="event.stopPropagation();startRecommendedAction('${l.id}', '${nextType}')" class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-medium hover:ring-2 hover:ring-indigo-300" title="${ACTION_LABEL[nextType]} ${escapeHtml(l.name)}">${next}</button>
+          ${nextType
+            ? `<button type="button" onclick="event.stopPropagation();startRecommendedAction('${l.id}', '${nextType}')" class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-medium hover:ring-2 hover:ring-indigo-300" title="${ACTION_LABEL[nextType]} ${escapeHtml(l.name)}">${next}</button>`
+            : '<span class="px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 italic" title="No email or phone on file — add contact info to propose a next contact">Add contact info</span>'}
         </div>
         <div class="flex items-center gap-1.5">
           <span class="text-zinc-400 dark:text-zinc-500 w-14 shrink-0">Touches</span>
@@ -7817,9 +7819,23 @@ function emailLink(label, url) {
 /* Decide whether to draft a text or an email.
    Rule: alternate based on last_action. If last was email → text; last was text/call → email.
    If no last_action, default to text if temp ≥ 7 and we have a phone (snappier), else email. */
+function leadHasEmail(l) {
+  return !!(l.email && String(l.email).includes('@'));
+}
+function leadHasPhone(l) {
+  return !!(l.phone && String(l.phone).replace(/\D/g, '').length >= 7);
+}
+
+/* Channel availability guard: text/call need a phone, email needs an email. */
+function channelAvailable(l, channel) {
+  if (channel === 'email') return leadHasEmail(l);
+  if (channel === 'text' || channel === 'sms' || channel === 'call') return leadHasPhone(l);
+  return false;
+}
+
 function decideRecommendedChannel(l) {
-  const hasEmail = !!(l.email && String(l.email).includes('@'));
-  const hasPhone = !!(l.phone && String(l.phone).replace(/\D/g, '').length >= 7);
+  const hasEmail = leadHasEmail(l);
+  const hasPhone = leadHasPhone(l);
   if (!hasEmail && !hasPhone) return null;
   if (l.last_action === 'email') return hasPhone ? 'text' : 'email';
   if (l.last_action === 'text' || l.last_action === 'sms') return hasEmail ? 'email' : 'text';
@@ -7831,6 +7847,16 @@ function decideRecommendedChannel(l) {
 }
 // Legacy alias
 const decideChannel = decideRecommendedChannel;
+
+/* The next-contact proposal shown in the UI. Honors the lead's
+   next_action_type only when that channel is actually reachable;
+   otherwise falls back to the contact-aware recommendation, which is
+   null when the lead has no email and no phone. */
+function recommendedNextType(l) {
+  const wanted = l.next_action_type;
+  if (wanted && channelAvailable(l, wanted)) return wanted;
+  return decideRecommendedChannel(l);
+}
 
 /* Generate the AI draft for a specific channel.
    Returns { channel, subject, body, video, ctaUrl } */
@@ -8021,10 +8047,8 @@ function formatSalesSmsBody(lead, body) {
 const AI_DRAFTS = {};
 function getDraftSet(l) {
   if (!AI_DRAFTS[l.id]) AI_DRAFTS[l.id] = {};
-  const hasPhone = !!(l.phone && String(l.phone).replace(/\D/g, '').length >= 7);
-  const hasEmail = !!(l.email && String(l.email).includes('@'));
-  if (hasPhone && !AI_DRAFTS[l.id].text) AI_DRAFTS[l.id].text = generateDraft(l, 'text');
-  if (hasEmail && !AI_DRAFTS[l.id].email) AI_DRAFTS[l.id].email = generateDraft(l, 'email');
+  if (leadHasPhone(l) && !AI_DRAFTS[l.id].text) AI_DRAFTS[l.id].text = generateDraft(l, 'text');
+  if (leadHasEmail(l) && !AI_DRAFTS[l.id].email) AI_DRAFTS[l.id].email = generateDraft(l, 'email');
   return AI_DRAFTS[l.id];
 }
 function getDraft(l, channel) {
@@ -8270,8 +8294,10 @@ async function approveAndSend(id, checkboxEl, channel) {
     l.last_action = isEmail ? 'email' : 'text';
     l.last_contact_date = todayDate;
     l.days_since_contact = 0;
-    // Flip next recommended: last email → next text, last text → next email
-    l.next_action_type = isEmail ? 'text' : 'email';
+    // Flip next recommended: last email → next text, last text → next email —
+    // but only to a channel the lead is reachable on
+    const flip = isEmail ? 'text' : 'email';
+    l.next_action_type = channelAvailable(l, flip) ? flip : (isEmail ? 'email' : 'text');
     l.is_lonely = false;
   }
 
@@ -9926,7 +9952,7 @@ async function sendSmsNow() {
   l.last_action = 'text';
   l.last_contact_date = todayDate;
   l.days_since_contact = 0;
-  l.next_action_type = 'email'; // text just sent → recommend email next
+  l.next_action_type = channelAvailable(l, 'email') ? 'email' : 'text'; // text just sent → recommend email next if they have one
   l.is_lonely = false;
 
   // Invalidate the AI draft cache so the next-recommended draft is the opposite channel
