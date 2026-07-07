@@ -9700,7 +9700,9 @@ function updateLeadField(id, field, value) {
   if (['name','instrument','email','phone','rep','rep_working','rep_opened','rep_closed','status_bucket','next','source','inquiry_method','lead_type','piano_type','location','social','band','pricing_extracted','notes','date_added'].includes(field)) {
     delete AI_DRAFTS[id];
   }
-  ACTIONS.unshift({ who:'Karmel', when:'just now', what:`edited ${field.replace('_',' ')} for ${l.name}`, icon:'✎' });
+  const isRepField = ['rep', 'rep_working', 'rep_opened', 'rep_closed'].includes(field);
+  const changeDetail = isRepField ? ` to ${(value ? repName(value) : 'Unassigned').toUpperCase()}` : '';
+  ACTIONS.unshift({ who:'Karmel', when:'just now', what:`edited ${field.replace('_',' ')}${changeDetail} for ${l.name}`, icon:'✎' });
   scheduleLeadSync('update', l, { source: 'fieldEdit', field });
   renderAll();
   openDrawer(id);
@@ -9719,11 +9721,12 @@ function updateRepFromBadge(id, field, value) {
     : field === 'rep_working' ? 'working rep'
     : field === 'rep_closed' ? 'closed rep'
     : field.replace('_', ' ');
-  ACTIONS.unshift({ who:'Karmel', when:'just now', what:`changed ${label} for ${l.name}`, icon:'✎' });
+  const newRepName = value ? repName(value) : 'Unassigned';
+  ACTIONS.unshift({ who:'Karmel', when:'just now', what:`changed ${label} to ${newRepName.toUpperCase()} for ${l.name}`, icon:'✎' });
   scheduleLeadSync('update', l, { source: 'repBadgeEdit', field });
   renderAll();
   if (drawerLeadId === id) openDrawer(id);
-  toast(`${label.charAt(0).toUpperCase() + label.slice(1)} updated`);
+  toast(`${label.charAt(0).toUpperCase() + label.slice(1)} → ${newRepName}`);
 }
 
 function snoozeOptionsHtml(id) {
