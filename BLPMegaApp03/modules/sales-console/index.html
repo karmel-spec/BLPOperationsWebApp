@@ -8182,6 +8182,11 @@ async function requestArnoldDraft(id, channel) {
         engagement_state: engagementState(l),
         calendly_url: CALENDLY_URL,
         video: pickVideo(l),
+        timeline: (TIMELINES[l.id] || []).slice(0, 8).map(t => ({
+          date: t.date || t.when || '',
+          type: t.type || '',
+          text: String(t.text || '').slice(0, 300),
+        })),
         lead: {
           name: l.name, email: l.email, phone: l.phone,
           instrument: l.instrument, lead_type: l.lead_type, piano_type: l.piano_type,

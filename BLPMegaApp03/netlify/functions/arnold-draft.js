@@ -48,7 +48,8 @@ Tone by engagement state:
 Rules:
 - Draft ONLY for the channel requested. For texts, subject must be an empty string.
 - Use only facts given in the lead context. Never invent quotes, prices, dates, or inventory.
-- If a past quote is provided, you may reference it.
+- Quotes already given are settled facts. If the lead context shows Brigham already quoted prices (the "already quoted" line, or quotes mentioned in the notes/activity timeline), NEVER offer to "pull together some numbers", "work up a ballpark", or re-quote — reference the existing figures ("the $14.5k restoration and $7.5k QRS numbers I sent over") and move the conversation to the next step instead (answer questions, the deposit-queue reframe, or scheduling a call).
+- Read the activity timeline before drafting: it is the record of what has already been said and done with this customer. Never propose something the timeline shows already happened.
 - Links: messages are delivered as plain text, so paste URLs bare and exactly as given in the lead context, with a short natural lead-in (e.g. "here's a quick video tour of our shop: https://youtu.be/..."). NEVER use markdown [text](url), NEVER square-bracket placeholders like [video link], and NEVER invent or alter a URL — if a link is not in the context, do not include one. At most one video link and one scheduling link per message, and only when they genuinely help.
 - Plain text only — no markdown, no emoji.`;
 
@@ -112,7 +113,7 @@ exports.handler = async (event) => {
     return json(400, { ok: false, error: "Lead has no cell number on file — text draft refused." });
   }
 
-  const context = buildLeadContext(lead, payload.engagement_state, payload.extra_context, payload.calendly_url, payload.video);
+  const context = buildLeadContext(lead, payload.engagement_state, payload.extra_context, payload.calendly_url, payload.video, payload.timeline);
 
   const client = new Anthropic({
     apiKey,
@@ -170,15 +171,21 @@ exports.handler = async (event) => {
   });
 };
 
-function buildLeadContext(lead, engagementState, extraContext, calendlyUrl, video) {
+function buildLeadContext(lead, engagementState, extraContext, calendlyUrl, video, timeline) {
   const clean = (v) => String(v == null ? "" : v).trim();
+  const timelineLines = Array.isArray(timeline)
+    ? timeline
+        .filter((t) => t && (t.text || t.type))
+        .slice(0, 8)
+        .map((t) => `  - ${clean(t.date)} [${clean(t.type)}] ${clean(t.text).slice(0, 300)}`)
+    : [];
   const lines = [
     `Customer: ${clean(lead.name)}`,
     lead.instrument ? `Interested in: ${clean(lead.instrument)}` : "",
     lead.lead_type ? `Type of work: ${clean(lead.lead_type).split("\n")[0]}` : "",
     lead.piano_type ? `Their piano: ${clean(lead.piano_type).split("\n")[0]}` : "",
     lead.location ? `Location: ${clean(lead.location)}` : "",
-    lead.pricing_extracted ? `Past quote(s): ${clean(lead.pricing_extracted)}` : "",
+    lead.pricing_extracted ? `Brigham has ALREADY quoted this customer: ${clean(lead.pricing_extracted)} — reference these figures; do not offer to put numbers together.` : "",
     lead.temp != null ? `Interest level: ${clean(lead.temp)}/10` : "",
     lead.days_since_contact != null
       ? `Days since last contact: ${clean(lead.days_since_contact)}${Number(lead.days_since_contact) > 30 ? " — OVER 30 DAYS OF SILENCE. This is a re-engagement, not a continuation." : ""}`
@@ -188,6 +195,7 @@ function buildLeadContext(lead, engagementState, extraContext, calendlyUrl, vide
     engagementState ? `Engagement state: ${clean(engagementState)}` : "",
     lead.next ? `Planned next step (internal note): ${clean(lead.next)}` : "",
     lead.notes ? `Internal notes from the sheet: ${clean(lead.notes).slice(0, 600)}` : "",
+    timelineLines.length ? `Activity timeline (most recent first — what has already happened with this customer):\n${timelineLines.join("\n")}` : "",
     calendlyUrl ? `Scheduling link (use this to offer a call time): ${clean(calendlyUrl)}` : "",
     video && video.url ? `Approved video for this customer ("${clean(video.title)}"): ${clean(video.url)}` : "",
     extraContext ? `Extra context: ${clean(extraContext).slice(0, 600)}` : "",
