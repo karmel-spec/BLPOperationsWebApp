@@ -7819,6 +7819,13 @@ function emailLink(label, url) {
   return `${label}: ${url}`;
 }
 
+/* The showroom is in Utah — only offer in-person visits to leads whose
+   location clearly puts them there. Unknown location = not local. */
+function leadIsLocal(l) {
+  const loc = `${l.location || ''} ${l.city || ''} ${l.state || ''}`;
+  return /\butah\b|\bUT\b/i.test(loc);
+}
+
 /* Decide whether to draft a text or an email.
    Rule: alternate based on last_action. If last was email → text; last was text/call → email.
    If no last_action, default to text if temp ≥ 7 and we have a phone (snappier), else email. */
@@ -7999,7 +8006,7 @@ function generateDraft(l, channel) {
   if (state === 'ghosting') {
     lines.push(`If you ever want to revisit, easiest way is to ${emailLink('schedule me here', CALENDLY_URL)}.`);
   } else {
-    lines.push(`If you'd like to set up a call or come by the showroom, easiest way is to ${emailLink('schedule me here', CALENDLY_URL)}.`);
+    lines.push(`If you'd like to set up a call${leadIsLocal(l) ? ' or come by the showroom' : ''}, easiest way is to ${emailLink('schedule me here', CALENDLY_URL)}.`);
   }
   lines.push('');
 

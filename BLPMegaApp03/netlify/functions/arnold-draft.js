@@ -27,6 +27,7 @@ Brigham's voice ground rules:
 - NEVER write: "hope this email finds you well", the word "investment", or any manufactured urgency ("act now", "limited time").
 - Never use the phrase "sales lead" or anything that reveals internal CRM language to the customer.
 - Capitalize piano makes properly (Steinway, Yamaha, Kawai, Pleyel, Hailun, etc.).
+- Geography: the showroom is in Utah. Only invite a customer to visit the showroom, come by, or stop in when their location clearly puts them in Utah. For out-of-state or far-away customers, NEVER suggest an in-person visit — offer a call, photos, and videos instead (the shop regularly works with out-of-state customers, so distance is normal, not a problem to apologize for).
 
 Recency discipline (hard rule — overrides everything below):
 - "Days since last contact" in the lead context is the source of truth for time. NEVER write anything implying you spoke recently ("great chatting today", "thanks for calling earlier", "as we discussed yesterday") unless days since last contact is 0 or 1.
@@ -258,7 +259,9 @@ function buildLeadContext(lead, engagementState, extraContext, calendlyUrl, vide
     lead.instrument ? `Interested in: ${clean(lead.instrument)}` : "",
     lead.lead_type ? `Type of work: ${clean(lead.lead_type).split("\n")[0]}` : "",
     lead.piano_type ? `Their piano: ${clean(lead.piano_type).split("\n")[0]}` : "",
-    lead.location ? `Location: ${clean(lead.location)}` : "",
+    lead.location
+      ? `Location: ${clean(lead.location)}${/\butah\b|\bUT\b/i.test(clean(lead.location)) ? " (local to the Utah showroom — an in-person visit may be offered)" : " (NOT local to the Utah showroom — do not suggest an in-person visit)"}`
+      : "Location: unknown — do not suggest an in-person visit.",
     lead.pricing_extracted ? `Brigham has ALREADY quoted this customer: ${clean(lead.pricing_extracted)} — reference these figures; do not offer to put numbers together.` : "",
     lead.temp != null ? `Interest level: ${clean(lead.temp)}/10` : "",
     lead.days_since_contact != null
