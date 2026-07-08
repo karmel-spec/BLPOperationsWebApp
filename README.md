@@ -14,6 +14,7 @@ This repository packages the current BLP mega-app modules so Codex, Hermes, and 
 | Tuning CRM / Online Scheduling | `modules/BLP Tuning CRM WebApp` | `http://127.0.0.1:8900` |
 | Onboarding Portal | `modules/BLP-Onboarding-WebApp` | `http://127.0.0.1:5276` |
 | Chris Shop Manager / Restoration | `modules/BLP-Chris-App-for-Lindsay-2026-06-03` | `http://127.0.0.1:8901` |
+| Showroom Price Tag Maker | `BLP Price Tag WebApp` | `http://127.0.0.1:8902` |
 
 ## Current Design Direction
 

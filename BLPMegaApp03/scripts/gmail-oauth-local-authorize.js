@@ -1,6 +1,19 @@
 #!/usr/bin/env node
 const http = require("http");
 const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
+
+/* Credentials come from env vars, or from a local .oauth-env file (one
+   KEY=value per line, never committed) so secrets stay out of terminals
+   and chat logs. */
+const envFile = path.join(__dirname, "..", ".oauth-env");
+if (fs.existsSync(envFile)) {
+  for (const line of fs.readFileSync(envFile, "utf8").split("\n")) {
+    const m = line.match(/^\s*([A-Z_]+)\s*=\s*(.+?)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+}
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -69,13 +82,14 @@ const server = http.createServer(async (req, res) => {
       throw new Error(text);
     }
 
+    const outFile = path.join(__dirname, "..", ".oauth-refresh-token");
+    fs.writeFileSync(outFile, token.refresh_token + "\n", { mode: 0o600 });
     res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end("Authorization complete. Return to Codex or your terminal for the Netlify values.");
+    res.end("Authorization complete. The refresh token was saved locally — paste it into Netlify's GOOGLE_REFRESH_TOKEN.");
     console.log("\nAuthorization complete.");
-    console.log("Copy this secret into Netlify. Do not commit it to GitHub.");
-    console.log(`GOOGLE_REFRESH_TOKEN=${token.refresh_token}`);
-    console.log(`GMAIL_SEND_AS=brigham@brighamlarsonpianos.com`);
-    console.log("SALES_EMAIL_BCC=info@brighamlarsonpianos.com");
+    console.log(`Refresh token written to: ${outFile}`);
+    console.log("Open that file, copy its contents into Netlify's GOOGLE_REFRESH_TOKEN, then delete it.");
+    console.log("Never commit it to GitHub. Granted scopes: " + (token.scope || "(not reported)"));
   } catch (error) {
     res.writeHead(500, { "Content-Type": "text/plain" });
     res.end("Token exchange failed. Return to the terminal for details.");

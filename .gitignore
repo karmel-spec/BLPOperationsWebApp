@@ -7,3 +7,6 @@ Icon?
 !**/.env.example
 *.zip
 node_modules/
+.oauth-env
+.oauth-refresh-token
+.claude/

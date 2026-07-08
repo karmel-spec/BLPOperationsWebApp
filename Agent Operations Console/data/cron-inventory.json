@@ -1,0 +1,130 @@
+[
+  {
+    "agent": "Walter",
+    "system": "OpenClaw",
+    "openclaw_id": "agent:main:dashboard:04150d57-624a-4076-8b4c-7665a113ac64",
+    "connectionStatus": "needs-follow-up",
+    "jobs": [],
+    "source": "openclaw cron list (owns jobs; list not yet enumerated — follow-up needed)",
+    "nextAction": "Get Walter's cron enumeration after the REST wrapper is scoped."
+  },
+  {
+    "agent": "Libby",
+    "system": "OpenClaw",
+    "openclaw_id": "libby",
+    "connectionStatus": "connected",
+    "jobs": [
+      { "name": "Daily KB Status Report", "schedule": "Weekdays 5:30 AM MDT", "health": "failing", "note": "timeout" },
+      { "name": "Nightly KB Drive Sync", "schedule": "Weekdays 1:00 AM MDT", "health": "failing", "note": "OpenAI quota" },
+      { "name": "Nightly Agent File Backup", "schedule": "Daily 3:00 AM MDT", "health": "failing", "note": "quota" },
+      { "name": "Daily cron health email to Lindsay", "schedule": "7:00 AM MDT", "health": "failing", "note": "timeout" },
+      { "name": "Evening Obsidian status report", "schedule": "6:00 PM MDT", "health": "failing", "note": "Telegram routing missing" }
+    ],
+    "source": "5 jobs · ALL FAILING (timeouts + quota) — flagged for Walter/infra review",
+    "nextAction": "Fix OpenAI quota + timeouts, restore Telegram routing."
+  },
+  {
+    "agent": "Chris",
+    "system": "OpenClaw",
+    "openclaw_id": "chris",
+    "connectionStatus": "connected",
+    "jobs": [
+      { "name": "Nightly Knowledge Vault Backup", "schedule": "3:04 AM Denver", "health": "ok" },
+      { "name": "Daily Cron Report for Lindsay", "schedule": "7:50 AM Mon-Fri", "health": "ok" },
+      { "name": "Monthly Restoration Audio Request", "schedule": "9:00 AM on 15th-31st", "health": "ok" },
+      { "name": "Friday Report Gate", "schedule": "4:30 PM Fri (LA)", "health": "failing", "note": "ECONNREFUSED 127.0.0.1:1234 — repoint to gateway 18789" }
+    ],
+    "source": "4 jobs · 1 failing (Friday Report Gate)",
+    "nextAction": "Repoint Friday Report Gate to gateway port 18789."
+  },
+  {
+    "agent": "Sally",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-sally",
+    "connectionStatus": "needs-details",
+    "jobs": [],
+    "source": null,
+    "nextAction": "Registry column empty — collect connection details (or retire card: Arnold replaced Sally 2026-07-07)."
+  },
+  {
+    "agent": "Melody",
+    "system": "OpenClaw",
+    "openclaw_id": "melody",
+    "connectionStatus": "connected",
+    "jobs": [
+      { "name": "Email Responder (info@ drafts)", "schedule": "Every ~2 hours", "health": "ok" },
+      { "name": "Daily SalesCaptain Report", "schedule": "Daily → walter@", "health": "ok" },
+      { "name": "Nightly Backup", "schedule": "3:00 AM MT", "health": "ok" },
+      { "name": "Nightly KB Digest", "schedule": "Nightly → libby@", "health": "ok" },
+      { "name": "Daily Cron Report for Lindsay", "schedule": "Mornings", "health": "ok" }
+    ],
+    "source": "5 jobs · healthy (per 2026-05-27 registry reply)",
+    "nextAction": "Poll STATUS.md daily; no push webhook available."
+  },
+  {
+    "agent": "Dawn",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-dawn",
+    "connectionStatus": "scaffolded",
+    "jobs": [],
+    "source": "Planned: 6 AM Karmel brief · 6 AM Brigham brief · 7:30 AM standup prep",
+    "nextAction": "Provision dawn@ mailbox, finish agent setup, wire Gmail OAuth."
+  },
+  {
+    "agent": "Ivory",
+    "system": "OpenClaw",
+    "openclaw_id": "ivory",
+    "connectionStatus": "connected",
+    "jobs": [
+      { "name": "Google Review requests", "schedule": "Mon-Sat 6:01 PM", "health": "ok" },
+      { "name": "Tuning confirmations", "schedule": "Mon-Fri 8:00 AM", "health": "ok" },
+      { "name": "QBO Invoice Audit", "schedule": "Mon-Fri 4:00 AM", "health": "ok" },
+      { "name": "Morning Brief Inputs", "schedule": "Mon-Fri 7:00 AM", "health": "ok" },
+      { "name": "Daily Cron Report", "schedule": "Mon-Fri 7:30 AM", "health": "ok" },
+      { "name": "Drive Backup", "schedule": "Daily 11:00 PM", "health": "ok" },
+      { "name": "Nightly Backup (Lindsay protocol)", "schedule": "Daily 3:05 AM", "health": "failing", "note": "9 consecutive timeouts" },
+      { "name": "Syd Rescheduling", "schedule": "Mon & Thu 8:00 AM", "health": "ok" },
+      { "name": "Weekly CRM Calendar Sync", "schedule": "Mon 8:00 AM", "health": "ok" }
+    ],
+    "source": "9 jobs · 1 failing (nightly backup — 9 consecutive timeouts)",
+    "nextAction": "Investigate nightly backup timeout during model-call phase."
+  },
+  {
+    "agent": "Marcus",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-marcus",
+    "connectionStatus": "needs-details",
+    "jobs": [],
+    "source": null,
+    "nextAction": "Registry column empty — chase the connection-details survey reply."
+  },
+  {
+    "agent": "Monte",
+    "system": "OpenClaw",
+    "openclaw_id": "pending-monte",
+    "connectionStatus": "needs-details",
+    "jobs": [],
+    "source": null,
+    "nextAction": "Registry column empty — chase the connection-details survey reply."
+  },
+  {
+    "agent": "Lindsay",
+    "system": "Hermes",
+    "openclaw_id": "hermes-default",
+    "connectionStatus": "connected",
+    "jobs": [
+      { "name": "BLP OpenClaw Reply Tracker", "schedule": "Every 30 min", "health": "ok" }
+    ],
+    "source": "hermes cronjob list --json (1 job · healthy)",
+    "nextAction": "None — heartbeat healthy."
+  },
+  {
+    "agent": "Cody",
+    "system": "Hermes",
+    "openclaw_id": "hermes-codycoder",
+    "connectionStatus": "connected",
+    "jobs": [],
+    "source": "No recurring jobs yet — invoked on demand",
+    "nextAction": "Start gateway when needed: hermes profile start codycoder."
+  }
+]

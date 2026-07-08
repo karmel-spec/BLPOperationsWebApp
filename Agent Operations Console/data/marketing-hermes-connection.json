@@ -1,0 +1,188 @@
+{
+  "team": "Marketing",
+  "system": "Hermes",
+  "status": "needs-remote-hermes-gateway",
+  "purpose": "Connect the marketing agent team on the other Hermes laptop to the Agent Operations Console, Marketing Command Center, Design Center, and VideoFlow.",
+  "recommendedPhase1": {
+    "mode": "remote-hermes-webhook-bridge",
+    "description": "Use signed webhook requests from the BLP app or Netlify functions to a secure HTTPS bridge that reaches the Hermes webhook gateway on the other laptop.",
+    "why": "The marketing Hermes install is on another laptop, so localhost routes from that laptop are not reachable by this app or Netlify without a bridge.",
+    "preferredBridgeOptions": [
+      "Tailscale Funnel or Tailscale private network",
+      "Cloudflare Tunnel",
+      "ngrok",
+      "Small hosted gateway that forwards signed requests to Hermes"
+    ],
+    "requiredAppConfig": [
+      "HERMES_MARKETING_BASE_URL",
+      "Per-agent HMAC secrets stored as Netlify/server environment variables",
+      "Agent route map",
+      "Callback or status-return destination"
+    ]
+  },
+  "recommendedPhase2": {
+    "mode": "structured-callbacks-and-agent-health",
+    "taskIntake": "POST task payloads to each agent route with HMAC signature.",
+    "statusReturn": "Agent posts completion, blocker, last action, current load, and source links back to a callback endpoint or shared task store.",
+    "audit": "Every routed task and response should appear in Agent Log and the relevant module queue."
+  },
+  "gatewayFieldsToCollect": {
+    "remoteLaptopName": "",
+    "remoteLaptopOwner": "",
+    "staysAwakeDuringBusinessHours": "",
+    "hermesBinaryPath": "",
+    "hermesProfile": "",
+    "gatewayStatusCommandOutput": "",
+    "webhookEnabled": "",
+    "localWebhookHost": "",
+    "localWebhookPort": "",
+    "publicBridgeBaseUrl": "",
+    "bridgeMethod": "",
+    "signatureHeader": "",
+    "responseDestination": "",
+    "notes": ""
+  },
+  "agents": [
+    {
+      "name": "Marcus",
+      "moduleTargets": ["Agent Operations Console", "Marketing Command Center"],
+      "role": "Head of Marketing",
+      "email": "marcus@brighamlarsonpianos.com",
+      "status": "needs-route",
+      "webhookRoute": "",
+      "secretEnvVar": "HERMES_AGENT_MARCUS_SECRET",
+      "acceptedTaskTypes": ["marketing strategy", "SEO", "campaign planning", "brand voice", "competitive research"],
+      "driveBackupFolder": "",
+      "statusSource": "",
+      "responseDestination": ""
+    },
+    {
+      "name": "Desie",
+      "moduleTargets": ["Agent Operations Console", "Design Center"],
+      "role": "Design",
+      "email": "desie@brighamlarsonpianos.com",
+      "status": "needs-route",
+      "webhookRoute": "",
+      "secretEnvVar": "HERMES_AGENT_DESIE_SECRET",
+      "acceptedTaskTypes": ["design request", "brand asset", "print piece", "web graphic", "signage", "template"],
+      "driveBackupFolder": "",
+      "statusSource": "",
+      "responseDestination": ""
+    },
+    {
+      "name": "Ed",
+      "moduleTargets": ["Agent Operations Console", "VideoFlow Automation Studio"],
+      "role": "Video Editor",
+      "email": "ed@brighamlarsonpianos.com",
+      "status": "needs-route",
+      "webhookRoute": "",
+      "secretEnvVar": "HERMES_AGENT_ED_SECRET",
+      "acceptedTaskTypes": ["video edit", "raw intake", "metadata draft", "thumbnail notes", "social package", "publish readiness"],
+      "driveBackupFolder": "",
+      "statusSource": "",
+      "responseDestination": ""
+    },
+    {
+      "name": "Yolanda",
+      "moduleTargets": ["Agent Operations Console", "Marketing Command Center", "VideoFlow Automation Studio"],
+      "role": "YouTube",
+      "email": "yolanda@brighamlarsonpianos.com",
+      "status": "needs-route",
+      "webhookRoute": "",
+      "secretEnvVar": "HERMES_AGENT_YOLANDA_SECRET",
+      "acceptedTaskTypes": ["YouTube optimization", "description", "tags", "publishing checklist", "channel analysis"],
+      "driveBackupFolder": "",
+      "statusSource": "",
+      "responseDestination": ""
+    },
+    {
+      "name": "Sharie",
+      "moduleTargets": ["Agent Operations Console", "Marketing Command Center", "VideoFlow Automation Studio"],
+      "role": "Social Media",
+      "email": "sharie@brighamlarsonpianos.com",
+      "status": "needs-route",
+      "webhookRoute": "",
+      "secretEnvVar": "HERMES_AGENT_SHARIE_SECRET",
+      "acceptedTaskTypes": ["social post", "short-form package", "caption", "campaign follow-up", "publish readiness"],
+      "driveBackupFolder": "",
+      "statusSource": "",
+      "responseDestination": ""
+    },
+    {
+      "name": "Brandy",
+      "moduleTargets": ["Agent Operations Console", "Marketing Command Center"],
+      "role": "Branding",
+      "email": "brandy@brighamlarsonpianos.com",
+      "status": "needs-route",
+      "webhookRoute": "",
+      "secretEnvVar": "HERMES_AGENT_BRANDY_SECRET",
+      "acceptedTaskTypes": ["branding", "brand voice", "public message review", "campaign positioning"],
+      "driveBackupFolder": "",
+      "statusSource": "",
+      "responseDestination": ""
+    },
+    {
+      "name": "Addie",
+      "moduleTargets": ["Agent Operations Console", "Marketing Command Center"],
+      "role": "Advertising",
+      "email": "addie@brighamlarsonpianos.com",
+      "status": "needs-route",
+      "webhookRoute": "",
+      "secretEnvVar": "HERMES_AGENT_ADDIE_SECRET",
+      "acceptedTaskTypes": ["advertising", "paid campaign", "ad copy", "creative brief", "performance notes"],
+      "driveBackupFolder": "",
+      "statusSource": "",
+      "responseDestination": ""
+    },
+    {
+      "name": "Lee",
+      "moduleTargets": ["Agent Operations Console", "Marketing Command Center"],
+      "role": "Lead Gen",
+      "email": "lee@brighamlarsonpianos.com",
+      "status": "needs-route",
+      "webhookRoute": "",
+      "secretEnvVar": "HERMES_AGENT_LEE_SECRET",
+      "acceptedTaskTypes": ["lead generation", "source tagging", "funnel research", "lead quality review"],
+      "driveBackupFolder": "",
+      "statusSource": "",
+      "responseDestination": ""
+    },
+    {
+      "name": "Rajeesh",
+      "moduleTargets": ["Agent Operations Console", "Marketing Command Center"],
+      "role": "Website",
+      "email": "rajeesh@brighamlarsonpianos.com",
+      "status": "needs-route",
+      "webhookRoute": "",
+      "secretEnvVar": "HERMES_AGENT_RAJEESH_SECRET",
+      "acceptedTaskTypes": ["website update", "SEO page", "content audit", "landing page brief", "Shopify notes"],
+      "driveBackupFolder": "",
+      "statusSource": "",
+      "responseDestination": ""
+    },
+    {
+      "name": "Collin",
+      "moduleTargets": ["Agent Operations Console", "Marketing Command Center"],
+      "role": "Competitor Research",
+      "email": "collin@brighamlarsonpianos.com",
+      "status": "needs-route",
+      "webhookRoute": "",
+      "secretEnvVar": "HERMES_AGENT_COLLIN_SECRET",
+      "acceptedTaskTypes": ["competitor research", "market research", "content opportunity", "pricing intelligence"],
+      "driveBackupFolder": "",
+      "statusSource": "",
+      "responseDestination": ""
+    }
+  ],
+  "connectionTests": [
+    "Bridge health check succeeds from this laptop or Netlify.",
+    "Signed sample task reaches Marcus.",
+    "Signed sample design task reaches Desie.",
+    "Signed sample video task reaches Ed.",
+    "Agent receipt appears in the expected channel or callback.",
+    "Agent status appears in Agent Console.",
+    "Module queue reflects routed task state.",
+    "Agent completion or blocker returns to the app.",
+    "Agent Log records the full request and response trail."
+  ]
+}

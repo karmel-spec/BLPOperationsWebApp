@@ -1,0 +1,38 @@
+{
+  "sources": {
+    "googleDriveKnowledgeVault": {
+      "label": "Google Drive Knowledge Vault",
+      "url": "https://drive.google.com/drive/folders/1GoxHwnWqhhl50HvudeDnwuYBTvpXf1v-",
+      "localPath": "/Users/blpadmin/Library/CloudStorage/GoogleDrive-lindsay@brighamlarsonpianos.com/Shared drives/BLP Knowledge Vault/Vault"
+    },
+    "obsidianVault": {
+      "label": "Obsidian BLP Knowledge Vault",
+      "vaultName": "BLP Knowledge Vault",
+      "localPath": "/Users/blpadmin/Library/CloudStorage/GoogleDrive-lindsay@brighamlarsonpianos.com/Shared drives/BLP Knowledge Vault/Vault"
+    },
+    "avatarFolder": {
+      "label": "BLP Agent Console - Avatars",
+      "localPath": "/Users/blpadmin/Library/CloudStorage/GoogleDrive-lindsay@brighamlarsonpianos.com/My Drive/BLP Agent Console - Avatars"
+    },
+    "orgCharts": {
+      "label": "BLP Agent Org Chart PDFs",
+      "files": [
+        "/Users/blpadmin/Library/CloudStorage/GoogleDrive-lindsay@brighamlarsonpianos.com/My Drive/BLP Agent Org Chart v5.pdf",
+        "/Users/blpadmin/Library/CloudStorage/GoogleDrive-lindsay@brighamlarsonpianos.com/My Drive/BLP-org-chart-v5.pdf"
+      ]
+    },
+    "openclawConnectionSheet": {
+      "label": "BLP OpenClaw Agent Connection Details",
+      "url": "https://docs.google.com/spreadsheets/d/1uB5vYpNwld1HbuGuhG_qNRdjS2Czg0mwOeut1eSIlAI/edit",
+      "responsesSheet": "Responses",
+      "statusSheet": "Status",
+      "rawRepliesSheet": "Raw Replies"
+    },
+    "notionAgentConsole": {
+      "label": "BLP Agent Console",
+      "url": "https://www.notion.so/BLP-Agent-Console-3702e4a42842802d8ededc000050acf9",
+      "databaseId": "3702e4a42842802d8ededc000050acf9",
+      "tokenEnvVar": "BLP_NOTION_TOKEN"
+    }
+  }
+}
