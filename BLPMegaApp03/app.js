@@ -90,6 +90,15 @@ const liveModules = [
     tone: "gold",
   },
   {
+    title: "Shop Reports / Friday Reports",
+    status: "Live Google Sheet",
+    href: "./modules/shop-reports/index.html",
+    summary: "Technician Friday reports with one-click submission into the report spreadsheet, who's-reported dashboard, searchable 2017–2026 history, per-piano work timelines, and calendar assigned-vs-reported comparison.",
+    owner: "Restoration shop and technicians",
+    access: "Owner, Chris, technicians, managers",
+    tone: "gold",
+  },
+  {
     title: "BLP CRM",
     status: "Priority draft",
     href: "./modules/blp-crm/index.html",
