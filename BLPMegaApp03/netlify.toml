@@ -4,3 +4,8 @@
 # Arnold's morning oversight digest — 13:00 UTC = 7:00 AM Mountain (summer).
 [functions."arnold-morning-digest"]
   schedule = "0 13 * * *"
+
+# Site-wide password gate (see netlify/edge-functions/gate.js).
+[[edge_functions]]
+  function = "gate"
+  path = "/*"
