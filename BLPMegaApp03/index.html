@@ -40,18 +40,7 @@
         <a class="primary small" href="./i-have-11-agents-2-in/index.html">New Request</a>
       </header>
 
-      <section id="command-home" class="daily-command-center" aria-label="Daily command center">
-        <header>
-          <div>
-            <p class="eyebrow">Daily command center</p>
-            <h2>What needs attention today?</h2>
-          </div>
-          <span id="commandCenterTimestamp">Today</span>
-        </header>
-        <div class="attention-grid" id="attentionGrid"></div>
-      </section>
-
-      <section class="role-login-panel current-user-panel" aria-label="Current user and permissions">
+      <section id="command-home" class="role-login-panel current-user-panel" aria-label="Current user and permissions">
         <div>
           <p class="eyebrow">Current user</p>
           <h3 id="currentUserHeading">Viewing as Owner</h3>
@@ -62,19 +51,6 @@
           <select id="roleProfileSelect" aria-label="Choose permission group"></select>
         </label>
         <div class="role-session-card" id="roleSessionCard"></div>
-      </section>
-
-      <section class="home-task-board" aria-label="Admin and manager task board">
-        <div class="home-team-switcher" id="homeTeamSwitcher" aria-label="Select a BLP team member task board"></div>
-        <header class="home-task-header">
-          <div>
-            <p class="eyebrow">Admin and manager priorities</p>
-            <h3 id="homeBoardTitle">Today’s operating board</h3>
-            <p id="homeBoardRole">Owner priorities</p>
-          </div>
-          <a class="secondary small" href="./modules/admin-task-board/index.html" target="_blank" rel="noreferrer">Open full board</a>
-        </header>
-        <div class="home-kanban" id="homeKanban"></div>
       </section>
 
       <section class="recent-updates-panel" aria-label="Recently updated modules">
@@ -93,13 +69,13 @@
           <p class="eyebrow">Preview Studio</p>
           <h3>Open modules inside the BLP frame</h3>
         </div>
-        <span id="previewStatus">Agent Operations Console</span>
+        <span id="previewStatus">Sales Console</span>
       </section>
       <section class="module-preview" data-size="desktop">
         <header class="preview-toolbar">
           <div>
-            <p class="eyebrow" id="previewOwner">Agent team operations</p>
-            <h3 id="previewTitle">Agent Operations Console</h3>
+            <p class="eyebrow" id="previewOwner">Sales and showroom</p>
+            <h3 id="previewTitle">Sales Console</h3>
           </div>
           <div class="preview-actions">
             <div class="viewport-controls" aria-label="Preview viewport size">
@@ -108,15 +84,15 @@
               <button type="button" data-preview-size="mobile">Mobile</button>
               <button type="button" data-preview-size="wide">Wide</button>
             </div>
-            <a class="secondary small" id="previewOpenLink" href="./i-have-11-agents-2-in/index.html" target="_blank" rel="noreferrer">Open separately</a>
+            <a class="secondary small" id="previewOpenLink" href="https://blpsalesapp.netlify.app/" target="_blank" rel="noreferrer">Open separately</a>
           </div>
         </header>
         <div class="preview-frame-shell">
           <iframe
             id="moduleFrame"
             class="preview-frame"
-            title="Agent Operations Console"
-            src="./i-have-11-agents-2-in/index.html"
+            title="Sales Console"
+            src="https://blpsalesapp.netlify.app/"
           ></iframe>
         </div>
       </section>
@@ -124,9 +100,9 @@
       <section id="planned" class="section-heading">
         <div>
           <p class="eyebrow">Expansion map</p>
-          <h3>Module status map</h3>
+          <h3>Future development map</h3>
         </div>
-        <span>Live, draft, and waiting states</span>
+        <span>Concepts and modules staged for later</span>
       </section>
       <section class="module-grid compact" id="plannedModules"></section>
 

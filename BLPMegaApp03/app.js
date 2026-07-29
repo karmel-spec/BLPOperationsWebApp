@@ -1,5 +1,81 @@
 const liveModules = [
   {
+    title: "Sales Console",
+    status: "Live app",
+    href: "https://blpsalesapp.netlify.app/",
+    summary: "Live sales command center (blpsalesapp.netlify.app) with the Leads Log queue, heat scoring, Arnold draft recommendations, and the lead map.",
+    owner: "Sales and showroom",
+    access: "Owner, sales, admins, managers",
+    tone: "gold",
+  },
+  {
+    title: "Piano Log & Inventory",
+    status: "Live Google Sheet",
+    href: "./modules/pianolog/index.html",
+    summary: "Live piano inventory and restoration tracking source with Piano Log, restoration contracts, storage requests, Shopify export, image uploads, and product records.",
+    owner: "Inventory, restoration, and showroom",
+    access: "Owner, Chris, shop admin, inventory, marketing",
+    tone: "gold",
+  },
+  {
+    title: "Shop Manager / Restoration Console",
+    status: "Imported, needs live permissions",
+    href: "./modules/shop-manager/index.html",
+    summary: "Chris's restoration shop app for Piano Log pipeline, technician dashboards, floor-plan map, weekly planning, shopping lists, and live Google Sheets/Calendar sync.",
+    owner: "Restoration shop and technicians",
+    access: "Owner, Chris, shop admin, technicians",
+    tone: "gold",
+  },
+  {
+    title: "BLP CRM",
+    status: "Priority draft",
+    href: "./modules/blp-crm/index.html",
+    summary: "Central customer database for sales, tuning, teachers, moving, restoration, leads, accounting, marketing, and client portals, with imports from Gazelle, QBO, Agile, Google Sheets, and more.",
+    owner: "Customer data backbone",
+    access: "Owner, Cody, admins, managers, department leads",
+    tone: "blue",
+  },
+  {
+    title: "BrigGPT Console",
+    status: "Priority draft",
+    href: "./modules/briggpt-console/index.html",
+    summary: "Founder-knowledge console for Brigham's expert piano judgment, brand voice, customer explanations, training guidance, HeyGen/avatar video workflows, and cross-dashboard support.",
+    owner: "Founder intelligence",
+    access: "Owner, Clara, managers, trainers, approved staff",
+    tone: "green",
+  },
+  {
+    title: "Inventory & Pricing Audits",
+    status: "Priority draft",
+    href: "./modules/inventory-pricing-audits/index.html",
+    summary: "Audit center for piano inventory accuracy, Piano Log and Shopify comparisons, weekly pricing checks, margin review, stale listings, and correction queues.",
+    owner: "Inventory and pricing control",
+    access: "Owner, inventory, sales, marketing, shop admin, accounting",
+    tone: "blue",
+  },
+  {
+    title: "Knowledge Vault",
+    status: "Priority draft",
+    href: "./modules/knowledge-vault/index.html",
+    summary: "Training and source-truth dashboard for Obsidian and Drive knowledge, training records, policies, SOPs, approved answers, and agent source libraries.",
+    owner: "Training and source truth",
+    access: "Owner, Lindsay, managers, trainers, approved agents",
+    tone: "blue",
+  },
+  {
+    title: "Team Culture",
+    status: "Priority draft",
+    href: "./modules/team-culture/index.html",
+    summary: "People dashboard for values, recognition, team rituals, celebrations, feedback loops, internal stories, culture notes, and team-building initiatives.",
+    owner: "People and culture",
+    access: "Owner, Karmel, managers, admins, team leads",
+    tone: "green",
+  },
+];
+
+// Parked for future development (2026-07-29): shown on the Expansion Map, not in daily navigation.
+const plannedModules = [
+  {
     title: "Agent Operations Console",
     status: "Live prototype",
     href: "./i-have-11-agents-2-in/index.html",
@@ -18,15 +94,6 @@ const liveModules = [
     tone: "blue",
   },
   {
-    title: "Sales Console",
-    status: "Imported prototype",
-    href: "./modules/sales-console/index.html",
-    summary: "Sales lead command center with heat scoring, funnel work queues, Brigham queue assignment, editable lead drawer, draft recommendations, and sales-team guide.",
-    owner: "Sales and showroom",
-    access: "Owner, sales, admins, managers",
-    tone: "gold",
-  },
-  {
     title: "VideoFlow Automation Studio",
     status: "Source handoff ready",
     href: "./modules/videoflow/index.html",
@@ -34,24 +101,6 @@ const liveModules = [
     owner: "Marketing video operations",
     access: "Owner, marketing, media agents, leadership",
     tone: "blue",
-  },
-  {
-    title: "Shop Manager / Restoration Console",
-    status: "Imported, needs live permissions",
-    href: "./modules/shop-manager/index.html",
-    summary: "Chris's restoration shop app for Piano Log pipeline, technician dashboards, floor-plan map, weekly planning, shopping lists, and live Google Sheets/Calendar sync.",
-    owner: "Restoration shop and technicians",
-    access: "Owner, Chris, shop admin, technicians",
-    tone: "gold",
-  },
-  {
-    title: "Piano Log & Inventory",
-    status: "Live Google Sheet",
-    href: "./modules/pianolog/index.html",
-    summary: "Live piano inventory and restoration tracking source with Piano Log, restoration contracts, storage requests, Shopify export, image uploads, and product records.",
-    owner: "Inventory, restoration, and showroom",
-    access: "Owner, Chris, shop admin, inventory, marketing",
-    tone: "gold",
   },
   {
     title: "Tuning CRM / Online Scheduling",
@@ -90,24 +139,6 @@ const liveModules = [
     tone: "gold",
   },
   {
-    title: "BLP CRM",
-    status: "Priority draft",
-    href: "./modules/blp-crm/index.html",
-    summary: "Central customer database for sales, tuning, teachers, moving, restoration, leads, accounting, marketing, and client portals, with imports from Gazelle, QBO, Agile, Google Sheets, and more.",
-    owner: "Customer data backbone",
-    access: "Owner, Cody, admins, managers, department leads",
-    tone: "blue",
-  },
-  {
-    title: "BrigGPT Console",
-    status: "Priority draft",
-    href: "./modules/briggpt-console/index.html",
-    summary: "Founder-knowledge console for Brigham's expert piano judgment, brand voice, customer explanations, training guidance, HeyGen/avatar video workflows, and cross-dashboard support.",
-    owner: "Founder intelligence",
-    access: "Owner, Clara, managers, trainers, approved staff",
-    tone: "green",
-  },
-  {
     title: "Warranty Tracking",
     status: "Priority draft",
     href: "./modules/warranty-tracking/index.html",
@@ -142,15 +173,6 @@ const liveModules = [
     owner: "Finance operations",
     access: "Owner, accounting, Monte, approved managers",
     tone: "gold",
-  },
-  {
-    title: "Inventory & Pricing Audits",
-    status: "Priority draft",
-    href: "./modules/inventory-pricing-audits/index.html",
-    summary: "Audit center for piano inventory accuracy, Piano Log and Shopify comparisons, weekly pricing checks, margin review, stale listings, and correction queues.",
-    owner: "Inventory and pricing control",
-    access: "Owner, inventory, sales, marketing, shop admin, accounting",
-    tone: "blue",
   },
   {
     title: "Restoration Pipeline",
@@ -234,15 +256,6 @@ const liveModules = [
     tone: "gold",
   },
   {
-    title: "Team Culture",
-    status: "Priority draft",
-    href: "./modules/team-culture/index.html",
-    summary: "People dashboard for values, recognition, team rituals, celebrations, feedback loops, internal stories, culture notes, and team-building initiatives.",
-    owner: "People and culture",
-    access: "Owner, Karmel, managers, admins, team leads",
-    tone: "green",
-  },
-  {
     title: "Holidays & Parties",
     status: "Priority draft",
     href: "./modules/holidays-parties/index.html",
@@ -288,15 +301,6 @@ const liveModules = [
     tone: "green",
   },
   {
-    title: "Knowledge Vault",
-    status: "Priority draft",
-    href: "./modules/knowledge-vault/index.html",
-    summary: "Training and source-truth dashboard for Obsidian and Drive knowledge, training records, policies, SOPs, approved answers, and agent source libraries.",
-    owner: "Training and source truth",
-    access: "Owner, Lindsay, managers, trainers, approved agents",
-    tone: "blue",
-  },
-  {
     title: "Executive Vision Board",
     status: "Priority draft",
     href: "./modules/executive-vision-board/index.html",
@@ -305,9 +309,25 @@ const liveModules = [
     access: "Owner, leadership, approved managers",
     tone: "gold",
   },
+  {
+    title: "Daily Command Center",
+    status: "Future development",
+    href: "",
+    summary: "Home dashboard concept for open priorities, waiting approvals, agent requests, customer follow-ups, and urgent blockers at a glance.",
+    owner: "Owner dashboard concept",
+    access: "Owner, admins, managers",
+    tone: "green",
+  },
+  {
+    title: "Team Operating Boards",
+    status: "Future development",
+    href: "",
+    summary: "Per-person operating boards for Brigham, Karmel, Melissa, Susie, Alisa, Ezzy, and Doris with intake, priority, in-progress, waiting, and done columns.",
+    owner: "Admin and manager operations",
+    access: "Owner, admins, managers",
+    tone: "blue",
+  },
 ];
-
-const plannedModules = [];
 
 const accessModel = [
   ["Owner", "Full executive visibility, financial views, final approvals, and permission authority."],
@@ -415,161 +435,29 @@ const roadmap = [
 
 const snapshotStats = [
   ["Live modules", liveModules.length, "Imported and reachable from this command home."],
-  ["Latest import", "VideoFlow", "Drive handoff and Next.js source are ready for setup."],
+  ["Latest update", "Sales Console", "Now embeds the live blpsalesapp.netlify.app deployment."],
   ["Design direction", "1 + 3", "Executive showroom blended with bright staff usability."],
   ["Primary action", "Route work", "Human requests flow into agents, teams, and review queues."],
 ];
 
 const recentModuleUpdates = [
-  ["Agent Operations Console", "Updated", "Human-to-agent routing is ready for daily work intake."],
-  ["Sales Console", "Imported", "Lead queues, heat scoring, and showroom follow-up are in the shell."],
-  ["Tuning CRM / Online Scheduling", "Needs data", "Live scheduling bridge is the next connection point."],
+  ["Sales Console", "Replaced", "Old embedded prototype retired; now the live blpsalesapp.netlify.app sales app."],
   ["Shop Manager / Restoration Console", "Needs permissions", "Restoration workflows are imported and waiting on live access."],
 ];
 
 const operatingSignals = [
-  ["Accounting", "Priority draft for QuickBooks, bill pay, payroll coordination, taxes, reconciliations, reports, and financial controls.", "Accounting Department"],
-  ["Admin task board", "Trello-style board for admin and manager tasks, priorities, blockers, and follow-ups.", "Admin Task Board"],
-  ["Agent console", "Live prototype for human-to-agent work routing.", "Agent Operations Console"],
+  ["Sales Dashboard", "Live sales app (blpsalesapp.netlify.app) for lead queues, heat scoring, Arnold drafts, and showroom follow-up.", "Sales Console"],
+  ["Piano log", "Live Google Sheet connected as the inventory and restoration source.", "Piano Log & Inventory"],
+  ["Shop manager", "Imported and waiting on full live permissions.", "Shop Manager / Restoration Console"],
   ["BLP CRM", "Priority draft for the shared customer database that connects every revenue stream.", "BLP CRM"],
   ["BrigGPT", "Priority draft for Brigham's expert piano knowledge, founder voice, avatar scripts, and cross-dashboard guidance.", "BrigGPT Console"],
-  ["Building", "Priority draft for facility projects, maintenance, inspections, room readiness, repairs, vendors, budgets, and owner approvals.", "Building"],
-  ["Client Dashboard", "Priority draft for customer-facing piano records, restoration updates, documents, approvals, and safe messages.", "Client Dashboard"],
-  ["Customer Service", "Priority draft for calls, texts, emails, tickets, transcripts, follow-ups, and customer communication history.", "Customer Service"],
-  ["Design Center", "Priority draft for brand assets, signs, web graphics, print pieces, templates, design requests, approvals, vendor handoffs, and production files.", "Design Center"],
-  ["Executive Vision Board", "Priority draft for north-star goals, quarterly priorities, strategic projects, health metrics, decision logs, and owner approvals.", "Executive Vision Board"],
-  ["Fleet", "Priority draft for vehicle records, maintenance, mileage, assignments, insurance, inspections, issues, incidents, and replacement planning.", "Fleet"],
-  ["Holidays & Parties", "Priority draft for holidays, company parties, dates, budgets, vendors, invitations, assignments, approvals, and event follow-through.", "Holidays & Parties"],
   ["Inventory Audits", "Priority draft for Piano Log accuracy, Shopify listing hygiene, pricing checks, margin review, and correction queues.", "Inventory & Pricing Audits"],
   ["Knowledge Vault", "Priority draft for Obsidian and Drive knowledge, training records, policies, SOPs, approved answers, and agent source libraries.", "Knowledge Vault"],
-  ["Marketing", "Imported command center for growth metrics, campaigns, and content planning.", "Marketing Command Center"],
-  ["Newsletters", "Priority draft for customer and teacher newsletters, campaign calendars, story ideas, approvals, segments, send dates, and performance.", "Newsletters"],
-  ["Onboarding", "Static prototype running with restored image assets.", "Onboarding & Training Portal"],
-  ["Payroll", "Priority draft for time approvals, technician hours, commissions, pay period review, exceptions, and payroll-ready reports.", "Payroll"],
-  ["Piano log", "Live Google Sheet connected as the inventory and restoration source.", "Piano Log & Inventory"],
-  ["Profit First", "Priority draft for Profit First accounts, allocations, transfer rhythms, review dates, owner dashboards, exceptions, and financial health checkpoints.", "Profit First"],
-  ["Recitals", "Priority draft for teacher CRM, student scheduling, venue planning, programs, reminders, media, payments, and family communication.", "Recitals"],
-  ["Research", "Priority draft for market research, competitor tracking, product notes, opportunity briefs, pricing intelligence, and source-backed recommendations.", "Research"],
-  ["Restoration", "Priority draft for estimates, approvals, rebuild stages, parts, photos, handoffs, and completion signals.", "Restoration Pipeline"],
-  ["Restoration Training", "Priority draft for restoration skill modules, safety standards, practice assignments, mentor sign-offs, photo evidence, quality checks, and technician progression.", "Piano Restoration Training"],
-  ["Sales Dashboard", "Imported sales console for lead queues, heat scoring, follow-up drafts, and showroom work.", "Sales Console"],
-  ["Shop manager", "Imported and waiting on full live permissions.", "Shop Manager / Restoration Console"],
-  ["Social Sites", "Priority draft for platform planning, post queues, content approvals, comment follow-up, platform health, growth signals, and cross-module handoffs.", "Social Sites"],
   ["Team Culture", "Priority draft for values, recognition, team rituals, celebrations, feedback loops, internal stories, culture notes, and team-building initiatives.", "Team Culture"],
-  ["Team Meetings", "Priority draft for agendas, recurring rhythms, decisions, action items, attendance, follow-ups, and leadership review notes.", "Team Meetings"],
-  ["Technicians", "Priority draft for field assignments, skills, training, service notes, and technician records.", "Technician Dashboards"],
-  ["Tuning CRM", "Imported with live data bridge still to connect.", "Tuning CRM / Online Scheduling"],
-  ["Uniforms", "Priority draft for team apparel inventory, sizing, ordering, assignments, replacement requests, vendor notes, and role-based policy details.", "Uniforms"],
-  ["VideoFlow", "Source handoff received; needs .env.local, Supabase, and Google OAuth setup.", "VideoFlow Automation Studio"],
-  ["Warranty", "Priority draft for warranty coverage, expiring records, claims, reminders, and contacts spreadsheet sync.", "Warranty Tracking"],
 ];
-
-const teamStorageKey = "blpAdminTaskBoardTeam.v1";
-const homeColumns = [
-  ["intake", "Intake"],
-  ["priority", "Priority"],
-  ["progress", "In Progress"],
-  ["waiting", "Waiting"],
-  ["done", "Done"],
-];
-
-const defaultHomeTeamBoards = {
-  brigham: {
-    name: "Brigham",
-    role: "Owner priorities",
-    initials: "B",
-    image: "https://www.brighamlarsonpianos.com/cdn/shop/files/Brigham.Larson.BW.jpg?v=1709675863&width=300",
-    tasks: {
-      intake: [["Review new operating module ideas", "Decide which future modules should become live prototypes first.", ["Owner", "Strategy"]]],
-      priority: [["Set weekly company focus", "Choose the one priority that should guide admin, agents, and managers this week.", ["High", "Leadership"]]],
-      progress: [["Approve operating system direction", "Review the unified BLP app shell and confirm the next design pass.", ["Review", "Product"]]],
-      waiting: [["Feedback from leadership", "Waiting for notes on which dashboards should become production systems first.", ["Waiting", "Feedback"]]],
-      done: [],
-    },
-  },
-  karmel: {
-    name: "Karmel",
-    role: "Owner/admin priorities",
-    initials: "K",
-    image: "https://www.brighamlarsonpianos.com/cdn/shop/files/Copy_of_999A8339-Edit_e9215d62-9f45-4050-9554-f4e2f78cdfcb.jpg?v=1735944534&width=300",
-    tasks: {
-      intake: [["Collect module requests", "Capture new console ideas, missing data, and app feedback as they come in.", ["Intake", "Admin"]]],
-      priority: [["Confirm task board workflow", "Decide whether this board should connect first to Notion, Google Sheets, or a database.", ["High", "Ops"]]],
-      progress: [["Review live module links", "Check each mini-app link and note broken permissions or missing source data.", ["QA", "Modules"]]],
-      waiting: [["Agent data responses", "Waiting on full OpenClaw and Hermes response data for active agent dashboards.", ["Agents", "Waiting"]]],
-      done: [["Add Web App Home links", "Return links added across major imported modules.", ["Complete", "Navigation"]]],
-    },
-  },
-  melissa: {
-    name: "Melissa",
-    role: "Client service priorities",
-    initials: "M",
-    image: "https://www.brighamlarsonpianos.com/cdn/shop/files/5U4A1257.jpg?v=1775246484&width=300",
-    tasks: {
-      intake: [["New customer follow-up", "Review incoming customer requests that need a same-day response.", ["Client", "Follow-up"]]],
-      priority: [["Service handoff rhythm", "Define how customer-service tickets should route to tuning, sales, and shop.", ["High", "Tickets"]]],
-      progress: [["Customer Service module plan", "Outline the SalesCaptain replacement workflow for calls, texts, emails, and tickets.", ["Planning", "CRM"]]],
-      waiting: [],
-      done: [],
-    },
-  },
-  susie: {
-    name: "Susie",
-    role: "Office priorities",
-    initials: "S",
-    image: "",
-    tasks: {
-      intake: [["Front desk requests", "Collect scheduling, customer, and admin requests that need triage.", ["Office", "Intake"]]],
-      priority: [["Daily communication queue", "Keep urgent client-facing messages from getting buried.", ["High", "Calls"]]],
-      progress: [["Tuning CRM review", "Validate which fields the front desk needs on the tuning console.", ["Tuning", "Review"]]],
-      waiting: [["Calendar permissions", "Waiting on full calendar/source access for live appointment data.", ["Calendar", "Waiting"]]],
-      done: [],
-    },
-  },
-  alisa: {
-    name: "Alisa",
-    role: "Admin priorities",
-    initials: "A",
-    image: "https://www.brighamlarsonpianos.com/cdn/shop/files/Alisa.Merrill.BW_1.jpg?v=1735949942&width=300",
-    tasks: {
-      intake: [["Document request", "Collect forms, checklists, and repeatable admin procedures for the Knowledge Vault.", ["Docs", "Process"]]],
-      priority: [["Checklist cleanup", "Identify admin checklists that should move into the operating system.", ["High", "Systems"]]],
-      progress: [],
-      waiting: [["Source folder access", "Waiting on final Drive folder links for shared admin documents.", ["Drive", "Waiting"]]],
-      done: [],
-    },
-  },
-  ezzy: {
-    name: "Ezzy",
-    role: "Creative and media priorities",
-    initials: "E",
-    image: "https://www.brighamlarsonpianos.com/cdn/shop/files/Ezaray.Lopp.BW_cc6b4562-389e-4c78-b1fe-3dcd2590bd86.jpg?v=1777569159&width=300",
-    tasks: {
-      intake: [["Design request queue", "Capture graphics, social, newsletter, and signage requests.", ["Creative", "Intake"]]],
-      priority: [["Design Center module outline", "Define what assets, approvals, and templates belong in the Design Center.", ["High", "Design"]]],
-      progress: [["VideoFlow handoff", "Review video workflow source handoff and media queue needs.", ["Video", "Workflow"]]],
-      waiting: [],
-      done: [],
-    },
-  },
-  doris: {
-    name: "Doris",
-    role: "Accounting priorities",
-    initials: "D",
-    image: "https://www.brighamlarsonpianos.com/cdn/shop/files/DORIS-BW_2.jpg?v=1735946727&width=300",
-    tasks: {
-      intake: [["Accounting requests", "Collect bill pay, payroll, taxes, and QuickBooks-related tasks.", ["Finance", "Intake"]]],
-      priority: [["Accounting module requirements", "List the first QuickBooks, bill pay, payroll, and tax workflows to wire.", ["High", "QuickBooks"]]],
-      progress: [["Profit First planning", "Shape the Profit First module into a practical review dashboard.", ["Finance", "Planning"]]],
-      waiting: [["QuickBooks permissions", "Waiting on production access details before live integration work.", ["Waiting", "Access"]]],
-      done: [],
-    },
-  },
-};
 
 let activeModuleIndex = 0;
 let activePreviewSize = "desktop";
-let activeHomeBoardKey = "brigham";
 
 function escapeHtml(value = "") {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
@@ -577,26 +465,6 @@ function escapeHtml(value = "") {
 
 function escapeAttribute(value = "") {
   return String(value).replaceAll("&", "&amp;").replaceAll("\"", "&quot;").replaceAll("<", "&lt;");
-}
-
-function getInitials(name = "") {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase() || "T";
-}
-
-function loadHomeTeamBoards() {
-  try {
-    const stored = JSON.parse(localStorage.getItem(teamStorageKey) || "null");
-    if (stored && typeof stored === "object" && Object.keys(stored).length) return stored;
-  } catch (error) {
-    console.warn("Could not load saved home team boards", error);
-  }
-  return defaultHomeTeamBoards;
 }
 
 function getStatusLabel(status = "") {
@@ -610,101 +478,6 @@ function getStatusLabel(status = "") {
 
 function getStatusSlug(status = "") {
   return getStatusLabel(status).toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
-}
-
-function getActiveHomeBoard() {
-  const boards = loadHomeTeamBoards();
-  return boards[activeHomeBoardKey] || boards[Object.keys(boards)[0]];
-}
-
-function renderAttentionGrid() {
-  const target = document.querySelector("#attentionGrid");
-  if (!target) return;
-
-  const board = getActiveHomeBoard();
-  const tasks = board?.tasks || {};
-  const customerSignals = operatingSignals.filter(([title, detail]) => /customer|client|service|warranty|tuning/i.test(`${title} ${detail}`));
-  const urgentItems = Object.values(tasks).flat().filter((task) => (task[2] || []).some((tag) => /high|owner|waiting|access/i.test(tag)));
-  const allowedCount = getAllowedModuleIndexes().length;
-  const attentionItems = [
-    ["Open priorities", (tasks.priority || []).length + (tasks.progress || []).length, `${board?.name || "Team"} active focus items`],
-    ["Waiting approvals", (tasks.waiting || []).length, "Access, feedback, and owner review"],
-    ["Agent requests", getAllowedModuleIndexes(roleProfiles.find((role) => role.key === "agent-team")).length, "Agent-ready modules available"],
-    ["Customer follow-ups", customerSignals.length, "Client, tuning, warranty, and service signals"],
-    ["Urgent blockers", urgentItems.length, `${allowedCount} modules visible in this role`],
-  ];
-
-  target.innerHTML = attentionItems
-    .map(([label, value, note]) => `
-      <article class="attention-card" data-attention="${escapeAttribute(label.toLowerCase().replace(/[^a-z]+/g, "-"))}">
-        <span>${escapeHtml(label)}</span>
-        <strong>${escapeHtml(value)}</strong>
-        <p>${escapeHtml(note)}</p>
-      </article>
-    `)
-    .join("");
-}
-
-function renderHomeTaskCard(task, column) {
-  const [title, detail, tags = []] = task;
-  const tagText = tags.join(" ").toLowerCase();
-  const stateClass = [
-    column === "priority" ? "is-priority" : "",
-    column === "waiting" ? "is-waiting" : "",
-    column === "done" ? "is-done" : "",
-    tagText.includes("high") ? "is-urgent" : "",
-    tagText.includes("owner") || tagText.includes("review") ? "is-approval" : "",
-  ].filter(Boolean).map((className) => ` ${className}`).join("");
-  return `
-    <div class="home-task-card${stateClass}">
-      <strong>${escapeHtml(title)}</strong>
-      <p>${escapeHtml(detail)}</p>
-      ${tags.length ? `<div class="task-tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
-    </div>
-  `;
-}
-
-function renderHomeTeamBoard(key = activeHomeBoardKey) {
-  const boards = loadHomeTeamBoards();
-  const fallbackKey = Object.keys(boards)[0];
-  const boardKey = boards[key] ? key : fallbackKey;
-  const person = boards[boardKey];
-  const switcher = document.querySelector("#homeTeamSwitcher");
-  const kanban = document.querySelector("#homeKanban");
-  if (!switcher || !kanban || !person) return;
-
-  activeHomeBoardKey = boardKey;
-  switcher.innerHTML = Object.entries(boards)
-    .map(([personKey, board]) => `
-      <button class="home-team-profile${personKey === boardKey ? " is-active" : ""}" type="button" data-home-board="${escapeAttribute(personKey)}">
-        ${board.image
-          ? `<img src="${escapeAttribute(board.image)}" alt="${escapeAttribute(board.name)}" loading="lazy" onload="if (!this.naturalWidth) { this.hidden = true; this.nextElementSibling.hidden = false; }" onerror="this.hidden = true; this.nextElementSibling.hidden = false;" />`
-          : ""}
-        <span class="home-initials-avatar"${board.image ? " hidden" : ""}>${escapeHtml(board.initials || getInitials(board.name))}</span>
-        <span>${escapeHtml(board.name)}</span>
-      </button>
-    `)
-    .join("");
-
-  document.querySelector("#homeBoardTitle").textContent = `${person.name}'s operating board`;
-  document.querySelector("#homeBoardRole").textContent = person.role || "Team priorities";
-  kanban.innerHTML = homeColumns
-    .map(([column, label]) => {
-      const tasks = person.tasks?.[column] || [];
-      return `
-        <article class="home-kanban-column" data-column="${column}">
-          <div class="home-column-title">
-            <strong>${label}</strong>
-            <span>${tasks.length}</span>
-          </div>
-          ${tasks.length
-            ? tasks.map((task) => renderHomeTaskCard(task, column)).join("")
-            : `<p class="home-task-empty">No ${column === "done" ? "completed" : label.toLowerCase()} tasks on this board yet.</p>`}
-        </article>
-      `;
-    })
-    .join("");
-  renderAttentionGrid();
 }
 
 function getActiveRoleProfile() {
@@ -785,23 +558,19 @@ function renderLiveModules() {
 function renderPlannedModules() {
   const target = document.querySelector("#plannedModules");
   if (!target) return;
-  const allowed = getAllowedModuleIndexes();
-  target.innerHTML = allowed
-    .map((index) => {
-      const module = liveModules[index];
-      return `
-        <article class="module-card status-module-card" data-tone="${module.tone}" data-module-index="${index}">
+  target.innerHTML = plannedModules
+    .map((module) => `
+        <article class="module-card status-module-card" data-tone="${module.tone}">
           <header>
             <div>
               <small>${module.owner}</small>
               <h4>${module.title}</h4>
             </div>
-            <span class="status" data-status="${getStatusSlug(module.status)}">${getStatusLabel(module.status)}</span>
+            <span class="status" data-status="draft">Future development</span>
           </header>
           <p>${module.summary}</p>
         </article>
-      `;
-    })
+      `)
     .join("");
 }
 
@@ -944,12 +713,6 @@ function renderModulePreview() {
 }
 
 document.addEventListener("click", (event) => {
-  const homeBoardButton = event.target.closest("[data-home-board]");
-  if (homeBoardButton) {
-    renderHomeTeamBoard(homeBoardButton.dataset.homeBoard);
-    return;
-  }
-
   const moduleCard = event.target.closest("[data-module-index]");
   if (moduleCard) {
     event.preventDefault();
@@ -973,7 +736,6 @@ document.addEventListener("change", (event) => {
   activeRoleKey = roleSelect.value;
   localStorage.setItem(roleStorageKey, activeRoleKey);
   ensureActiveModuleAllowed();
-  renderAttentionGrid();
   renderRoleLogin();
   renderLiveModules();
   renderPlannedModules();
@@ -984,9 +746,7 @@ document.addEventListener("change", (event) => {
 });
 
 renderSnapshotStats();
-renderAttentionGrid();
 renderRoleLogin();
-renderHomeTeamBoard();
 renderLiveModules();
 renderPlannedModules();
 renderRecentUpdates();

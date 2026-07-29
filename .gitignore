@@ -10,3 +10,7 @@ node_modules/
 .oauth-env
 .oauth-refresh-token
 .claude/
+
+# Local Netlify folder
+.netlify
+deno.lock
