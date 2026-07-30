@@ -4,132 +4,87 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>BLP Operating System</title>
-    <link rel="stylesheet" href="./styles.css?v=soft-preview-frame-20260604" />
+    <link rel="stylesheet" href="./styles.css?v=nav-restructure-20260730" />
   </head>
   <body>
-    <aside class="sidebar" aria-label="BLP platform navigation">
-      <div class="brand">
+    <header class="global-bar" aria-label="Global command">
+      <a class="global-brand" href="./index.html" aria-label="BLP Team Operating System home">
         <img src="./assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
-        <div>
-          <h1>BLP Team Operating System</h1>
-        </div>
+      </a>
+
+      <div class="hamburger-menu">
+        <button type="button" class="hamburger-toggle" id="hamburgerToggle" aria-haspopup="true" aria-expanded="false" aria-controls="hamburgerDropdown">
+          <span></span><span></span><span></span>
+          <span class="sr-only">Menu</span>
+        </button>
+        <nav class="hamburger-dropdown" id="hamburgerDropdown" aria-label="Sections" hidden>
+          <a href="./index.html#preview" aria-current="page">Preview Studio</a>
+          <a href="./expansion-map.html">Expansion Map</a>
+          <a href="./settings.html">Settings</a>
+        </nav>
       </div>
 
-      <nav aria-label="Sections">
-        <a href="#command-home">Command Home</a>
-        <a href="#preview">Preview Studio</a>
-        <a href="#planned">Expansion Map</a>
-        <a href="#access">Access Model</a>
-      </nav>
+      <label class="command-search">
+        <span>Ask, search, or route work</span>
+        <input type="search" placeholder="Find a customer, assign an agent, open tuning schedule..." />
+      </label>
 
-      <section class="sidebar-signals" aria-label="Operating status">
-        <div id="signalList" class="signal-list"></div>
-      </section>
-    </aside>
+      <a class="primary small" href="./i-have-11-agents-2-in/index.html">New Request</a>
+    </header>
 
-    <main>
-      <header class="topbar" aria-label="Global command">
-        <a class="topbar-brand" href="#preview" aria-label="BLP Team Operating System home">
-          <img src="./assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
-          <strong>BLP Team Operating System</strong>
-        </a>
-        <label class="command-search">
-          <span>Ask, search, or route work</span>
-          <input type="search" placeholder="Find a customer, assign an agent, open tuning schedule..." />
-        </label>
-        <a class="primary small" href="./i-have-11-agents-2-in/index.html">New Request</a>
-      </header>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Live modules">
+        <section class="sidebar-signals" aria-label="Operating status">
+          <div id="signalList" class="signal-list"></div>
+        </section>
+      </aside>
 
-      <section id="command-home" class="role-login-panel current-user-panel" aria-label="Current user and permissions">
-        <div>
-          <p class="eyebrow">Current user</p>
-          <h3 id="currentUserHeading">Viewing as Owner</h3>
-          <p id="roleLoginDescription">Choose a permission group to preview which modules that team should see.</p>
-        </div>
-        <label class="role-select-label">
-          <span>Quick role switch</span>
-          <select id="roleProfileSelect" aria-label="Choose permission group"></select>
-        </label>
-        <div class="role-session-card" id="roleSessionCard"></div>
-      </section>
-
-      <section class="recent-updates-panel" aria-label="Recently updated modules">
-        <header class="section-heading compact">
-          <div>
-            <p class="eyebrow">Recently updated modules</p>
-            <h3>Latest module movement</h3>
-          </div>
-          <span>Operational pulse</span>
-        </header>
-        <div class="recent-updates-grid" id="recentUpdatesGrid"></div>
-      </section>
-
-      <section id="preview" class="section-heading preview-heading">
-        <div>
-          <p class="eyebrow">Preview Studio</p>
-          <h3>Open modules inside the BLP frame</h3>
-        </div>
-        <span id="previewStatus">Sales Console</span>
-      </section>
-      <section class="module-preview" data-size="desktop">
-        <header class="preview-toolbar">
-          <div>
-            <p class="eyebrow" id="previewOwner">Sales and showroom</p>
-            <h3 id="previewTitle">Sales Console</h3>
-          </div>
-          <div class="preview-actions">
-            <div class="viewport-controls" aria-label="Preview viewport size">
-              <button type="button" data-preview-size="desktop" class="is-active">Desktop</button>
-              <button type="button" data-preview-size="tablet">Tablet</button>
-              <button type="button" data-preview-size="mobile">Mobile</button>
-              <button type="button" data-preview-size="wide">Wide</button>
+      <main>
+        <section class="recent-updates-panel" aria-label="Recently updated modules">
+          <header class="section-heading compact">
+            <div>
+              <p class="eyebrow">Recently updated modules</p>
+              <h3>Latest module movement</h3>
             </div>
-            <a class="secondary small" id="previewOpenLink" href="https://blpsalesapp.netlify.app/" target="_blank" rel="noreferrer">Open separately</a>
-          </div>
-        </header>
-        <div class="preview-frame-shell">
-          <iframe
-            id="moduleFrame"
-            class="preview-frame"
-            title="Sales Console"
-            src="https://blpsalesapp.netlify.app/"
-          ></iframe>
-        </div>
-      </section>
+          </header>
+          <div class="recent-updates-grid" id="recentUpdatesGrid"></div>
+        </section>
 
-      <section id="planned" class="section-heading">
-        <div>
-          <p class="eyebrow">Expansion map</p>
-          <h3>Future development map</h3>
-        </div>
-        <span>Concepts and modules staged for later</span>
-      </section>
-      <section class="module-grid compact" id="plannedModules"></section>
-
-      <section id="access" class="split-section">
-        <article>
-          <p class="eyebrow">Access and permissions</p>
-          <h3>Role-based views for human and agent teams</h3>
-          <p>
-            The combined platform should show each person only the sections they need, while preserving owner visibility across the whole business.
-          </p>
-        </article>
-        <div class="access-list" id="accessList"></div>
-      </section>
-
-      <section class="permissions-setup">
-        <div class="section-heading compact">
+        <section id="preview" class="section-heading preview-heading">
           <div>
-            <p class="eyebrow">Login setup</p>
-            <h3>Permission groups to wire next</h3>
+            <p class="eyebrow">Preview Studio</p>
+            <h3>Open modules inside the BLP frame</h3>
           </div>
-          <span>Draft access map</span>
-        </div>
-        <div class="login-role-grid" id="loginRoleGrid"></div>
-      </section>
+          <span id="previewStatus">Sales Console</span>
+        </section>
+        <section class="module-preview" data-size="desktop">
+          <header class="preview-toolbar">
+            <div>
+              <p class="eyebrow" id="previewOwner">Sales and showroom</p>
+              <select id="previewModuleSelect" class="preview-module-select" aria-label="Choose module to preview"></select>
+            </div>
+            <div class="preview-actions">
+              <div class="viewport-controls" aria-label="Preview viewport size">
+                <button type="button" data-preview-size="desktop" class="is-active">Desktop</button>
+                <button type="button" data-preview-size="tablet">Tablet</button>
+                <button type="button" data-preview-size="mobile">Mobile</button>
+                <button type="button" data-preview-size="wide">Wide</button>
+              </div>
+              <a class="secondary small" id="previewOpenLink" href="https://blpsalesapp.netlify.app/" target="_blank" rel="noreferrer">Open separately</a>
+            </div>
+          </header>
+          <div class="preview-frame-shell">
+            <iframe
+              id="moduleFrame"
+              class="preview-frame"
+              title="Sales Console"
+              src="https://blpsalesapp.netlify.app/"
+            ></iframe>
+          </div>
+        </section>
+      </main>
+    </div>
 
-    </main>
-
-    <script src="./app.js?v=sales-console-module-20260604"></script>
+    <script src="./app.js?v=nav-restructure-20260730"></script>
   </body>
 </html>

@@ -71,6 +71,10 @@ const liveModules = [
     access: "Owner, Lindsay, managers, trainers, approved agents",
     tone: "blue",
   },
+];
+
+// Parked for future development (2026-07-29): shown on the Expansion Map, not in daily navigation.
+const plannedModules = [
   {
     title: "Team Culture",
     status: "Priority draft",
@@ -80,10 +84,6 @@ const liveModules = [
     access: "Owner, Karmel, managers, admins, team leads",
     tone: "green",
   },
-];
-
-// Parked for future development (2026-07-29): shown on the Expansion Map, not in daily navigation.
-const plannedModules = [
   {
     title: "Agent Operations Console",
     status: "Live prototype",
@@ -374,7 +374,7 @@ const roleProfiles = [
     login: "Passwordless email + MFA",
     description: "User setup, module settings, work queues, training, CRM, and operational dashboards.",
     tokens: ["admin", "admins", "managers", "training", "hr", "customer service", "front desk", "team leads", "approved staff", "approved managers"],
-    modules: ["Admin Task Board", "Agent Operations Console", "BLP CRM", "Client Dashboard", "Customer Service", "Knowledge Vault", "Onboarding & Training Portal", "Team Culture", "Team Meetings"],
+    modules: ["Admin Task Board", "Agent Operations Console", "BLP CRM", "Client Dashboard", "Customer Service", "Knowledge Vault", "Onboarding & Training Portal", "Team Meetings"],
   },
   {
     key: "manager",
@@ -435,20 +435,6 @@ const roleProfiles = [
 const roleStorageKey = "blpOperatingSystemRole.v1";
 let activeRoleKey = localStorage.getItem(roleStorageKey) || "owner";
 
-const roadmap = [
-  ["Collect", "Import each new app/codebase as its own module folder so nothing gets overwritten."],
-  ["Inventory", "Document framework, data sources, permissions, and business purpose for every module."],
-  ["Unify", "Choose the shared app shell, navigation, login model, design system, and data contracts."],
-  ["Migrate", "Move modules into the shared platform one at a time with tests and stakeholder review."],
-];
-
-const snapshotStats = [
-  ["Live modules", liveModules.length, "Imported and reachable from this command home."],
-  ["Latest update", "Sales Console", "Now embeds the live blpsalesapp.netlify.app deployment."],
-  ["Design direction", "1 + 3", "Executive showroom blended with bright staff usability."],
-  ["Primary action", "Route work", "Human requests flow into agents, teams, and review queues."],
-];
-
 const recentModuleUpdates = [
   ["Sales Console", "Replaced", "Old embedded prototype retired; now the live blpsalesapp.netlify.app sales app."],
   ["Shop Manager / Restoration Console", "Replaced", "Now links to the live brighamlarsonpianos.tech shop site."],
@@ -457,15 +443,14 @@ const recentModuleUpdates = [
 ];
 
 const operatingSignals = [
-  ["Sales Dashboard", "Live sales app (blpsalesapp.netlify.app) for lead queues, heat scoring, Arnold drafts, and showroom follow-up.", "Sales Console"],
-  ["Piano log", "Live inventory app (pianologapp.netlify.app) for the Piano Log and restoration source.", "Piano Log & Inventory"],
-  ["Shop manager", "Live restoration shop site (brighamlarsonpianos.tech).", "Shop Manager / Restoration Console"],
-  ["BLP CRM", "Live unified customer database (blpcrm.netlify.app) connecting every revenue stream.", "BLP CRM"],
-  ["BrigGPT", "Priority draft for Brigham's expert piano knowledge, founder voice, avatar scripts, and cross-dashboard guidance.", "BrigGPT Console"],
-  ["Store Map", "Live showroom floor map (blpstoremap.netlify.app) with piano slots and live inventory.", "Store Map"],
-  ["Piano Technology Library", "Free live technician resource library (pianotechnologylibrary.com).", "Piano Technology Library"],
-  ["Knowledge Vault", "Priority draft for Obsidian and Drive knowledge, training records, policies, SOPs, approved answers, and agent source libraries.", "Knowledge Vault"],
-  ["Team Culture", "Priority draft for values, recognition, team rituals, celebrations, feedback loops, internal stories, culture notes, and team-building initiatives.", "Team Culture"],
+  ["Sales Dashboard", "Sales Console"],
+  ["Piano Log", "Piano Log & Inventory"],
+  ["Shop Manager", "Shop Manager / Restoration Console"],
+  ["BLP CRM", "BLP CRM"],
+  ["BrigGPT", "BrigGPT Console"],
+  ["Store Map", "Store Map"],
+  ["Piano Technology Library", "Piano Technology Library"],
+  ["Knowledge Vault", "Knowledge Vault"],
 ];
 
 let activeModuleIndex = 0;
@@ -605,6 +590,7 @@ function renderRecentUpdates() {
 
 function renderAccessModel() {
   const target = document.querySelector("#accessList");
+  if (!target) return;
   const profile = getActiveRoleProfile();
   target.innerHTML = accessModel
     .map(
@@ -637,57 +623,22 @@ function renderLoginRoles() {
     .join("");
 }
 
-function renderRoadmap() {
-  const target = document.querySelector("#roadmapList");
-  target.className = "roadmap-list";
-  target.innerHTML = roadmap
-    .map(
-      ([title, description], index) => `
-        <article class="roadmap-step">
-          <span>${index + 1}</span>
-          <strong>${title}</strong>
-          <p>${description}</p>
-        </article>
-      `,
-    )
-    .join("");
-}
-
-function renderSnapshotStats() {
-  const target = document.querySelector("#snapshotGrid");
-  if (!target) return;
-  target.innerHTML = snapshotStats
-    .map(
-      ([label, value, note]) => `
-        <article class="snapshot-card">
-          <span>${label}</span>
-          <strong>${value}</strong>
-          <p>${note}</p>
-        </article>
-      `,
-    )
-    .join("");
-}
-
 function renderSignals() {
   const target = document.querySelector("#signalList");
   if (!target) return;
   const profile = getActiveRoleProfile();
   const allowedIndexes = getAllowedModuleIndexes(profile);
   target.innerHTML = operatingSignals
-    .filter(([, , moduleTitle]) => {
+    .filter(([, moduleTitle]) => {
       const moduleIndex = liveModules.findIndex((module) => module.title === moduleTitle);
       return moduleIndex < 0 || allowedIndexes.includes(moduleIndex);
     })
     .map(
-      ([title, detail, moduleTitle]) => {
+      ([title, moduleTitle]) => {
         const moduleIndex = liveModules.findIndex((module) => module.title === moduleTitle);
         return `
         <article class="signal-item" ${moduleIndex >= 0 ? `data-module-index="${moduleIndex}"` : ""}>
-          <div>
-            <strong>${title}</strong>
-            <span>${detail}</span>
-          </div>
+          <strong>${escapeHtml(title)}</strong>
         </article>
       `;
       },
@@ -699,20 +650,22 @@ function renderModulePreview() {
   ensureActiveModuleAllowed();
   const module = liveModules[activeModuleIndex] || liveModules[0];
   const preview = document.querySelector(".module-preview");
-  const title = document.querySelector("#previewTitle");
+  const select = document.querySelector("#previewModuleSelect");
   const owner = document.querySelector("#previewOwner");
   const status = document.querySelector("#previewStatus");
   const frame = document.querySelector("#moduleFrame");
   const openLink = document.querySelector("#previewOpenLink");
 
-  if (!module || !preview || !title || !owner || !status || !frame || !openLink) return;
+  if (!module || !preview || !select || !owner || !status || !frame || !openLink) return;
 
   preview.dataset.size = activePreviewSize;
-  title.textContent = module.title;
+  select.innerHTML = getAllowedModuleIndexes()
+    .map((index) => `<option value="${index}"${index === activeModuleIndex ? " selected" : ""}>${escapeHtml(liveModules[index].title)}</option>`)
+    .join("");
   owner.textContent = module.owner;
   status.textContent = module.status;
   frame.title = module.title;
-  frame.src = module.href;
+  if (frame.getAttribute("src") !== module.href) frame.src = module.href;
   openLink.href = module.href;
 
   document.querySelectorAll("[data-preview-size]").forEach((button) => {
@@ -721,6 +674,32 @@ function renderModulePreview() {
 
   document.querySelectorAll(".signal-item[data-module-index]").forEach((item) => {
     item.classList.toggle("is-selected", Number(item.dataset.moduleIndex) === activeModuleIndex);
+  });
+}
+
+function setupHamburger() {
+  const toggle = document.querySelector("#hamburgerToggle");
+  const dropdown = document.querySelector("#hamburgerDropdown");
+  if (!toggle || !dropdown) return;
+
+  toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const open = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", String(!open));
+    dropdown.hidden = open;
+  });
+
+  document.addEventListener("click", (event) => {
+    if (dropdown.hidden || event.target.closest(".hamburger-menu")) return;
+    toggle.setAttribute("aria-expanded", "false");
+    dropdown.hidden = true;
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || dropdown.hidden) return;
+    toggle.setAttribute("aria-expanded", "false");
+    dropdown.hidden = true;
+    toggle.focus();
   });
 }
 
@@ -743,6 +722,13 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("change", (event) => {
+  const moduleSelect = event.target.closest("#previewModuleSelect");
+  if (moduleSelect) {
+    activeModuleIndex = Number(moduleSelect.value);
+    renderModulePreview();
+    return;
+  }
+
   const roleSelect = event.target.closest("#roleProfileSelect");
   if (!roleSelect) return;
   activeRoleKey = roleSelect.value;
@@ -757,7 +743,7 @@ document.addEventListener("change", (event) => {
   renderModulePreview();
 });
 
-renderSnapshotStats();
+setupHamburger();
 renderRoleLogin();
 renderLiveModules();
 renderPlannedModules();

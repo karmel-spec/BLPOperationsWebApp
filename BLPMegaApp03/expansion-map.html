@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Expansion Map — BLP Operating System</title>
+    <link rel="stylesheet" href="./styles.css?v=nav-restructure-20260730" />
+  </head>
+  <body>
+    <header class="global-bar" aria-label="Global command">
+      <a class="global-brand" href="./index.html" aria-label="BLP Team Operating System home">
+        <img src="./assets/brand/blp-logo.png" alt="Brigham Larson Pianos" />
+      </a>
+
+      <div class="hamburger-menu">
+        <button type="button" class="hamburger-toggle" id="hamburgerToggle" aria-haspopup="true" aria-expanded="false" aria-controls="hamburgerDropdown">
+          <span></span><span></span><span></span>
+          <span class="sr-only">Menu</span>
+        </button>
+        <nav class="hamburger-dropdown" id="hamburgerDropdown" aria-label="Sections" hidden>
+          <a href="./index.html#preview">Preview Studio</a>
+          <a href="./expansion-map.html" aria-current="page">Expansion Map</a>
+          <a href="./settings.html">Settings</a>
+        </nav>
+      </div>
+
+      <label class="command-search">
+        <span>Ask, search, or route work</span>
+        <input type="search" placeholder="Find a customer, assign an agent, open tuning schedule..." />
+      </label>
+
+      <a class="primary small" href="./i-have-11-agents-2-in/index.html">New Request</a>
+    </header>
+
+    <div class="app-shell no-sidebar">
+      <main>
+        <section id="planned" class="section-heading">
+          <div>
+            <p class="eyebrow">Expansion map</p>
+            <h3>Future development map</h3>
+          </div>
+          <span>Concepts and modules staged for later</span>
+        </section>
+        <section class="module-grid compact" id="plannedModules"></section>
+      </main>
+    </div>
+
+    <script src="./app.js?v=nav-restructure-20260730"></script>
+  </body>
+</html>
