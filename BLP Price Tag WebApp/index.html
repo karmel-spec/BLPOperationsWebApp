@@ -717,6 +717,20 @@ function printTag() {
   }));
 }
 
+// Warranty auto-fills from the make — Hailun 15yr, Hallet Davis 10yr,
+// everything else 3 Year BLP — until the team types a warranty by hand.
+let warrantyAuto = true;
+function autoWarranty() {
+  if (!warrantyAuto) return;
+  const m = $("model").value.toLowerCase();
+  $("warranty").value = !m.trim() ? ""
+    : m.includes("hailun") ? "15 Year Manufacturer"
+    : m.includes("hallet") ? "10 Year Manufacturer"
+    : "3 Year BLP";
+}
+$("model").addEventListener("input", autoWarranty);
+$("warranty").addEventListener("input", () => { warrantyAuto = false; });
+
 fields.forEach(id => $(id).addEventListener("input", render));
 document.querySelectorAll('input[name="sheet"]').forEach(r => r.addEventListener("change", render));
 $("duplex").addEventListener("change", () => {
@@ -731,6 +745,8 @@ window.addEventListener("resize", scalePreview);
 // Add &duplex=1 for the double-sided Store Map QR back.
 const params = new URLSearchParams(location.search);
 fields.forEach(id => { if (params.has(id)) $(id).value = params.get(id); });
+if (params.has("warranty")) warrantyAuto = false;
+else autoWarranty();
 if (params.get("duplex") === "1") {
   $("duplex").checked = true;
   $("duplex-hint").style.display = "";

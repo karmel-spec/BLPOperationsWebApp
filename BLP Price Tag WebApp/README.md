@@ -10,6 +10,8 @@ print-ready PDF price tag matching the official template
 2. Look the piano up in the [Piano Log](https://docs.google.com/spreadsheets/d/1ZunbPKygpQlcXfTyPowDHdUE9spJ3uV1XA4iX1eoKRc/edit)
    (link is in the app header).
 3. Fill in: make/model line, warranty, Brigham's Price, optional MSRP
+   (warranty auto-fills from the make — Hailun 15 Year, Hallet Davis
+   10 Year, everything else 3 Year BLP — type over it to override)
    (Piano Buyer lookup link in the app), serial #, and the YouTube video URL
    for the QR code.
 4. The monthly finance payment is calculated automatically:
