@@ -142,6 +142,21 @@
   .preview-scale {
     transform-origin: top left;
   }
+
+  /* Phones: stack the worksheet and preview full-width so nothing
+     overflows the screen; the preview scales itself to fit. */
+  @media screen and (max-width: 640px) {
+    .layout { padding: 12px; gap: 16px; }
+    .panel, .preview-wrap { min-width: 0; flex: 1 1 100%; }
+    .panel { padding: 16px; }
+    /* the tag keeps its real 4.6in layout box even when visually scaled
+       down — clip it so it can't force the page wider than the phone */
+    .preview-wrap { position: static; overflow: hidden; max-width: 100%; }
+    .row2 { flex-direction: column; gap: 0; }
+    header.app-header { padding: 12px 14px; gap: 10px; }
+    header.app-header img { height: 32px; }
+    header.app-header h1 { font-size: 17px; }
+  }
   .tag {
     width: 4.6in;
     height: 7.4in;
@@ -194,7 +209,6 @@
     text-align: center;
     padding: 0.07in 0.3in;
     width: calc(100% + 0.44in);
-    text-shadow: 0 1px 2px rgba(0,0,0,.35);
     white-space: nowrap;
   }
   .tag .ribbon::before, .tag .ribbon::after {
@@ -206,12 +220,12 @@
   .tag .ribbon::before {
     left: 0;
     border-width: 0 0.12in 0.1in 0;
-    border-color: transparent #7a0f0d transparent transparent;
+    border-color: transparent var(--ribbon-red-dark) transparent transparent;
   }
   .tag .ribbon::after {
     right: 0;
     border-width: 0.1in 0.12in 0 0;
-    border-color: #7a0f0d transparent transparent transparent;
+    border-color: var(--ribbon-red-dark) transparent transparent transparent;
   }
   .tag .finance {
     font-size: 14.5pt;
@@ -317,6 +331,8 @@
   @media print {
     body > header, .layout { display: none !important; }
     body { background: #fff; }
+    /* Gradients rasterize muddy/dark on many printers — print the ribbon flat red */
+    .tag .ribbon { background: var(--ribbon-red); }
     .print-sheet { display: block; }
     .print-page {
       display: flex;
