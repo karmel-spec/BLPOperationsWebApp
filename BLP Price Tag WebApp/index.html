@@ -322,9 +322,8 @@
     print-color-adjust: exact;
   }
   .price-arrow svg { width: 100%; height: 100%; display: block; }
-  #arrow-preview, #arrow-back-preview { display: none; }
+  #arrow-preview { display: none; }
   body.show-arrow #arrow-preview { display: block; margin-bottom: 24px; }
-  body.show-arrow.show-back #arrow-back-preview { display: block; margin: 24px 0 0; }
 
   /* ============ PRINT ============ */
   .print-sheet { display: none; }
@@ -473,7 +472,6 @@
     <div class="preview-scale" id="preview-scale">
       <div class="price-arrow" id="arrow-preview"></div>
       <div class="tag" id="tag-preview"></div>
-      <div class="price-arrow" id="arrow-back-preview"></div>
       <div class="tag tag-back" id="back-preview"></div>
     </div>
   </div>
@@ -591,19 +589,13 @@ function renderBackInto(el) {
 }
 
 // Cut-out price arrow: the "$187/mo." sign that mounts above the tag.
-// mirror=true is the duplex back of the sheet — the outline flips left
-// so it lands exactly behind the front arrow and the cut-out sign ends
-// up readable from both sides.
-function buildArrowSVG(mirror) {
+// Front side only — the back of the sheet gets a blank spacer instead.
+function buildArrowSVG() {
   const fin = financeMonthly();
   const amount = fin ? "$" + Math.round(fin.pay).toLocaleString("en-US") : "$—";
-  const pts = mirror
-    ? "680,28 145,12 12,100 145,188 680,172"
-    : "20,28 555,12 688,100 555,188 20,172";
-  const cx = mirror ? 400 : 300;
   return `<svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="${pts}" fill="#fff" stroke="#111" stroke-width="7" stroke-linejoin="miter"/>
-    <text x="${cx}" y="145" text-anchor="middle"
+    <polygon points="20,28 555,12 688,100 555,188 20,172" fill="#fff" stroke="#111" stroke-width="7" stroke-linejoin="miter"/>
+    <text x="300" y="145" text-anchor="middle"
       font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" fill="#111"
       font-size="122" font-weight="800">${amount}<tspan font-size="62" font-weight="700" dx="8">/mo.</tspan></text>
   </svg>`;
@@ -630,10 +622,7 @@ function render() {
   document.body.classList.toggle("show-back", duplex);
   document.body.classList.toggle("show-arrow", arrow);
   if (duplex) renderBackInto($("back-preview"));
-  if (arrow) {
-    $("arrow-preview").innerHTML = buildArrowSVG(false);
-    if (duplex) $("arrow-back-preview").innerHTML = buildArrowSVG(true);
-  }
+  if (arrow) $("arrow-preview").innerHTML = buildArrowSVG();
   scalePreview();
 }
 
@@ -666,7 +655,7 @@ function populatePrintSheet(copies, duplex) {
   if (arrow) {
     const a = document.createElement("div");
     a.className = "price-arrow";
-    a.innerHTML = buildArrowSVG(false);
+    a.innerHTML = buildArrowSVG();
     front.appendChild(a);
   }
   for (let i = 0; i < n; i++) {
@@ -683,15 +672,15 @@ function populatePrintSheet(copies, duplex) {
   // Duplex: page 2 carries the Store Map QR backs. Every layout is centered
   // and the 2-up copies are identical, so fronts and backs line up when the
   // sheet is flipped (long edge for portrait, short edge for 2-up landscape).
-  // In arrow layout the back arrow's outline is mirrored so it prints exactly
-  // behind the front one — the cut-out sign reads from both sides.
+  // In arrow layout the back page keeps a blank spacer where the arrow sits,
+  // so the QR back still lands exactly behind the tag — the arrow itself
+  // prints on the front only.
   if (duplex) {
     const back = document.createElement("div");
     back.className = "print-page" + (arrow ? " col" : "");
     if (arrow) {
       const a = document.createElement("div");
       a.className = "price-arrow";
-      a.innerHTML = buildArrowSVG(true);
       back.appendChild(a);
     }
     for (let i = 0; i < n; i++) {

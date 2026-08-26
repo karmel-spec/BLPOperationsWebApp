@@ -28,8 +28,8 @@ print-ready PDF price tag matching the official template
    (`#piano=SERIAL` deep link — needs the Serial #). Back side is logo-free
    to save ink (team-facing). In the print dialog turn on two-sided printing:
    *flip on long edge* for tag + arrow and 1-per-page, *flip on short edge*
-   for the 2-up sheet, so backs come out right-side up. In arrow layout the
-   back arrow outline is mirrored so the cut-out sign reads from both sides.
+   for the 2-up sheet, so backs come out right-side up. The price arrow
+   prints on the front only — the back of the sheet is blank behind it.
 
 ## Tech notes
 
